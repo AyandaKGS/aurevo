@@ -1,22 +1,11 @@
 "use client"
 
-import { DarkModeToggle } from "@/components/DarkModeToggle"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  MobileNav,
-  MobileNavHeader,
-  MobileNavMenu,
-  MobileNavToggle,
-  Navbar,
-  NavbarButton,
-  NavbarLogo,
-  NavBody,
-  NavItems,
-} from "@/components/ui/resizable-navbar"
 import {
   AirVent,
   ArrowRight,
@@ -35,100 +24,36 @@ import {
   Wifi
 } from "lucide-react"
 import Image from "next/image"
-import { useState } from "react"
 
 
 export default function HomePage() {
 
-  const navItems = [
+  const testimonials = [
     {
-      name: "Rooms",
-      link: "#rooms",
+      name: "Kallie L",
+      review:
+        "Had a great stay while doing volunteer work at Lake Eyasi Medical Clinic. Wonderful service, yummy food and comfortable rooms. Quiet and lovely. Kellie Lala",
+      rating: 5,
+      date: "3 years ago",
     },
     {
-      name: "Amenities",
-      link: "#amenities",
+      name: "Eric S",
+      review:
+        "During my Safari to Lake Eyasi and Ngorongoro crater, I stayed for 2 nights in this accommodation. Sonayi Safari Lodge was very nice, clean, quiet, and comfortable. The food was excellent, and since we were many at the lodge restaurant they had put the buffet style. I got served many different varieties. The service was perfect for all the places inside the bedroom and outside. The security is perfect and I would like to encourage other people to go on safari in this wonderful country and visit Lake Eyasi and experience the beautiful natural people and things.",
+      rating: 5,
+      date: "4 years ago",
     },
     {
-      name: "Location",
-      link: "#location",
-    },
-    {
-      name: "Contact",
-      link: "#contact",
+      name: "Peter V",
+      review:
+        "We had a lovely camping facilities at Lake Manyara Sonayi Camp during our visit in Tanzania. Very quite environment full of activities to do, delicious food, well secured with a wall. At Tembo house we had a clear view of a small town of Mto Wa Mbu especial in the night. We also did a visit down the Kirurumu river and enjoy the stunning view of the gorge that this river offers. At the far end you can also see the Lake Manyara at distance but worth much to stay at this friendly environment with the best people around. We highly recommend this camping site for anybody or group looking forward to stay in Tanzania during wildlife safaris.",
+      rating: 5,
+      date: "3 weeks ago",
     },
   ];
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-
+  
   return (
     <div className="relative w-full min-h-screen bg-background">
-      {/* Navigation */}
-      <Navbar className="top-0">
-        {/* Desktop Navigation */}
-        <NavBody>
-          <NavbarLogo />
-          <NavItems items={navItems} />
-          <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary" className="relative left-6">
-              <DarkModeToggle />
-            </NavbarButton>
-            <NavbarButton variant="secondary">Login</NavbarButton>
-            <NavbarButton variant="primary">Book a call</NavbarButton>
-          </div>
-        </NavBody>
-
-        {/* Mobile Navigation */}
-        <MobileNav>
-          <MobileNavHeader>
-            <NavbarLogo />
-            <MobileNavToggle
-              isOpen={isMobileMenuOpen}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            />
-          </MobileNavHeader>
-
-          <MobileNavMenu
-            isOpen={isMobileMenuOpen}
-            onClose={() => setIsMobileMenuOpen(false)}
-          >
-            {navItems.map((item, idx) => (
-              <a
-                key={`mobile-link-${idx}`}
-                href={item.link}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="relative text-neutral-600 dark:text-neutral-300"
-              >
-                <span className="block">{item.name}</span>
-              </a>
-            ))}
-            <div className="flex w-full flex-col gap-4">              <NavbarButton
-              onClick={() => setIsMobileMenuOpen(false)}
-              variant="primary"
-              className="w-full"
-            >
-              <DarkModeToggle />
-            </NavbarButton>
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Login
-              </NavbarButton>
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Book now
-              </NavbarButton>
-            </div>
-          </MobileNavMenu>
-        </MobileNav>
-      </Navbar>
-
       {/* Hero Section with Booking */}
       <section className="relative h-screen bg-gradient-to-r from-black/50 to-black/30">
         <div
@@ -211,7 +136,7 @@ export default function HomePage() {
               {
                 name: "Single Room",
                 status: "Available",
-                statusColor: "bg-green-600",
+                statusColor: "bg-orange-600",
                 image: "/images/single-room-cover.webp",
                 features: ["Ocean View", "King Bed", "Private Balcony", "Marble Bathroom"],
                 amenities: [Bed, Bath, Tv, AirVent, Wifi],
@@ -227,7 +152,7 @@ export default function HomePage() {
               {
                 name: "Triple Room",
                 status: "Exclusive",
-                statusColor: "bg-purple-600",
+                statusColor: "bg-orange-600",
                 image: "/images/triple-room-cover.webp",
                 features: ["Private Pool", "Personal Chef", "Concierge Service", "Exclusive Access"],
                 amenities: [Bed, Bath, Tv, AirVent, Wifi],
@@ -380,51 +305,13 @@ export default function HomePage() {
               <span className="text-muted-foreground/60">(2,847 reviews)</span>
             </div>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Jennifer Martinez",
-                location: "New York, NY",
-                review:
-                  "Absolutely magical experience! The staff went above and beyond to make our anniversary unforgettable. The ocean view from our suite was breathtaking.",
-                rating: 5,
-                date: "2 weeks ago",
-              },
-              {
-                name: "David Thompson",
-                location: "London, UK",
-                review:
-                  "Exceptional service and amenities. The spa treatments were divine and the dining exceeded all expectations. Will definitely return!",
-                rating: 5,
-                date: "1 month ago",
-              },
-              {
-                name: "Maria Rodriguez",
-                location: "Barcelona, Spain",
-                review:
-                  "Perfect location with stunning views. The infinity pool and beach access made our vacation truly special. Highly recommend!",
-                rating: 5,
-                date: "3 weeks ago",
-              },
-            ].map((review, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="pt-6">
-                  <div className="flex mb-4">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-card-foreground mb-6 italic">&quot;{review.review}&quot;</p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-muted-foreground/70">{review.name}</p>
-                      <p className="text-sm text-muted-foreground">{review.location}</p>
-                    </div>
-                    <p className="text-sm text-gray-500">{review.date}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="rounded-md flex flex-col antialiased bg-background dark:bg-grid-white/[0.05] items-center justify-center relative overflow-hidden">
+            <InfiniteMovingCards
+              items={testimonials}
+              direction="left"
+              pauseOnHover
+              speed="normal"
+            />
           </div>
         </div>
       </section>
@@ -441,10 +328,10 @@ export default function HomePage() {
               </p>
               <div className="space-y-4">
                 {[
-                  { name: "Hunting with the Hadzabe", distance: "0 min walk" },
-                  { name: "Shopping at the Datoga Village", distance: "10 min drive" },
-                  { name: "International Airport", distance: "25 min drive" },
-                  { name: "Lake Eyasi", distance: "3 min walk" },
+                  { name: "Hunting with the Hadzabe", distance: "15min drive" },
+                  { name: "Lake Manyara National Park", distance: "1hr 25mins drive" },
+                  { name: "International Airport", distance: "4hr 19mins drive" },
+                  { name: "Lake Eyasi", distance: "16mins drive" },
                 ].map((location, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-foreground rounded-lg">
                     <div className="flex items-center space-x-3">

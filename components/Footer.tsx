@@ -24,7 +24,7 @@ export default function Footer() {
                         <ul className="space-y-2 text-gray-400">
                             <li>
                                 <Link href="#rooms" className="hover:text-white">
-                                    Rooms & Suites
+                                    Rooms & Campsite
                                 </Link>
                             </li>
                             <li>
