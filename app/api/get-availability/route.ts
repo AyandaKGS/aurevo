@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { rateLimit } from "@/lib/utils/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 
+
 export async function GET(req: NextRequest) {
     const { remaining, isRateLimitReached } = await rateLimit(req, 1, 1);
 
