@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
                 "X-RateLimit-Reset": new Date(Date.now() + 1000).toISOString(),
             }
         })
-
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any 
     } catch (error: any) {
         console.error("Error getting availability", error.message);
         return new NextResponse(error.message, { status: 500 });
