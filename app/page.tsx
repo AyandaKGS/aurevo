@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ImagesSlider } from "@/components/ui/images-slider"
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +13,7 @@ import {
   Bath,
   Bed,
   Car,
+  ChevronDownIcon,
   Coffee,
   Mail,
   MapPin,
@@ -24,9 +26,31 @@ import {
   Wifi
 } from "lucide-react"
 import Image from "next/image"
-
+import { motion } from "motion/react";
+import { Calendar } from "@/components/ui/calendar"
+import { useState } from "react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { addDays, isBefore, subDays } from "date-fns"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios";
+import { homepageLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
 
 export default function HomePage() {
+  const [checkInDate, setCheckInDate] = useState<Date | undefined>(new Date());
+  const [checkoutDate, setCheckoutDate] = useState<Date | undefined>(addDays(new Date(), 1))
+  const [checkInOpen, setCheckInOpen] = useState(false);
+  const [checkOutOpen, setCheckOutOpen] = useState(false)
+
+  const getAvailability = useQuery({
+    queryKey: ["availability"],
+    queryFn: async () => {
+      const { data } = await axios.get("/api/get-availability");
+
+      return data
+    }
+  })
+
+  console.error("Availability", getAvailability.data?.rooms)
 
   const testimonials = [
     {
@@ -51,76 +75,145 @@ export default function HomePage() {
       date: "3 weeks ago",
     },
   ];
-  
+
+  const images = [
+    "https://images.unsplash.com/photo-1485433592409-9018e83a1f0d?q=80&w=1814&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "https://images.unsplash.com/photo-1483982258113-b72862e6cff6?q=80&w=3456&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "https://images.unsplash.com/photo-1482189349482-3defd547e0e9?q=80&w=2848&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  ];
+
+  if (getAvailability.isFetching) return (
+    <MultiStepLoader
+      loadingStates={homepageLoadingStates}
+      loading={getAvailability.isFetching}
+      duration={2000}
+    />
+  );
+
   return (
     <div className="relative w-full min-h-screen bg-background">
       {/* Hero Section with Booking */}
-      <section className="relative h-screen bg-gradient-to-r from-black/50 to-black/30">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: "url(`/placeholder.svg?height=1080&width=1920`)",
+      <ImagesSlider className="min-h-fit h-screen py-5 lg:py-0" images={images}>
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: -80,
           }}
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
-            <div className="text-white">
-              <Badge className="mb-4 bg-amber-600 text-white border-amber-600">⭐ 3-Star Luxury Resort</Badge>
-              <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-                Experience
-                <span className="block text-amber-400">The Wilderness</span>
-                Like Never Before
-              </h1>
-              <p className="text-xl mb-8 text-gray-200 leading-relaxed">
-                Discover unparalleled comfort and elegance at Sonayi Safari Lodge and Campsite. A home away from home.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-lg px-8">
-                  Explore Rooms
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button
-                  variant="default"
-                  size="lg"
-                  className="text-lg px-8 border-white border-[0.5px] bg-transparent text-foreground hover:bg-foreground hover:text-gray-900"
-                >
-                  Virtual Tour
-                </Button>
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            duration: 0.6,
+          }}
+          className="z-50 flex flex-col justify-center items-center"
+        >
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+            <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
+              <div className="text-white">
+                <Badge className="mb-4 bg-amber-600 text-white border-amber-600">⭐ 3-Star Luxury Resort</Badge>
+                <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+                  Experience
+                  <span className="block text-amber-400">The Wilderness</span>
+                  Like Never Before
+                </h1>
+                <p className="text-xl mb-8 text-gray-200 leading-relaxed">
+                  Discover unparalleled comfort and elegance at Sonayi Safari Lodge and Campsite. A home away from home.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-lg px-8">
+                    Explore Rooms
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="text-lg px-8 border-white border-[0.5px] bg-transparent text-white hover:bg-white hover:text-gray-900"
+                  >
+                    Virtual Tour
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            {/* Booking Widget */}
-            <Card className="bg-card rounded-2xl p-8 shadow-2xl">
-              <CardHeader className="text-2xl font-bold text-card-foreground mb-6">Book Your Stay</CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="checkin">Check-in</Label>
-                    <Input type="date" id="checkin" className="mt-1" />
+              {/* Booking Widget */}
+              <Card className="bg-card rounded-2xl p-8 shadow-2xl">
+                <CardHeader className="text-2xl font-bold text-card-foreground mb-6">Book Your Stay</CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="checkin">Check-in</Label>
+                      <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            id="date"
+                            className="w-48 justify-between font-normal"
+                          >
+                            {checkInDate ? checkInDate.toLocaleDateString() : "Select date"}
+                            <ChevronDownIcon />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={checkInDate}
+                            captionLayout="dropdown"
+                            onSelect={(date) => {
+                              setCheckInDate(date)
+                              setCheckInOpen(false)
+                            }}
+                            disabled={(date) => isBefore(date, subDays(new Date(), 1))}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div>
+                      <Label htmlFor="checkout">Check-out</Label>
+                      <Popover open={checkOutOpen} onOpenChange={setCheckOutOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            id="date"
+                            className="w-48 justify-between font-normal"
+                          >
+                            {checkoutDate ? checkoutDate.toLocaleDateString() : "Select date"}
+                            <ChevronDownIcon />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={checkoutDate}
+                            captionLayout="dropdown"
+                            onSelect={(date) => {
+                              setCheckoutDate(date)
+                              setCheckOutOpen(false)
+                            }}
+                            disabled={(date) => isBefore(date, addDays(checkInDate!, 1))}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="checkout">Check-out</Label>
-                    <Input type="date" id="checkout" className="mt-1" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="guests">Guests</Label>
+                      <Input type="number" id="guests" placeholder="2" min="1" max={getAvailability.data?.guests} className="mt-1" />
+                    </div>
+                    <div>
+                      <Label htmlFor="rooms">Rooms</Label>
+                      <Input type="number" id="rooms" placeholder="1" min="1" max={getAvailability.data?.rooms} className="mt-1" />
+                    </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="guests">Guests</Label>
-                    <Input type="number" id="guests" placeholder="2" min="1" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="rooms">Rooms</Label>
-                    <Input type="number" id="rooms" placeholder="1" min="1" className="mt-1" />
-                  </div>
-                </div>
-                <Button className="w-full bg-amber-600 hover:bg-amber-700 text-lg py-3">Check Availability</Button>
-                <p className="text-sm text-gray-600 text-center">Best Rate Guaranteed • Free Cancellation</p>
-              </CardContent>
-            </Card>
+                  <Button className="w-full bg-amber-600 hover:bg-amber-700 text-lg py-3">Check Availability</Button>
+                  <p className="text-sm text-gray-600 text-center">Best Rate Guaranteed • Free Cancellation</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-      </section>
+        </motion.div>
+      </ImagesSlider>
+
 
       {/* Rooms Section */}
       <section id="rooms" className="py-20 bg-accent-foreground">
