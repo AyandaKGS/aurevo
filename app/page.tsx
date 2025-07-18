@@ -34,6 +34,7 @@ import { addDays, isBefore, subDays } from "date-fns"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios";
 import { homepageLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
+import Link from "next/link"
 
 export default function HomePage() {
   const [checkInDate, setCheckInDate] = useState<Date | undefined>(new Date());
@@ -48,9 +49,7 @@ export default function HomePage() {
 
       return data
     }
-  })
-
-  console.error("Availability", getAvailability.data?.rooms)
+  });
 
   const testimonials = [
     {
@@ -122,15 +121,19 @@ export default function HomePage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-lg px-8">
-                    Explore Rooms
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <Link href={"/rooms"} className="flex items-center">
+                      Explore Rooms
+                      <ArrowRight className="ml-2 h-5 w-5 mt-1" />
+                    </Link>
                   </Button>
                   <Button
                     variant="default"
                     size="lg"
                     className="text-lg px-8 border-white border-[0.5px] bg-transparent text-white hover:bg-white hover:text-gray-900"
                   >
-                    Virtual Tour
+                    <Link href={"/virtual-tour"}>
+                      Virtual Tour
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -189,7 +192,7 @@ export default function HomePage() {
                               setCheckoutDate(date)
                               setCheckOutOpen(false)
                             }}
-                            disabled={(date) => isBefore(date, addDays(checkInDate!, 1))}
+                            disabled={(date) => isBefore(date, addDays(checkInDate ?? new Date(), 1))}
                           />
                         </PopoverContent>
                       </Popover>

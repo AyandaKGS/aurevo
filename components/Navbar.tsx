@@ -17,7 +17,7 @@ export function NavbarComp() {
     const navItems = [
         {
             name: "Rooms",
-            link: "#rooms",
+            link: "/rooms",
         },
         {
             name: "Amenities",

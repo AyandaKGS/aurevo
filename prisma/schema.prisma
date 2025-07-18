@@ -15,8 +15,8 @@ model availability {
     id          String   @id @default(auto()) @map("_id") @db.ObjectId
     guests      Int      @default(40)
     rooms       Int      @default(20)
-    maxCheckIn  DateTime @default(now())
-    maxCheckOut DateTime
+    maxCheckIn  DateTime? @default(now())
+    maxCheckOut DateTime?
 
     @@map("availability")
 }
