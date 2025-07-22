@@ -1,31 +1,28 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { hotelBookingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-    Star,
     Bed,
-    Mountain,
     ChevronRight,
-    Users,
-    Maximize,
     Eye,
-    Heart,
-    Filter,
-    Search,
-    ArrowLeft,
     Grid3X3,
+    Heart,
     List,
+    Maximize,
+    Search,
+    Star,
+    Users
 } from "lucide-react"
-import { hotelBookingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
 import Image from "next/image"
+import { useEffect, useRef, useState } from "react"
 
 interface Room {
     id: string
@@ -393,7 +390,7 @@ const EnhancedSearch = ({ searchQuery, setSearchQuery, rooms, onRoomSelect }: En
                     {searchQuery && suggestions.length === 0 && (
                         <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                             <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <div className="text-sm">No rooms found for "{searchQuery}"</div>
+                            <div className="text-sm">No rooms found for &quot;{searchQuery}&quot;</div>
                             <div className="text-xs mt-1">Try searching for amenities, room types, or features</div>
                         </div>
                     )}
@@ -483,9 +480,10 @@ export default function RoomsPage() {
     const [filterCategory, setFilterCategory] = useState("all")
     const [priceRange, setPriceRange] = useState([0, 1000])
     const [searchQuery, setSearchQuery] = useState("")
-    const [showFilters, setShowFilters] = useState(false)
+    // const [showFilters, setShowFilters] = useState(false)
 
     const handleBooking = (roomId: string) => {
+        console.log("Room Id", roomId);
         setActiveLoader("booking")
         setTimeout(() => {
             setActiveLoader(null)
@@ -755,7 +753,7 @@ export default function RoomsPage() {
 
                 <div className="flex gap-8">
                     {/* Sidebar Filters */}
-                    <div className={`w-80 space-y-6 ${showFilters ? "block" : "hidden lg:block"}`}>
+                    <div className={`w-80 space-y-6 hidden lg:block`}>
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg">Filter Rooms</CardTitle>

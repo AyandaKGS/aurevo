@@ -2,11 +2,17 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImagesSlider } from "@/components/ui/images-slider"
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { homepageLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { addDays, isBefore, subDays } from "date-fns"
 import {
   AirVent,
   ArrowRight,
@@ -15,9 +21,7 @@ import {
   Car,
   ChevronDownIcon,
   Coffee,
-  Mail,
   MapPin,
-  Phone,
   Shield,
   Star,
   Tv,
@@ -25,16 +29,10 @@ import {
   Waves,
   Wifi
 } from "lucide-react"
+import { motion } from "motion/react"
 import Image from "next/image"
-import { motion } from "motion/react";
-import { Calendar } from "@/components/ui/calendar"
-import { useState } from "react"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { addDays, isBefore, subDays } from "date-fns"
-import { useQuery } from "@tanstack/react-query"
-import axios from "axios";
-import { homepageLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
 import Link from "next/link"
+import { useState } from "react"
 
 export default function HomePage() {
   const [checkInDate, setCheckInDate] = useState<Date | undefined>(new Date());
@@ -495,50 +493,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Contact Section */}
-      {/* <section id="contact" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Contact Us</h2>
-            <p className="text-xl text-gray-600">We&apos;re here to help make your stay unforgettable</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Phone,
-                title: "Call Us",
-                content: "+255742446107",
-                description: "24/7 Reservations & Concierge",
-              },
-              {
-                icon: Mail,
-                title: "Email Us",
-                content: "sonayilodge@gmail.com",
-                description: "We respond within 2 hours",
-              },
-              {
-                icon: MapPin,
-                title: "Visit Us",
-                content: "Karatu Eyasi, Tanzania",
-                description: "Karatu, Tanzania",
-              },
-            ].map((contact, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="pt-8">
-                  <div className="bg-amber-100 p-4 rounded-full w-fit mx-auto mb-4">
-                    <contact.icon className="h-6 w-6 text-amber-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{contact.title}</h3>
-                  <p className="text-amber-600 font-medium mb-1">{contact.content}</p>
-                  <p className="text-gray-600 text-sm">{contact.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section> */}
-
+      
     </div>
   )
 }

@@ -302,7 +302,7 @@ export default function VirtualTourPage() {
     const [showHotspots, setShowHotspots] = useState(true)
     const [showMiniMap, setShowMiniMap] = useState(true)
     const [activeLoader, setActiveLoader] = useState<string | null>(null)
-    const [tourProgress, setTourProgress] = useState(0)
+    // const [tourProgress, setTourProgress] = useState(0)
     const [autoRotate, setAutoRotate] = useState(false)
 
     const tourRef = useRef<HTMLDivElement>(null)
@@ -334,7 +334,7 @@ export default function VirtualTourPage() {
         const location = tourLocations.find((loc) => loc.id === locationId)
         if (location) {
             setCurrentLocation(location)
-            setTourProgress((prev) => Math.min(prev + 1, tourLocations.length))
+            // setTourProgress((prev) => Math.min(prev + 1, tourLocations.length))
         }
     }
 
