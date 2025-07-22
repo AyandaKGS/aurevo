@@ -46,7 +46,7 @@ export function NavbarComp() {
                         <DarkModeToggle />
                     </NavbarButton>
                     <NavbarButton variant="secondary">Login</NavbarButton>
-                    <NavbarButton variant="primary">Book a call</NavbarButton>
+                    <NavbarButton variant="primary">Send a message</NavbarButton>
                 </div>
             </NavBody>
 

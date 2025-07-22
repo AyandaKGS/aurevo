@@ -44,7 +44,7 @@ export default function Footer() {
                         <ul className="space-y-2 text-gray-400">
                             <li>
                                 <Link href="#" className="hover:text-white">
-                                     Room Service
+                                    Room Service
                                 </Link>
                             </li>
                             <li>
@@ -59,31 +59,25 @@ export default function Footer() {
                             </li>
                             <li>
                                 <Link href="#" className="hover:text-white">
-                                Safari
+                                    Safari
                                 </Link>
                             </li>
                         </ul>
                     </div>
                     <div>
-                        <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
-                        <div className="space-y-2 text-gray-400">
-                            <p>+255742446107</p>
-                            <p>sonayilodge@gmail.com</p>
-                            <p>Karatu Eyasi, Tanzania</p>
-                            <p>Sonayi Safari Lodge and Campsite</p>
+                        <h4 className="text-lg font-semibold mb-4">Privacy Policy</h4>
+                        <div className="flex flex-col space-y-2 text-gray-400">
+                            <Link href="#" className="text-gray-400 hover:text-white">
+                                Privacy Policy
+                            </Link>
+                            <Link href="#" className="text-gray-400 hover:text-white">
+                                Terms of Service
+                            </Link>
                         </div>
                     </div>
                 </div>
-                <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-center items-center">
                     <p className="text-gray-400">&copy; {new Date().getFullYear()} Sonayi Safari Lodge and Campsite. All rights reserved.</p>
-                    <div className="flex space-x-4 mt-4 md:mt-0">
-                        <Link href="#" className="text-gray-400 hover:text-white">
-                            Privacy Policy
-                        </Link>
-                        <Link href="#" className="text-gray-400 hover:text-white">
-                            Terms of Service
-                        </Link>
-                    </div>
                 </div>
             </div>
         </footer>
