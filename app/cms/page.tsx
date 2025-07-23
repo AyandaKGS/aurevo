@@ -31,7 +31,9 @@ import Image from "next/image"
 import z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { FileUpload } from "@/components/ui/file-upload";
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface Room {
     id: string
@@ -182,7 +184,7 @@ const editRoomSchema = z.object({
     description: z.string().min(10, "Please enter a description"),
     images: z.array(z.string()).refine((value) => value.some((image) => image)),
     amenities: z.array(z.string()).refine((value) => value.some((amenity) => amenity)),
-    roomFeatures: z.array(z.string()).refine((value) => value.some((feature) => feature)),
+    features: z.array(z.string()).refine((value) => value.some((feature) => feature)),
     status: z.string().min(1, "Please select a status"),
     availability: z.string().min(1, "Please select an availability"),
     popular: z.boolean().optional(),
@@ -199,6 +201,7 @@ export default function CMSDashboard() {
     const [filterCategory, setFilterCategory] = useState("all")
     const [filterStatus, setFilterStatus] = useState("all")
     const [activeTab, setActiveTab] = useState("overview")
+    const [files, setFiles] = useState([]);
 
     // Form state for room editing
     const [formData, setFormData] = useState<Partial<Room>>({})
@@ -211,6 +214,8 @@ export default function CMSDashboard() {
         defaultValues: {
             popular: false,
             newlyRenovated: false,
+            amenities: [],
+            features: [],
         }
     })
 
@@ -258,35 +263,19 @@ export default function CMSDashboard() {
         setIsEditing(true)
     }
 
-    const saveRoom = () => {
-        const roomData: Room = {
-            id: selectedRoom?.id || `room-${Date.now()}`,
-            name: formData.name || "",
-            category: formData.category || "standard",
-            price: formData.price || 0,
-            originalPrice: formData.originalPrice,
-            size: formData.size || 0,
-            maxGuests: formData.maxGuests || 2,
-            bedType: formData.bedType || "queen",
-            view: formData.view || "resort",
-            images: uploadedImages,
-            amenities: selectedAmenities,
-            features: selectedFeatures,
-            description: formData.description || "",
-            availability: formData.availability || "available",
-            rating: formData.rating || 4.5,
-            reviewCount: formData.reviewCount || 0,
-            isPopular: formData.isPopular || false,
-            isNewlyRenovated: formData.isNewlyRenovated || false,
-            status: formData.status || "draft",
-            createdAt: selectedRoom?.createdAt || new Date().toISOString().split("T")[0],
-            updatedAt: new Date().toISOString().split("T")[0],
-        }
+    const handleFileUpload = (images: File[]) => {
+        setFiles(images);
+        editRoomForm.setValue("images", files)
+        console.log(files);
+    };
+
+
+    const saveRoom = (data: EditRoomData) => {
 
         if (selectedRoom) {
             setRooms(rooms.map((r) => (r.id === selectedRoom.id ? roomData : r)))
         } else {
-            setRooms([...rooms, roomData])
+            setRooms([...rooms, data])
         }
 
         setIsEditing(false)
@@ -309,14 +298,6 @@ export default function CMSDashboard() {
         setRooms([...rooms, duplicatedRoom])
     }
 
-    const toggleAmenity = (amenity: string) => {
-        setSelectedAmenities((prev) => (prev.includes(amenity) ? prev.filter((a) => a !== amenity) : [...prev, amenity]))
-    }
-
-    const toggleFeature = (feature: string) => {
-        setSelectedFeatures((prev) => (prev.includes(feature) ? prev.filter((f) => f !== feature) : [...prev, feature]))
-    }
-
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files
         if (files) {
@@ -326,7 +307,7 @@ export default function CMSDashboard() {
             )
             setUploadedImages([...uploadedImages, ...newImages])
         }
-    }
+    };
 
     const removeImage = (index: number) => {
         setUploadedImages(uploadedImages.filter((_, i) => i !== index))
@@ -342,7 +323,7 @@ export default function CMSDashboard() {
                 >
                     <form onSubmit={editRoomForm.handleSubmit(saveRoom)} className="max-w-6xl mx-auto p-6">
 
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex flex-col md:flex-row gap-y-2 items-start md:items-center justify-between mb-6">
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                                     {selectedRoom ? "Edit Room" : "Add New Room"}
@@ -356,7 +337,7 @@ export default function CMSDashboard() {
                                     <X className="h-4 w-4 mr-2" />
                                     Cancel
                                 </Button>
-                                <Button onClick={saveRoom}>
+                                <Button>
                                     <Save className="h-4 w-4 mr-2" />
                                     Save Room
                                 </Button>
@@ -374,125 +355,191 @@ export default function CMSDashboard() {
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="name">Room Name</Label>
-                                                <Input
-                                                    id="name"
-                                                    value={formData.name || ""}
-                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                    placeholder="e.g., Ocean View Deluxe Suite"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="category">Category</Label>
-                                                <Select
-                                                    value={formData.category}
-                                                    onValueChange={(value) => setFormData({ ...formData, category: value })}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select category" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {categories.map((cat) => (
-                                                            <SelectItem key={cat.value} value={cat.value}>
-                                                                {cat.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="name"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="name">Room Name</FormLabel>
+                                                        <Input
+                                                            id="name"
+                                                            placeholder="e.g., Ocean View Deluxe Suite"
+                                                            {...field}
+                                                        />
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="category"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="category">Category</FormLabel>
+                                                        <Select
+                                                            defaultValue={field.value}
+                                                            onValueChange={field.onChange}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select category" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {categories.map((cat) => (
+                                                                    <SelectItem key={cat.value} value={cat.value}>
+                                                                        {cat.label}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="price"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="price">Price per Night ($)</FormLabel>
+                                                        <Input
+                                                            id="price"
+                                                            type="number"
+                                                            {...field}
+                                                            placeholder="299"
+                                                        />
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="originalPrice"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="originalPrice">Original Price ($)</FormLabel>
+                                                        <Input
+                                                            id="originalPrice"
+                                                            type="number"
+                                                            {...field}
+                                                            placeholder="399"
+                                                        />
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
                                             <div>
-                                                <Label htmlFor="price">Price per Night ($)</Label>
-                                                <Input
-                                                    id="price"
-                                                    type="number"
-                                                    value={formData.price || ""}
-                                                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                                                    placeholder="299"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="originalPrice">Original Price ($)</Label>
-                                                <Input
-                                                    id="originalPrice"
-                                                    type="number"
-                                                    value={formData.originalPrice || ""}
-                                                    onChange={(e) => setFormData({ ...formData, originalPrice: Number(e.target.value) })}
-                                                    placeholder="399"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="size">Size (sq ft)</Label>
-                                                <Input
-                                                    id="size"
-                                                    type="number"
-                                                    value={formData.size || ""}
-                                                    onChange={(e) => setFormData({ ...formData, size: Number(e.target.value) })}
-                                                    placeholder="650"
+                                                <FormField
+                                                    control={editRoomForm.control}
+                                                    name="size"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel htmlFor="size">Size (sq ft)</FormLabel>
+                                                            <Input
+                                                                id="size"
+                                                                type="number"
+                                                                {...field}
+                                                                placeholder="650"
+                                                            />
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
                                                 />
                                             </div>
                                         </div>
-
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div>
-                                                <Label htmlFor="maxGuests">Max Guests</Label>
-                                                <Input
-                                                    id="maxGuests"
-                                                    type="number"
-                                                    value={formData.maxGuests || ""}
-                                                    onChange={(e) => setFormData({ ...formData, maxGuests: Number(e.target.value) })}
-                                                    placeholder="4"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="bedType">Bed Type</Label>
-                                                <Select
-                                                    value={formData.bedType}
-                                                    onValueChange={(value) => setFormData({ ...formData, bedType: value })}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select bed type" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {bedTypes.map((bed) => (
-                                                            <SelectItem key={bed.value} value={bed.value}>
-                                                                {bed.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="view">View</Label>
-                                                <Select
-                                                    value={formData.view}
-                                                    onValueChange={(value) => setFormData({ ...formData, view: value })}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select view" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {views.map((view) => (
-                                                            <SelectItem key={view.value} value={view.value}>
-                                                                {view.label}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="maxGuests"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="maxGuests">Max Guests</FormLabel>
+                                                        <Input
+                                                            id="maxGuests"
+                                                            type="number"
+                                                            {...field}
+                                                            placeholder="4"
+                                                        />
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="bedType"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="bedType">Bed Type</FormLabel>
+                                                        <Select
+                                                            defaultValue={field.value}
+                                                            onValueChange={field.onChange}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select bed type" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {bedTypes.map((bed) => (
+                                                                    <SelectItem key={bed.value} value={bed.value}>
+                                                                        {bed.label}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="view"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="view">View</FormLabel>
+                                                        <Select
+                                                            defaultValue={field.value}
+                                                            onValueChange={field.onChange}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select view" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {views.map((view) => (
+                                                                    <SelectItem key={view.value} value={view.value}>
+                                                                        {view.label}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
                                         </div>
 
                                         <div>
-                                            <Label htmlFor="description">Description</Label>
-                                            <Textarea
-                                                id="description"
-                                                value={formData.description || ""}
-                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                                placeholder="Describe the room's features, ambiance, and unique selling points..."
-                                                rows={4}
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="description"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="description">Description</FormLabel>
+                                                        <Textarea
+                                                            id="description"
+                                                            {...field}
+                                                            placeholder="Describe the room's features, ambiance, and unique selling points..."
+                                                            rows={4}
+                                                        />
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
                                             />
                                         </div>
                                     </CardContent>
@@ -507,30 +554,21 @@ export default function CMSDashboard() {
                                     <CardContent>
                                         <div className="space-y-4">
                                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                                                <input
-                                                    type="file"
-                                                    multiple
-                                                    accept="image/*"
-                                                    onChange={handleImageUpload}
-                                                    className="hidden"
-                                                    id="image-upload"
-                                                />
                                                 <label htmlFor="image-upload" className="cursor-pointer">
                                                     <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                                    <p className="text-lg font-medium text-gray-900 dark:text-white mb-2">Upload Images</p>
-                                                    <p className="text-gray-600 dark:text-gray-400">
-                                                        Drag and drop or click to select multiple images
-                                                    </p>
                                                 </label>
+                                                <FileUpload onChange={handleFileUpload} />
                                             </div>
 
                                             {uploadedImages.length > 0 && (
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                                     {uploadedImages.map((image, index) => (
                                                         <div key={index} className="relative group">
-                                                            <img
+                                                            <Image
                                                                 src={image || "/placeholder.svg"}
                                                                 alt={`Room image ${index + 1}`}
+                                                                width={500}
+                                                                height={500}
                                                                 className="w-full h-32 object-cover rounded-lg"
                                                             />
                                                             <button
@@ -555,22 +593,53 @@ export default function CMSDashboard() {
                                         <CardDescription>Select all amenities available in this room</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                            {commonAmenities.map((amenity) => (
-                                                <div key={amenity} className="flex items-center space-x-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        id={`amenity-${amenity}`}
-                                                        checked={selectedAmenities.includes(amenity)}
-                                                        onChange={() => toggleAmenity(amenity)}
-                                                        className="rounded border-gray-300"
-                                                    />
-                                                    <label htmlFor={`amenity-${amenity}`} className="text-sm">
-                                                        {amenity}
-                                                    </label>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <FormField
+                                            control={editRoomForm.control}
+                                            name="amenities"
+                                            render={() => (
+                                                <FormItem>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                        {commonAmenities.map((amenity) => (
+                                                            <FormField
+                                                                key={amenity}
+                                                                control={editRoomForm.control}
+                                                                name="amenities"
+                                                                render={({ field }) => {
+                                                                    return (
+                                                                        <FormItem
+                                                                            key={amenity}
+                                                                            className="flex flex-row items-start space-x-3 space-y-0"
+                                                                        >
+                                                                            <FormControl>
+                                                                                <Checkbox
+                                                                                    checked={field.value?.includes(amenity)}
+                                                                                    onCheckedChange={(checked) => {
+                                                                                        return checked
+                                                                                            ? field.onChange([
+                                                                                                ...field.value,
+                                                                                                amenity,
+                                                                                            ])
+                                                                                            : field.onChange(
+                                                                                                field.value?.filter(
+                                                                                                    (value: string) => value !== amenity
+                                                                                                )
+                                                                                            );
+                                                                                    }}
+                                                                                />
+                                                                            </FormControl>
+                                                                            <FormLabel className="text-sm font-normal">
+                                                                                {amenity}
+                                                                            </FormLabel>
+                                                                        </FormItem>
+                                                                    );
+                                                                }}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </CardContent>
                                 </Card>
 
@@ -581,22 +650,53 @@ export default function CMSDashboard() {
                                         <CardDescription>Select key features and furnishings</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                            {commonFeatures.map((feature) => (
-                                                <div key={feature} className="flex items-center space-x-2">
-                                                    <input
-                                                        type="checkbox"
-                                                        id={`feature-${feature}`}
-                                                        checked={selectedFeatures.includes(feature)}
-                                                        onChange={() => toggleFeature(feature)}
-                                                        className="rounded border-gray-300"
-                                                    />
-                                                    <label htmlFor={`feature-${feature}`} className="text-sm">
-                                                        {feature}
-                                                    </label>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <FormField
+                                            control={editRoomForm.control}
+                                            name="amenities"
+                                            render={() => (
+                                                <FormItem>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                        {commonFeatures.map((feature) => (
+                                                            <FormField
+                                                                key={feature}
+                                                                control={editRoomForm.control}
+                                                                name="features"
+                                                                render={({ field }) => {
+                                                                    return (
+                                                                        <FormItem
+                                                                            key={feature}
+                                                                            className="flex flex-row items-start space-x-3 space-y-0"
+                                                                        >
+                                                                            <FormControl>
+                                                                                <Checkbox
+                                                                                    checked={field.value?.includes(feature)}
+                                                                                    onCheckedChange={(checked) => {
+                                                                                        return checked
+                                                                                            ? field.onChange([
+                                                                                                ...field.value,
+                                                                                                feature,
+                                                                                            ])
+                                                                                            : field.onChange(
+                                                                                                field.value?.filter(
+                                                                                                    (value: string) => value !== feature
+                                                                                                )
+                                                                                            );
+                                                                                    }}
+                                                                                />
+                                                                            </FormControl>
+                                                                            <FormLabel className="text-sm font-normal">
+                                                                                {feature}
+                                                                            </FormLabel>
+                                                                        </FormItem>
+                                                                    );
+                                                                }}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </CardContent>
                                 </Card>
                             </div>
@@ -609,58 +709,91 @@ export default function CMSDashboard() {
                                         <CardTitle>Status & Settings</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div>
-                                            <Label htmlFor="status">Publication Status</Label>
-                                            <Select
-                                                value={formData.status}
-                                                onValueChange={(value) => setFormData({ ...formData, status: value as Room["status"] })}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="draft">Draft</SelectItem>
-                                                    <SelectItem value="active">Active</SelectItem>
-                                                    <SelectItem value="archived">Archived</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <div>
-                                            <Label htmlFor="availability">Availability</Label>
-                                            <Select
-                                                value={formData.availability}
-                                                onValueChange={(value) =>
-                                                    setFormData({ ...formData, availability: value as Room["availability"] })
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="available">Available</SelectItem>
-                                                    <SelectItem value="limited">Limited</SelectItem>
-                                                    <SelectItem value="booked">Booked</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
+                                        <FormField
+                                            control={editRoomForm.control}
+                                            name="status"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel htmlFor="status">Publication Status</FormLabel>
+                                                    <Select
+                                                        defaultValue={field.value}
+                                                        onValueChange={field.onChange}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={"Draft"} />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="draft">Draft</SelectItem>
+                                                            <SelectItem value="active">Active</SelectItem>
+                                                            <SelectItem value="archived">Archived</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={editRoomForm.control}
+                                            name="availability"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel htmlFor="availability">Availability</FormLabel>
+                                                    <Select
+                                                        defaultValue={field.value}
+                                                        onValueChange={field.onChange}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Available" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="available">Available</SelectItem>
+                                                            <SelectItem value="limited">Limited</SelectItem>
+                                                            <SelectItem value="booked">Booked</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={editRoomForm.control}
+                                            name="popular"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between">
+                                                    <FormLabel htmlFor="popular">Mark as Popular</FormLabel>
+                                                    <FormControl>
+                                                        <Switch
+                                                            id="popular"
+                                                            checked={field.value}
+                                                            onCheckedChange={field.onChange}
+                                                        />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={editRoomForm.control}
+                                            name="newlyRenovated"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between">
+                                                    <FormLabel htmlFor="renovated">Newly Renovated</FormLabel>
+                                                    <FormControl>
+                                                        <Switch
+                                                            id="renovated"
+                                                            checked={field.value}
+                                                            onCheckedChange={field.onChange}
+                                                        />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
                                         <div className="flex items-center justify-between">
-                                            <Label htmlFor="popular">Mark as Popular</Label>
-                                            <Switch
-                                                id="popular"
-                                                checked={formData.isPopular || false}
-                                                onCheckedChange={(checked) => setFormData({ ...formData, isPopular: checked })}
-                                            />
-                                        </div>
 
-                                        <div className="flex items-center justify-between">
-                                            <Label htmlFor="renovated">Newly Renovated</Label>
-                                            <Switch
-                                                id="renovated"
-                                                checked={formData.isNewlyRenovated || false}
-                                                onCheckedChange={(checked) => setFormData({ ...formData, isNewlyRenovated: checked })}
-                                            />
+
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -717,7 +850,7 @@ export default function CMSDashboard() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto p-6">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col md:flex-row gap-y-2 items-start md:items-center justify-between mb-6">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Room Management</h1>
                         <p className="text-gray-600 dark:text-gray-400">Manage your property&apos;s room inventory and details</p>
@@ -902,9 +1035,11 @@ export default function CMSDashboard() {
                                                 <tr key={room.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
-                                                            <img
+                                                            <Image
                                                                 src={room.images[0] || "/placeholder.svg"}
                                                                 alt={room.name}
+                                                                width={500}
+                                                                height={500}
                                                                 className="w-12 h-12 object-cover rounded"
                                                             />
                                                             <div className="ml-4">
