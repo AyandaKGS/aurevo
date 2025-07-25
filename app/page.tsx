@@ -140,7 +140,7 @@ export default function HomePage() {
               <Card className="bg-card rounded-2xl p-8 shadow-2xl">
                 <CardHeader className="text-2xl font-bold text-card-foreground mb-6">Book Your Stay</CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
+                  <div className="flex flex-col min-[394]:grid min-[394]:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="checkin">Check-in</Label>
                       <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
@@ -148,7 +148,7 @@ export default function HomePage() {
                           <Button
                             variant="outline"
                             id="date"
-                            className="w-48 justify-between font-normal"
+                            className="w-full  justify-between font-normal"
                           >
                             {checkInDate ? checkInDate.toLocaleDateString() : "Select date"}
                             <ChevronDownIcon />
@@ -175,7 +175,7 @@ export default function HomePage() {
                           <Button
                             variant="outline"
                             id="date"
-                            className="w-48 justify-between font-normal"
+                            className="w-full justify-between font-normal"
                           >
                             {checkoutDate ? checkoutDate.toLocaleDateString() : "Select date"}
                             <ChevronDownIcon />
