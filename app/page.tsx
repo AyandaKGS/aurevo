@@ -127,7 +127,7 @@ export default function HomePage() {
                   <Button
                     variant="default"
                     size="lg"
-                    className="text-lg px-8 border-white border-[0.5px] bg-transparent text-white hover:bg-white hover:text-gray-900"
+                    className="text-lg hidden md:blockpx-8 border-white border-[0.5px] bg-transparent text-white hover:bg-white hover:text-gray-900"
                   >
                     <Link href={"/virtual-tour"}>
                       Virtual Tour
@@ -140,7 +140,7 @@ export default function HomePage() {
               <Card className="bg-card rounded-2xl p-8 shadow-2xl">
                 <CardHeader className="text-2xl font-bold text-card-foreground mb-6">Book Your Stay</CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col md:grid md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="checkin">Check-in</Label>
                       <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
