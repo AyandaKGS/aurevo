@@ -12,11 +12,33 @@ model bookings {
 }
 
 model availability {
-    id          String   @id @default(auto()) @map("_id") @db.ObjectId
-    guests      Int      @default(40)
-    rooms       Int      @default(20)
+    id          String    @id @default(auto()) @map("_id") @db.ObjectId
+    guests      Int       @default(40)
+    rooms       Int       @default(20)
     maxCheckIn  DateTime? @default(now())
     maxCheckOut DateTime?
 
     @@map("availability")
+}
+
+model room {
+    id             String   @id @default(auto()) @map("_id") @db.ObjectId
+    name           String
+    category       String
+    price          Int
+    originalPrice  Int
+    size           Int
+    maxGuests      Int
+    bedType        String
+    view           String
+    description    String
+    images         String[]
+    amenities      String[]
+    features       String[]
+    status         String[]
+    availability   String
+    popular        Boolean?
+    newlyRenovated Boolean?
+
+    @@map("rooms")
 }

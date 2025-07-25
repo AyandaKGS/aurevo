@@ -34,6 +34,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { FileUpload } from "@/components/ui/file-upload";
 import { Checkbox } from "@/components/ui/checkbox"
+import { useMutation } from "@tanstack/react-query"
+import axios from "axios"
+import { toast } from "sonner"
 
 interface Room {
     id: string
@@ -173,20 +176,20 @@ const commonFeatures = [
 ]
 
 const editRoomSchema = z.object({
-    name: z.string().min(1, "Please enter a room name."),
-    category: z.string().min(1, "Please select a category."),
-    price: z.number().min(1, "Please input a price"),
+    name: z.string({ error: "Please enter a room name." }).min(1),
+    category: z.string({ error: "Please select a category." }).min(1),
+    price: z.number({ error: "Please input a price." }).min(1),
     originalPrice: z.number().optional(),
-    size: z.number().min(1, "Please input a price"),
-    maxGuests: z.number().min(1, "Please input a minimum number of guests."),
-    bedType: z.string().min(1, "Please select a bed type"),
-    view: z.string().min(1, "Please select a view"),
-    description: z.string().min(10, "Please enter a description"),
-    images: z.array(z.string()).refine((value) => value.some((image) => image)),
-    amenities: z.array(z.string()).refine((value) => value.some((amenity) => amenity)),
-    features: z.array(z.string()).refine((value) => value.some((feature) => feature)),
-    status: z.string().min(1, "Please select a status"),
-    availability: z.string().min(1, "Please select an availability"),
+    size: z.number({ error: "Please input a size." }).min(1),
+    maxGuests: z.number({ error: "Please input a maximum number of guests." }).min(1),
+    bedType: z.string({ error: "Please select a bed type." }).min(1),
+    view: z.string({ error: "Please select a view." }).min(1),
+    description: z.string({ error: "Please enter a description." }).min(10),
+    images: z.array(z.string(), { error: "Please select at least 1 image." }).refine((value) => value.some((image) => image)),
+    amenities: z.array(z.string(), { error: "Please select at least one amenity." }).refine((value) => value.some((amenity) => amenity)),
+    features: z.array(z.string(), { error: "Please select at least 1 feature." }).refine((value) => value.some((feature) => feature)),
+    status: z.string({ error: "Please select a status." }).min(1),
+    availability: z.string({ error: "Please select an availability." }).min(1),
     popular: z.boolean().optional(),
     newlyRenovated: z.boolean().optional(),
 })
@@ -201,12 +204,11 @@ export default function CMSDashboard() {
     const [filterCategory, setFilterCategory] = useState("all")
     const [filterStatus, setFilterStatus] = useState("all")
     const [activeTab, setActiveTab] = useState("overview")
-    const [files, setFiles] = useState([]);
-
+    
     // Form state for room editing
     const [formData, setFormData] = useState<Partial<Room>>({})
-    const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
-    const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
+    // const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
+    // const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
     const [uploadedImages, setUploadedImages] = useState<string[]>([])
 
     const editRoomForm = useForm<EditRoomData>({
@@ -218,6 +220,16 @@ export default function CMSDashboard() {
             features: [],
         }
     })
+
+    const saveRoomMtn = useMutation({
+        mutationFn: async (data: EditRoomData) => {
+            const { data: returnData } = await axios.post("/api/update-room", {
+                data
+            });
+
+            return returnData
+        },
+    });
 
     const filteredRooms = rooms.filter((room) => {
         const matchesSearch = room.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -263,20 +275,21 @@ export default function CMSDashboard() {
         setIsEditing(true)
     }
 
-    const handleFileUpload = (images: File[]) => {
-        setFiles(images);
-        editRoomForm.setValue("images", files)
-        console.log(files);
-    };
-
-
     const saveRoom = (data: EditRoomData) => {
-
-        if (selectedRoom) {
-            setRooms(rooms.map((r) => (r.id === selectedRoom.id ? roomData : r)))
-        } else {
-            setRooms([...rooms, data])
-        }
+        saveRoomMtn.mutate(data, {
+            onSuccess: (data) => {
+                if (selectedRoom) {
+                    setRooms(rooms.map((r) => (r.id === selectedRoom.id ? data : r)))
+                } else {
+                    setRooms([...rooms, data])
+                }
+                toast.success("Successfully created room.");
+            },
+            onError: (error) => {
+                console.error("Error creating room", error);
+                toast.error("Error creating room. Please try again.")
+            },
+        });
 
         setIsEditing(false)
         setSelectedRoom(null)
@@ -298,14 +311,11 @@ export default function CMSDashboard() {
         setRooms([...rooms, duplicatedRoom])
     }
 
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files
-        if (files) {
-            // Simulate image upload - in real app, upload to cloud storage
-            const newImages = Array.from(files).map(
-                (file) => `/placeholder.svg?height=400&width=600&text=${encodeURIComponent(file.name)}`,
-            )
-            setUploadedImages([...uploadedImages, ...newImages])
+    const handleImageUpload = (images: string[]) => {
+        if (images) {
+            setUploadedImages([...uploadedImages, ...images]);
+            editRoomForm.setValue("images", images);
+            console.log("Images", images)
         }
     };
 
@@ -322,7 +332,6 @@ export default function CMSDashboard() {
                     {...editRoomForm}
                 >
                     <form onSubmit={editRoomForm.handleSubmit(saveRoom)} className="max-w-6xl mx-auto p-6">
-
                         <div className="flex flex-col md:flex-row gap-y-2 items-start md:items-center justify-between mb-6">
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -343,7 +352,6 @@ export default function CMSDashboard() {
                                 </Button>
                             </div>
                         </div>
-
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Main Form */}
                             <div className="lg:col-span-2 space-y-6">
@@ -398,7 +406,6 @@ export default function CMSDashboard() {
                                                 )}
                                             />
                                         </div>
-
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <FormField
                                                 control={editRoomForm.control}
@@ -523,7 +530,6 @@ export default function CMSDashboard() {
                                                 )}
                                             />
                                         </div>
-
                                         <div>
                                             <FormField
                                                 control={editRoomForm.control}
@@ -544,7 +550,6 @@ export default function CMSDashboard() {
                                         </div>
                                     </CardContent>
                                 </Card>
-
                                 {/* Images */}
                                 <Card>
                                     <CardHeader>
@@ -557,9 +562,14 @@ export default function CMSDashboard() {
                                                 <label htmlFor="image-upload" className="cursor-pointer">
                                                     <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                                                 </label>
-                                                <FileUpload onChange={handleFileUpload} />
+                                                <FileUpload upload={handleImageUpload} disabled={uploadedImages.length >= 4} />
+                                                {
+                                                    uploadedImages.length >= 4 && (
+                                                        <p className="text-neutral-400 dark:text-neutral-400">Max number of files reached.</p>
+                                                    )
+                                                }
                                             </div>
-
+                                            <p className="text-red-600 text-sm">{editRoomForm.formState.errors.images && editRoomForm.formState.errors.images.message}</p>
                                             {uploadedImages.length > 0 && (
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                                     {uploadedImages.map((image, index) => (
@@ -585,7 +595,6 @@ export default function CMSDashboard() {
                                         </div>
                                     </CardContent>
                                 </Card>
-
                                 {/* Amenities */}
                                 <Card>
                                     <CardHeader>
@@ -642,7 +651,6 @@ export default function CMSDashboard() {
                                         />
                                     </CardContent>
                                 </Card>
-
                                 {/* Features */}
                                 <Card>
                                     <CardHeader>
@@ -700,7 +708,6 @@ export default function CMSDashboard() {
                                     </CardContent>
                                 </Card>
                             </div>
-
                             {/* Sidebar */}
                             <div className="space-y-6">
                                 {/* Status & Settings */}

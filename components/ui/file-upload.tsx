@@ -1,8 +1,10 @@
 import { cn } from "@/lib/utils";
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { IconUpload } from "@tabler/icons-react";
 import { useDropzone } from "react-dropzone";
+import { useUploadThing } from "@/lib/utils/uploadthing";
+import { toast } from "sonner";
 
 const mainVariant = {
   initial: {
@@ -26,35 +28,49 @@ const secondaryVariant = {
 };
 
 export const FileUpload = ({
-  onChange,
+  disabled,
+  upload,
 }: {
-  onChange?: (files: File[]) => void;
+  disabled?: boolean;
+  upload?: (files: string[]) => void;
 }) => {
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (newFiles: File[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-    onChange && onChange(newFiles);
-  };
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setFiles(acceptedFiles);
+  }, []);
 
-  const handleClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const { getRootProps, isDragActive } = useDropzone({
-    multiple: false,
-    noClick: true,
-    onDrop: handleFileChange,
-    onDropRejected: (error) => {
-      console.log(error);
+  const { startUpload } = useUploadThing("imageUploader", {
+    onClientUploadComplete: (res) => {
+      if (upload) upload([res[0].ufsUrl]);
     },
+    onUploadError: (error) => {
+      console.error(error);
+    },
+    onUploadBegin: () => {
+      toast.info("Uploading image...");
+    },
+  });
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    multiple: false,
+    disabled: files.length >= 4 || disabled,
+    onDrop,
+    maxFiles: 4,
+    accept: {
+      image: [".jpg", ".jpeg", ".png"]
+    }
   });
 
   return (
     <div className="relative w-full" {...getRootProps()}>
       <motion.div
-        onClick={handleClick}
+        onClick={() => {
+          startUpload(files);
+          setFiles([]);
+          fileInputRef.current?.click();
+        }}
         whileHover="animate"
         className="p-10 group/file block rounded-lg cursor-pointer w-full relative overflow-hidden"
       >
@@ -62,7 +78,7 @@ export const FileUpload = ({
           ref={fileInputRef}
           id="file-upload-handle"
           type="file"
-          onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
+          {...getInputProps()}
           className="hidden"
         />
         <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]">
@@ -82,7 +98,7 @@ export const FileUpload = ({
                   key={"file" + idx}
                   layoutId={idx === 0 ? "file-upload" : "file-upload-" + idx}
                   className={cn(
-                    "relative overflow-hidden z-40 bg-white dark:bg-neutral-900 flex flex-col items-start justify-start md:h-24 p-4 mt-4 w-full mx-auto rounded-md",
+                    "relative overflow-hidden z-40 bg-white dark:bg-neutral-900 flex flex-col items-start justify-start md:h-28 p-4 mt-4 w-full mx-auto rounded-lg",
                     "shadow-sm"
                   )}
                 >
@@ -104,13 +120,12 @@ export const FileUpload = ({
                       {(file.size / (1024 * 1024)).toFixed(2)} MB
                     </motion.p>
                   </div>
-
                   <div className="flex text-xs sm:text-sm md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-neutral-600 dark:text-neutral-400">
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="px-1 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 "
+                      className="px-1 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800"
                     >
                       {file.type}
                     </motion.p>
@@ -124,6 +139,7 @@ export const FileUpload = ({
                       {new Date(file.lastModified).toLocaleDateString()}
                     </motion.p>
                   </div>
+                  <motion.p className="self-end mt-2 sm:mt-0 text-xs md:text-sm text-neutral-800 dark:text-neutral-400 p-1 rounded-lg bg-gray-100 dark:bg-neutral-800">Click to upload</motion.p>
                 </motion.div>
               ))}
             {!files.length && (
@@ -180,8 +196,8 @@ export function GridPattern() {
             <div
               key={`${col}-${row}`}
               className={`w-10 h-10 flex shrink-0 rounded-[2px] ${index % 2 === 0
-                  ? "bg-gray-50 dark:bg-neutral-950"
-                  : "bg-gray-50 dark:bg-neutral-950 shadow-[0px_0px_1px_3px_rgba(255,255,255,1)_inset] dark:shadow-[0px_0px_1px_3px_rgba(0,0,0,1)_inset]"
+                ? "bg-gray-50 dark:bg-neutral-950"
+                : "bg-gray-50 dark:bg-neutral-950 shadow-[0px_0px_1px_3px_rgba(255,255,255,1)_inset] dark:shadow-[0px_0px_1px_3px_rgba(0,0,0,1)_inset]"
                 }`}
             />
           );
