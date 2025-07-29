@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -53,8 +51,8 @@ interface Room {
     features: string[]
     description: string
     availability: "available" | "limited" | "booked"
-    rating: number
-    reviewCount: number
+    rating?: number
+    reviewCount?: number
     isPopular?: boolean
     isNewlyRenovated?: boolean
     status: "active" | "draft" | "archived"
@@ -178,10 +176,10 @@ const commonFeatures = [
 const editRoomSchema = z.object({
     name: z.string({ error: "Please enter a room name." }).min(1),
     category: z.string({ error: "Please select a category." }).min(1),
-    price: z.number({ error: "Please input a price." }).min(1),
-    originalPrice: z.number().optional(),
-    size: z.number({ error: "Please input a size." }).min(1),
-    maxGuests: z.number({ error: "Please input a maximum number of guests." }).min(1),
+    price: z.string({ error: "Please input a price." }).min(1),
+    originalPrice: z.string().optional(),
+    size: z.string({ error: "Please input a size." }).min(1),
+    maxGuests: z.string({ error: "Please input a maximum number of guests." }).min(1),
     bedType: z.string({ error: "Please select a bed type." }).min(1),
     view: z.string({ error: "Please select a view." }).min(1),
     description: z.string({ error: "Please enter a description." }).min(10),
@@ -198,26 +196,21 @@ type EditRoomData = z.infer<typeof editRoomSchema>;
 
 export default function CMSDashboard() {
     const [rooms, setRooms] = useState<Room[]>(initialRooms)
-    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+    const [selectedRoom, setSelectedRoom] = useState({ amenities: [], features: [] })
     const [isEditing, setIsEditing] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [filterCategory, setFilterCategory] = useState("all")
     const [filterStatus, setFilterStatus] = useState("all")
     const [activeTab, setActiveTab] = useState("overview")
-    
+
     // Form state for room editing
-    const [formData, setFormData] = useState<Partial<Room>>({})
-    // const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
-    // const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
-    const [uploadedImages, setUploadedImages] = useState<string[]>([])
+    const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
+    const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
 
     const editRoomForm = useForm<EditRoomData>({
         resolver: zodResolver(editRoomSchema),
         defaultValues: {
-            popular: false,
-            newlyRenovated: false,
-            amenities: [],
-            features: [],
+            ...selectedRoom,
         }
     })
 
@@ -247,30 +240,10 @@ export default function CMSDashboard() {
 
     const startEditing = (room?: Room) => {
         if (room) {
+            delete room?.reviewCount;
+            delete room.rating;
+
             setSelectedRoom(room)
-            setFormData(room)
-            setSelectedAmenities(room.amenities)
-            setSelectedFeatures(room.features)
-            setUploadedImages(room.images)
-        } else {
-            // New room
-            const newRoom: Partial<Room> = {
-                name: "",
-                category: "standard",
-                price: 0,
-                size: 0,
-                maxGuests: 2,
-                bedType: "queen",
-                view: "resort",
-                description: "",
-                availability: "available",
-                status: "draft",
-            }
-            setSelectedRoom(null)
-            setFormData(newRoom)
-            setSelectedAmenities([])
-            setSelectedFeatures([])
-            setUploadedImages([])
         }
         setIsEditing(true)
     }
@@ -313,17 +286,19 @@ export default function CMSDashboard() {
 
     const handleImageUpload = (images: string[]) => {
         if (images) {
-            setUploadedImages([...uploadedImages, ...images]);
-            editRoomForm.setValue("images", images);
-            console.log("Images", images)
+            const formImages = editRoomForm.getValues("images");
+            editRoomForm.setValue("images", formImages.concat(images));
         }
     };
 
     const removeImage = (index: number) => {
-        setUploadedImages(uploadedImages.filter((_, i) => i !== index))
+        const formImages = editRoomForm.getValues("images");
+        editRoomForm.setValue("images", formImages.filter((_, i) => i !== index))
     }
 
     if (isEditing) {
+        const images = editRoomForm.watch("images");
+
         return (
             <div
                 className="min-h-screen bg-gray-50 dark:bg-gray-900"
@@ -562,17 +537,17 @@ export default function CMSDashboard() {
                                                 <label htmlFor="image-upload" className="cursor-pointer">
                                                     <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                                                 </label>
-                                                <FileUpload upload={handleImageUpload} disabled={uploadedImages.length >= 4} />
+                                                <FileUpload upload={handleImageUpload} disabled={images.length >= 4} />
                                                 {
-                                                    uploadedImages.length >= 4 && (
+                                                    images.length >= 4 && (
                                                         <p className="text-neutral-400 dark:text-neutral-400">Max number of files reached.</p>
                                                     )
                                                 }
                                             </div>
                                             <p className="text-red-600 text-sm">{editRoomForm.formState.errors.images && editRoomForm.formState.errors.images.message}</p>
-                                            {uploadedImages.length > 0 && (
+                                            {images.length > 0 && (
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                    {uploadedImages.map((image, index) => (
+                                                    {images.map((image, index) => (
                                                         <div key={index} className="relative group">
                                                             <Image
                                                                 src={image || "/placeholder.svg"}
@@ -583,6 +558,7 @@ export default function CMSDashboard() {
                                                             />
                                                             <button
                                                                 onClick={() => removeImage(index)}
+                                                                type="button"
                                                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                             >
                                                                 <X className="h-4 w-4" />
@@ -813,9 +789,9 @@ export default function CMSDashboard() {
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-3">
-                                            {uploadedImages[0] && (
+                                            {images[0] && (
                                                 <Image
-                                                    src={uploadedImages[0] || "/placeholder.svg"}
+                                                    src={images[0] || "/placeholder.svg"}
                                                     alt="Room preview"
                                                     width={500}
                                                     height={500}
@@ -823,23 +799,23 @@ export default function CMSDashboard() {
                                                 />
                                             )}
                                             <div>
-                                                <h3 className="font-semibold">{formData.name || "Room Name"}</h3>
+                                                <h3 className="font-semibold">{editRoomForm.watch("name") || "Room Name"}</h3>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                                    {formData.description || "Room description will appear here..."}
+                                                    {editRoomForm.watch("description") || "Room description will appear here..."}
                                                 </p>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <div className="text-lg font-bold text-blue-600">${formData.price || 0}/night</div>
+                                                <div className="text-lg font-bold text-blue-600">${editRoomForm.watch("price") || 0}/night</div>
                                                 <Badge
                                                     className={
-                                                        formData.status === "active"
+                                                        editRoomForm.watch("status") === "active"
                                                             ? "bg-green-500"
-                                                            : formData.status === "draft"
+                                                            : editRoomForm.watch("status") === "draft"
                                                                 ? "bg-yellow-500"
                                                                 : "bg-gray-500"
                                                     }
                                                 >
-                                                    {formData.status || "draft"}
+                                                    {editRoomForm.watch("status") || "draft"}
                                                 </Badge>
                                             </div>
                                         </div>

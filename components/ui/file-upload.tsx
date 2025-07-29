@@ -41,7 +41,7 @@ export const FileUpload = ({
     setFiles(acceptedFiles);
   }, []);
 
-  const { startUpload } = useUploadThing("imageUploader", {
+  const { startUpload, isUploading } = useUploadThing("imageUploader", {
     onClientUploadComplete: (res) => {
       if (upload) upload([res[0].ufsUrl]);
     },
@@ -55,7 +55,7 @@ export const FileUpload = ({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     multiple: false,
-    disabled: files.length >= 4 || disabled,
+    disabled: files.length >= 4 || disabled || isUploading,
     onDrop,
     maxFiles: 4,
     accept: {
@@ -86,7 +86,7 @@ export const FileUpload = ({
         </div>
         <div className="relative flex flex-col items-center justify-center -top-10">
           <p className="relative z-20 font-sans font-bold text-neutral-700 dark:text-neutral-300 text-base">
-            Upload Images
+            Upload up to 4 Images
           </p>
           <p className="relative hidden sm:block z-20 font-sans font-normal text-neutral-400 dark:text-neutral-400 text-base mt-2">
             Drag and drop your files here or click to upload

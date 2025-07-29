@@ -35,7 +35,7 @@ model room {
     images         String[]
     amenities      String[]
     features       String[]
-    status         String[]
+    status         String
     availability   String
     popular        Boolean?
     newlyRenovated Boolean?
