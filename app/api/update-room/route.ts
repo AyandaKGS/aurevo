@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export async function POST(req: NextRequest) {
     const { data } = await req.json();
 

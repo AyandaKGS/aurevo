@@ -204,8 +204,8 @@ export default function CMSDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
     // Form state for room editing
-    const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
-    const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
+    // const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
+    // const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
 
     const editRoomForm = useForm<EditRoomData>({
         resolver: zodResolver(editRoomSchema),
