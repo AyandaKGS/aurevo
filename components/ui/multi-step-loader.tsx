@@ -59,7 +59,7 @@ const LoaderCore = ({
                     >
                         <div className="relative">
                             {isCompleted ? (
-                                <CheckFilled className={cn("text-green-500 dark:text-green-400")} />
+                                <CheckFilled className={cn("text-[#2E5E45] dark:text-[#3B7A57]")} />
                             ) : isCurrent ? (
                                 <div className="relative">
                                     <LoadingIcon type={loadingState.icon || "booking"} className={cn("text-primary animate-pulse")} />
@@ -73,9 +73,9 @@ const LoaderCore = ({
                             <span
                                 className={cn(
                                     "text-lg font-medium",
-                                    isCompleted && "text-green-600 dark:text-green-400",
+                                    isCompleted && "text-[#2E5E45] dark:text-[#3B7A57]",
                                     isCurrent && "text-primary font-semibold",
-                                    !isCompleted && !isCurrent && "text-gray-500 dark:text-gray-400",
+                                    !isCompleted && !isCurrent && "text-gray-500 dark:text-gray-600",
                                 )}
                             >
                                 {loadingState.text}
@@ -148,14 +148,14 @@ export const MultiStepLoader = ({
                             <div className="w-16 h-16 bg-primary-foreground rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Bed className="w-8 h-8 text-primary" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Processing Your Reservation</h2>
-                            <p className="text-gray-600 dark:text-gray-400">Please wait while we prepare your stay</p>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-zinc-800 mb-2">Processing Your Reservation</h2>
+                            <p className="text-gray-600 dark:text-gray-600">Please wait while we prepare your stay</p>
                         </div>
                         <div className="h-96 relative overflow-hidden">
                             <LoaderCore value={currentState} loadingStates={loadingStates} />
                         </div>
                         <div className="text-center mt-6">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">This may take a few moments...</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-600">This may take a few moments...</p>
                         </div>
                     </div>
                     <div className="bg-gradient-to-t inset-x-0 z-20 bottom-0 bg-white dark:bg-black h-full absolute [mask-image:radial-gradient(900px_at_center,transparent_30%,white)] pointer-events-none" />
@@ -167,13 +167,22 @@ export const MultiStepLoader = ({
 
 // Predefined loading states for common hospitality scenarios
 export const homepageLoadingStates: LoadingState[] = [
-    { text: "Welcome to Sonayi Safari Lodge and Campsite", icon: "location" },
+    { text: "Welcome to Aurevo", icon: "location" },
     { text: "Loading room availability", icon: "room" },
     { text: "Preparing amenities showcase", icon: "amenities" },
     { text: "Fetching current offers", icon: "booking" },
     { text: "Personalizing your experience", icon: "service" },
     { text: "Homepage ready!", icon: "complete" },
-]
+];
+
+export const editRoomsLoadingStates: LoadingState[] = [
+  { text: "Fetching room details", icon: "file-search" },
+  { text: "Loading images and media", icon: "image" },
+  { text: "Retrieving amenities", icon: "list" },
+  { text: "Preparing room editor", icon: "pencil" },
+  { text: "Applying saved configurations", icon: "sliders" },
+  { text: "Edit page ready!", icon: "check-circle" },
+];
 
 export const hotelBookingStates: LoadingState[] = [
     { text: "Checking room availability", icon: "room" },
@@ -181,39 +190,39 @@ export const hotelBookingStates: LoadingState[] = [
     { text: "Confirming your dates", icon: "booking" },
     { text: "Preparing your reservation", icon: "checkin" },
     { text: "Booking confirmed!", icon: "complete" },
-]
+];
 
 export const checkInStates: LoadingState[] = [
     { text: "Verifying your reservation", icon: "booking" },
     { text: "Preparing your room", icon: "room" },
     { text: "Generating room keys", icon: "checkin" },
     { text: "Welcome to our hotel!", icon: "complete" },
-]
+];
 
 export const roomServiceStates: LoadingState[] = [
     { text: "Receiving your order", icon: "dining" },
     { text: "Preparing your meal", icon: "service" },
     { text: "Dispatching to your room", icon: "room" },
     { text: "Order on its way!", icon: "complete" },
-]
+];
 
 export const conciergeStates: LoadingState[] = [
     { text: "Understanding your request", icon: "service" },
     { text: "Checking local availability", icon: "location" },
     { text: "Making arrangements", icon: "booking" },
     { text: "All set for you!", icon: "complete" },
-]
+];
 
 export const amenityBookingStates: LoadingState[] = [
     { text: "Checking spa availability", icon: "amenities" },
     { text: "Reserving your slot", icon: "booking" },
     { text: "Confirming your appointment", icon: "service" },
     { text: "Spa booking confirmed!", icon: "complete" },
-]
+];
 
 export const vipServiceStates: LoadingState[] = [
     { text: "Arranging airport pickup", icon: "parking" },
     { text: "Preparing VIP suite", icon: "room" },
     { text: "Coordinating concierge services", icon: "service" },
     { text: "VIP experience ready!", icon: "complete" },
-]
+];

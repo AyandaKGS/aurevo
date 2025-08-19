@@ -130,7 +130,7 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
         <a
           onMouseEnter={() => setHovered(idx)}
           onClick={onItemClick}
-          className="relative px-4 py-2 text-neutral-600 dark:text-neutral-300"
+          className="relative px-4 py-2 text-[#4A3322] dark:text-neutral-300"
           key={`link-${idx}`}
           href={item.link}
         >
@@ -238,13 +238,12 @@ export const NavbarLogo = () => {
       className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
     >
       <Image
-        src="/images/logo.jpg"
+        src="/images/logo-3-transparent.png"
         alt="logo"
-        width={30}
-        height={30}
-        className="rounded-full"
+        width={100}
+        height={100}
+        className="object-cover w-32 dark:invert"
       />
-      <span className="font-medium text-foreground">Sonayi</span>
     </Link>
   );
 };

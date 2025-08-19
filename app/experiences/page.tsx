@@ -525,7 +525,7 @@ export default function RoomsPage() {
     ]
 
     const RoomCard = ({ room }: { room: Room }) => (
-        <Card className="w-[300px] sm:w-full overflow-hidden hover:shadow-xl transition-all duration-300 group">
+        <Card className="w-[300px] sm:w-full overflow-hidden hover:shadow-xl transition-all duration-300 group pt-0">
             <div className="relative">
                 <Image
                     src={room.images[0] || "/placeholder.svg"}
@@ -713,9 +713,11 @@ export default function RoomsPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Page Header */}
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">On-demand Services</h1>
+                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Curated Experiences</h1>
                     <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
-                        From daily cleaning to laundry and dry cleaning, Auvero offers a range of services arranged at your convenience.
+                        Indulge in unforgettable experiences with private chefs, curated
+                        wine tastings, guided tours, and more, all designed to create lasting
+                        memories.
                     </p>
                     <div className="w-fit mx-auto mb-5">
                         <EnhancedSearch
@@ -951,17 +953,21 @@ export default function RoomsPage() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <img
+                                    <Image
                                         src={selectedRoom.images[0] || "/placeholder.svg"}
                                         alt={selectedRoom.name}
+                                        width={500}
+                                        height={500}
                                         className="w-full h-64 object-cover rounded-lg mb-4"
                                     />
                                     <div className="grid grid-cols-3 gap-2">
                                         {selectedRoom.images.slice(1, 4).map((image, idx) => (
-                                            <img
+                                            <Image
                                                 key={idx}
                                                 src={image || "/placeholder.svg"}
-                                                alt=""
+                                                alt={`${selectedRoom.name}-cover-image`}
+                                                width={500}
+                                                height={500}
                                                 className="w-full h-20 object-cover rounded"
                                             />
                                         ))}

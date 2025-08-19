@@ -1,55 +1,159 @@
 "use client"
 
+import BookingDialog from "@/components/BookingDialogue"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { ImagesSlider } from "@/components/ui/images-slider"
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { homepageLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+import { useAuth } from "@clerk/nextjs"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { room } from "@prisma/client"
+import { IconCheese, IconYoga } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
-import { addDays, isBefore, subDays } from "date-fns"
+import { addDays, formatDate, isBefore, subDays } from "date-fns"
 import {
   AirVent,
   ArrowRight,
-  Bath,
   Bed,
-  Car,
+  BrushCleaning,
+  ChefHat,
   ChevronDownIcon,
-  Coffee,
+  Clock,
+  Dog,
+  Droplets,
+  Dumbbell,
+  Flame,
+  GlassWater,
+  Heart,
+  Map,
   MapPin,
-  Shield,
+  Music,
+  ShieldCheck,
+  Shirt,
+  ShowerHead,
+  Smile,
+  Sparkles,
+  SprayCan,
   Star,
+  Table,
+  Timer,
+  Truck,
   Tv,
-  Utensils,
-  Waves,
-  Wifi
+  UtensilsCrossed,
+  Wifi,
+  Wine
 } from "lucide-react"
 import { motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useState } from "react";
+import { useForm } from "react-hook-form"
+import z from "zod"
+
+const availabilityFormSchema = z.object({
+  checkIn: z.date({ error: "Please select a check-in date." }),
+  checkOut: z.date({ error: "Please select a check-out date." }),
+  guests: z.string({ error: "Please select the number of guests." }),
+  rooms: z.string({ error: "Please select the number of rooms." }),
+});
+
+type AvailabilityFilterData = z.infer<typeof availabilityFormSchema>;
 
 export default function HomePage() {
-  const [checkInDate, setCheckInDate] = useState<Date | undefined>(new Date());
-  const [checkoutDate, setCheckoutDate] = useState<Date | undefined>(addDays(new Date(), 1))
+  const { isSignedIn } = useAuth();
   const [checkInOpen, setCheckInOpen] = useState(false);
-  const [checkOutOpen, setCheckOutOpen] = useState(false)
+  const [checkOutOpen, setCheckOutOpen] = useState(false);
+  const router = useRouter();
 
-  const getAvailability = useQuery({
-    queryKey: ["availability"],
-    queryFn: async () => {
-      const { data } = await axios.get("/api/get-availability");
-
-      return data
-    }
+  const availabilityForm = useForm<AvailabilityFilterData>({
+    resolver: zodResolver(availabilityFormSchema),
+    defaultValues: {
+      checkIn: new Date(),
+      checkOut: addDays(new Date(), 1),
+      guests: "2",
+      rooms: "1",
+    },
   });
 
+  const onSubmit = (data: AvailabilityFilterData) => {
+    const params = new URLSearchParams()
+    const { checkIn, checkOut, guests, rooms } = data;
+
+    params.set("checkIn", checkIn.toISOString());
+    params.set("checkOut", checkOut.toISOString());
+    params.set("guests", guests.toString())
+    params.set("rooms", rooms.toString())
+
+    router.push(`/rooms?${params.toString()}`)
+  }
+
+
+  const getData = useQuery({
+    queryKey: ["homepage-data"],
+    queryFn: async () => {
+      const { data } = await axios.get("/api/get-availability");
+      const { data: rooms } = await axios.get("/api/get-rooms", {
+        params: {
+          page: 1,
+          pageSize: 3,
+          featured: true
+        },
+      });
+
+      return {
+        availability: data,
+        rooms
+      };
+    },
+  });
+
+
   const testimonials = [
+    {
+      name: "Ade",
+      review:
+        "Ngozi and Uzoma were great hosts. Always responsive and very helpful, they made sure my stay was as comfortable as possible. One of my best Airbnb experience. I will stay here again and again.",
+      rating: 5,
+      date: "10 May 2025",
+    },
+    {
+      name: "Fortunate",
+      review:
+        "Great space! Very clean and comfortable. The studio room is a bit small, I had to squeeze myself to enter into the shower, however it wasn’t a deal breaker for me. Something to consider for those with bigger builds as I am on the smaller side. The host and the staff and super helpful and responsive. I felt very welcomed and very at home. The location is very convenient as well. Would definitely rebook for a future stay.",
+      location: "Chicago, Illinois",
+      rating: 5,
+      date: "12 December 2024",
+    },
+    {
+      name: "Nwabudike",
+      review:
+        "Very nice place with proximity to so many amenities, Good staff and great ambience. Definitely coming back!",
+      rating: 5,
+      date: "21 July 2025",
+    },
+    {
+      name: "Zulu",
+      review: "Enjoyed my stay. The apartment was as described and matched the pictures. Host was helpful and accommodating. It was peaceful. I enjoyed my stay.",
+      location: "Lagos, Nigeria",
+      rating: 5,
+      date: "21 May 2025",
+    },
+    {
+      name: "Tommy",
+      review: "Very good! I recommend this place.",
+      rating: 4,
+      date: "7 July 2025"
+    },
     {
       name: "Kallie L",
       review:
@@ -74,18 +178,20 @@ export default function HomePage() {
   ];
 
   const images = [
-    "https://images.unsplash.com/photo-1485433592409-9018e83a1f0d?q=80&w=1814&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "https://images.unsplash.com/photo-1483982258113-b72862e6cff6?q=80&w=3456&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "https://images.unsplash.com/photo-1482189349482-3defd547e0e9?q=80&w=2848&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    "/images/ngoziliving-1.jpeg",
+    "/images/ngoziliving-2.jpeg",
+    "/images/ngoziliving-3.avif",
   ];
 
-  if (getAvailability.isFetching) return (
+  if (getData.isFetching) return (
     <MultiStepLoader
       loadingStates={homepageLoadingStates}
-      loading={getAvailability.isFetching}
+      loading={getData.isFetching}
       duration={2000}
     />
   );
+
+  const averageRating = testimonials.map((testimonial) => testimonial.rating).reduce((a, b) => a + b, 0) / testimonials.length;
 
   return (
     <div className="relative w-full min-h-screen bg-background">
@@ -108,17 +214,17 @@ export default function HomePage() {
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
               <div className="text-white">
-                <Badge className="mb-4 bg-amber-600 text-white border-amber-600">⭐ 3-Star Luxury Resort</Badge>
+                <Badge className="mb-4 bg-gold-gradient text-white border-0">⭐ 3-Star+ Luxury Apartments</Badge>
                 <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-                  Experience
-                  <span className="block text-amber-400">The Wilderness</span>
-                  Like Never Before
+                  Elevating
+                  <span className="block text-amber-400">Luxury Living,</span>
+                  around the world
                 </h1>
                 <p className="text-xl mb-8 text-gray-200 leading-relaxed">
-                  Discover unparalleled comfort and elegance at Sonayi Safari Lodge and Campsite. A home away from home.
+                  Discover exceptional homes in iconic cities and breathtaking destinations—all in one seamless platform.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="bg-amber-600 hover:bg-amber-700 text-lg px-8">
+                  <Button size="lg" className="bg-gold-gradient text-lg px-8">
                     <Link href={"/rooms"} className="flex items-center">
                       Explore Rooms
                       <ArrowRight className="ml-2 h-5 w-5 mt-1" />
@@ -140,73 +246,121 @@ export default function HomePage() {
               <Card className="bg-card rounded-2xl p-8 shadow-2xl">
                 <CardHeader className="text-2xl font-bold text-card-foreground mb-6">Book Your Stay</CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex flex-col min-[394]:grid min-[394]:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="checkin">Check-in</Label>
-                      <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            id="date"
-                            className="w-full  justify-between font-normal"
-                          >
-                            {checkInDate ? checkInDate.toLocaleDateString() : "Select date"}
-                            <ChevronDownIcon />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={checkInDate}
-                            captionLayout="dropdown"
-                            onSelect={(date) => {
-                              setCheckInDate(date)
-                              setCheckInOpen(false)
-                            }}
-                            disabled={(date) => isBefore(date, subDays(new Date(), 1))}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div>
-                      <Label htmlFor="checkout">Check-out</Label>
-                      <Popover open={checkOutOpen} onOpenChange={setCheckOutOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            id="date"
-                            className="w-full justify-between font-normal"
-                          >
-                            {checkoutDate ? checkoutDate.toLocaleDateString() : "Select date"}
-                            <ChevronDownIcon />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={checkoutDate}
-                            captionLayout="dropdown"
-                            onSelect={(date) => {
-                              setCheckoutDate(date)
-                              setCheckOutOpen(false)
-                            }}
-                            disabled={(date) => isBefore(date, addDays(checkInDate ?? new Date(), 1))}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="guests">Guests</Label>
-                      <Input type="number" id="guests" placeholder="2" min="1" max={getAvailability.data?.guests} className="mt-1" />
-                    </div>
-                    <div>
-                      <Label htmlFor="rooms">Rooms</Label>
-                      <Input type="number" id="rooms" placeholder="1" min="1" max={getAvailability.data?.rooms} className="mt-1" />
-                    </div>
-                  </div>
-                  <Button className="w-full bg-amber-600 hover:bg-amber-700 text-lg py-3">Check Availability</Button>
+                  <Form {...availabilityForm}>
+                    <form className="space-y-4" onSubmit={availabilityForm.handleSubmit(onSubmit)}>
+                      <div className="flex flex-col min-[394]:grid min-[394]:grid-cols-2 gap-4">
+                        <FormField
+                          control={availabilityForm.control}
+                          name="checkIn"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel htmlFor="check-in">Check-in</FormLabel>
+                              <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      id="date"
+                                      className={cn("w-full justify-between font-normal", !field.value && "text-muted-foreground")
+                                      }
+                                    >
+                                      {field.value ? formatDate(field.value, "dd/MM/yyyy") : "Select date"}
+                                      <ChevronDownIcon />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={new Date(field.value)}
+                                    captionLayout="dropdown"
+                                    onSelect={field.onChange}
+                                    disabled={(date) => isBefore(date, subDays(new Date(), 1))}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={availabilityForm.control}
+                          name="checkOut"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel htmlFor="check-out">Check-out</FormLabel>
+                              <Popover open={checkOutOpen} onOpenChange={setCheckOutOpen}>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      id="date"
+                                      className={cn("w-full justify-between font-normal", !field.value && "text-muted-foreground")
+                                      }
+                                    >
+                                      {field.value ? formatDate(field.value, "dd/MM/yyyy") : "Select date"}
+                                      <ChevronDownIcon />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={new Date(field.value)}
+                                    captionLayout="dropdown"
+                                    onSelect={field.onChange}
+                                    disabled={(date) => date < new Date() || isBefore(date, addDays(availabilityForm.watch("checkIn"), 1))}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={availabilityForm.control}
+                          name="guests"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <FormLabel htmlFor="guests">Guests</FormLabel>
+                              <Input
+                                type="number"
+                                id="guests"
+                                {...field}
+                                min="1"
+                                max={getData?.data?.availability?.guests || 10}
+                                className="mt-1"
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={availabilityForm.control}
+                          name="rooms"
+                          render={({ field }) => (
+                            <FormItem className="space-y-1.5">
+                              <Label htmlFor="rooms">Rooms</Label>
+                              <Input
+                                type="number"
+                                id="rooms"
+                                {...field}
+                                min="1"
+                                max={getData?.data?.availability?.rooms || 5}
+                                className="mt-1"
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <Button className="w-full text-lg py-3">
+                        Check Availability
+                      </Button>
+                    </form>
+                  </Form>
                   <p className="text-sm text-gray-600 text-center">Best Rate Guaranteed • Free Cancellation</p>
                 </CardContent>
               </Card>
@@ -217,42 +371,135 @@ export default function HomePage() {
 
 
       {/* Rooms Section */}
-      <section id="rooms" className="py-20 bg-accent-foreground">
+      <section id="rooms" className="py-20 bg-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-accent mb-4">Luxurious Accommodations</h2>
-            <p className="text-xl text-muted/60 max-w-3xl mx-auto">
-              Choose from our carefully designed rooms and suites, each offering comfort and elegance.
+            <h2 className="text-4xl font-bold text-neutral-300 dark:text-[#4A3322] mb-4">Quality Stays</h2>
+            <p className="text-xl text-neutral-300/70 dark:text-[#4A3322]/70 max-w-3xl mx-auto">
+              Browse our curated apartments and suites, each designed to be comfortable and stylish.
             </p>
           </div>
           <div className="grid lg:grid-cols-3 gap-8">
+            {getData?.data?.rooms?.map((room: room) => (
+              <Card
+                key={`featured-rooms-${room.id}`}
+                className="overflow-hidden hover:shadow-xl bg-background transition-shadow duration-300 pt-0 px-0 border-0">
+                <div className="relative">
+                  <Image
+                    src={room.images[0] || "/placeholder.svg"}
+                    alt={room.name}
+                    width={800}
+                    height={400}
+                    className="w-full h-64 object-cover"
+                  />
+                  <Badge
+                    className={`absolute top-4 left-4 text-white ${room.availability === "available"
+                      ? "bg-primary"
+                      : room.availability === "limited"
+                        ? "bg-yellow-400 text-yellow-900"
+                        : "bg-gray-300 text-gray-700"
+                      }`}
+                  >
+                    {room.availability.charAt(0).toUpperCase() + room.availability.slice(1)}
+                  </Badge>
+                </div>
+
+                <CardHeader>
+                  <CardTitle className="text-xl">{room.name}</CardTitle>
+                  <div className="flex space-x-2">
+                    {[Bed, ShowerHead, Tv, AirVent, Wifi].map((Icon, iconIndex) => (
+                      <Icon key={iconIndex} className="h-4 w-4 text-muted-foreground/70" />
+                    ))}
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {room.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center text-sm text-muted-foreground/80">
+                        <div className="w-2 h-2 bg-primary rounded-full mr-3" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  {
+                    isSignedIn ? (
+                      <BookingDialog
+                        room={room}
+                        featured
+                        page={1}
+                      >
+                        <Button className="w-full" disabled={room.availability === "booked"}>
+                          {room.availability === "booked" ? "Booked" : "Book This Room"}
+                        </Button>
+                      </BookingDialog>
+                    ) : (
+                      <Button className="w-full" disabled={room.availability === "booked"}>
+                        <Link href={"/sign-up?from=booking"}>
+                          {room.availability === "booked" ? "Booked" : "Book This Room"}
+                        </Link>
+                      </Button>
+                    )
+                  }
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Amenities Section */}
+      <section id="amenities" className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-4">World-Class Experiences</h2>
+            <p className="text-xl text-muted-foreground">
+              Immerse yourself in unique experiences crafted for your enjoyment.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                name: "Single Room",
+                name: "Private Chef",
                 status: "Available",
-                statusColor: "bg-orange-600",
-                image: "/images/single-room-cover.webp",
-                features: ["Ocean View", "King Bed", "Private Balcony", "Marble Bathroom"],
-                amenities: [Bed, Bath, Tv, AirVent, Wifi],
+                statusColor: "bg-primary",
+                image: "https://images.unsplash.com/photo-1572715376701-98568319fd0b?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                features: [
+                  "Custom gourmet menus",
+                  "Farm-to-table ingredients",
+                  "Fine dining setup",
+                  "Table-side service"
+                ],
+                amenities: [ChefHat, UtensilsCrossed, Wine, Table, Flame]
               },
               {
-                name: "Double Room",
+                name: "Personal Trainer",
                 status: "Limited",
-                statusColor: "bg-orange-600",
-                image: "/images/double-room-cover.webp",
-                features: ["Separate Living Area", "Panoramic Views", "Luxury Amenities", "Butler Service"],
-                amenities: [Bed, Bath, Tv, AirVent, Wifi],
+                statusColor: "bg-primary",
+                image: "https://images.unsplash.com/photo-1534258936925-c58bed479fcb?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                features: [
+                  "Tailored workout programs",
+                  "1-on-1 training sessions",
+                  "State-of-the-art equipment",
+                  "Wellness & nutrition coaching"
+                ],
+                amenities: [Dumbbell, Timer, Droplets, Heart, IconYoga]
               },
               {
-                name: "Triple Room",
+                name: "Wine Tastings",
                 status: "Exclusive",
-                statusColor: "bg-orange-600",
-                image: "/images/triple-room-cover.webp",
-                features: ["Private Pool", "Personal Chef", "Concierge Service", "Exclusive Access"],
-                amenities: [Bed, Bath, Tv, AirVent, Wifi],
+                statusColor: "bg-primary",
+                image: "https://images.unsplash.com/photo-1643894708424-0ce015f720f8?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                features: [
+                  "Private sommelier-led tastings",
+                  "Curated fine wine selection",
+                  "Cheese & charcuterie pairing",
+                  "Stunning ambience"
+                ],
+                amenities: [Wine, IconCheese, GlassWater, Music, Sparkles]
               },
             ].map((room, index) => (
-              <Card key={index} className="overflow-hidden hover:shadow-xl transition-shadow duration-300">
+              <Card key={index} className="overflow-hidden hover:shadow-xl bg-background transition-shadow duration-300 pt-0 px-0 border-0">
                 <div className="relative">
                   <Image
                     src={room.image}
@@ -275,12 +522,12 @@ export default function HomePage() {
                   <ul className="space-y-2 mb-6">
                     {room.features.map((feature, featureIndex) => (
                       <li key={featureIndex} className="flex items-center text-sm text-muted-foreground/80">
-                        <div className="w-2 h-2 bg-amber-600 rounded-full mr-3" />
+                        <div className="w-2 h-2 bg-primary rounded-full mr-3" />
                         {feature}
                       </li>
                     ))}
                   </ul>
-                  <Button className="w-full bg-amber-600 hover:bg-amber-700">Book This Room</Button>
+                  <Button className="w-full bg-gold-gradient">Coming Soon</Button>
                 </CardContent>
               </Card>
             ))}
@@ -288,100 +535,100 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Amenities Section */}
-      <section id="amenities" className="py-20 bg-background">
+      {/* Services Section */}
+      <section id="rooms" className="py-20 bg-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">World-Class Amenities</h2>
-            <p className="text-xl text-muted-foreground">
-              Indulge in our premium facilities designed for your comfort and enjoyment
+            <h2 className="text-4xl font-bold text-neutral-300 dark:text-[#4A3322] mb-4">Exceptional Services</h2>
+            <p className="text-xl text-neutral-300/70 dark:text-[#4A3322]/70 max-w-3xl mx-auto">
+              Explore our curated services, each thoughtfully designed to enhance your lifestyle with comfort and convenience.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-8">
             {[
-              { icon: Waves, name: "Infinity Pool", description: "Stunning pool with poolside service" },
               {
-                icon: Utensils,
-                name: "Fine Dining",
-                description: "Great restaurant with world-class chef",
+                name: "Cleaning Services",
+                status: "Available",
+                statusColor: "bg-primary",
+                image: "https://images.unsplash.com/photo-1686178827149-6d55c72d81df?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                features: [
+                  "Thorough housekeeping for all rooms",
+                  "Eco-friendly cleaning products",
+                  "Flexible scheduling options",
+                  "Trained professional staff",
+                  "High attention to detail"
+                ],
+                amenities: [BrushCleaning, SprayCan, ShieldCheck, Clock, Smile]
               },
-              { icon: Coffee, name: "Room Service", description: "Order food straight to your room." },
-              { icon: Wifi, name: "Free WiFi", description: "High-speed internet throughout the property" },
-              { icon: Car, name: "Free Parking", description: "Complimentary free parking for all guests" },
-              { icon: Shield, name: "24/7 Security", description: "Round-the-clock security and concierge service" },
-            ].map((amenity, index) => (
-              <div key={index} className="text-center group">
-                <div className="bg-amber-50 p-6 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
-                  <amenity.icon className="h-8 w-8 text-amber-600" />
+              {
+                name: "Laundry and Dry Cleaning",
+                status: "Limited",
+                statusColor: "bg-primary",
+                image: "https://images.unsplash.com/photo-1696546760882-1d34a7af6800?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                features: [
+                  "Pickup and delivery service",
+                  "Premium fabric care",
+                  "Same-day cleaning available",
+                  "Delicate garment handling",
+                  "Convenient scheduling"
+                ],
+                amenities: [Shirt, Truck, Clock, ShieldCheck, Star]
+              },
+              {
+                name: "Dog Walking",
+                status: "Exclusive",
+                statusColor: "bg-primary",
+                image: "https://images.unsplash.com/photo-1530700131180-d43d9b8cc41f?q=80&w=1134&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                features: [
+                  "Experienced and trusted walkers",
+                  "Flexible walk durations",
+                  "Pet-safe walking routes",
+                  "Daily photo updates",
+                  "Pet-friendly service"
+                ],
+                amenities: [Dog, Heart, ShieldCheck, Clock, Map]
+              }
+            ].map((service, index) => (
+              <Card
+                key={index}
+                className="overflow-hidden hover:shadow-xl bg-background transition-shadow duration-300 pt-0 px-0 border-0"
+              >
+                <div className="relative">
+                  <Image
+                    src={service.image}
+                    alt={service.name}
+                    width={500}
+                    height={500}
+                    className="w-full h-64 object-cover"
+                  />
+                  <Badge className={`absolute top-4 left-4 ${service.statusColor} text-white`}>
+                    {service.status}
+                  </Badge>
                 </div>
-                <h3 className="text-lg font-semibold text-muted-foreground mb-2">{amenity.name}</h3>
-                <p className="text-muted-foreground/70 text-sm">{amenity.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Dining Section */}
-      <section id="dining" className="py-20 bg-amber-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">Culinary Excellence</h2>
-              <p className="text-lg text-gray-600 mb-8">
-                Savor exceptional cuisine crafted by our world-class chef. From fine dining to casual beachside
-                meals, every dish is a celebration of flavor and artistry.
-              </p>
-              <div className="space-y-6">
-                {[
-                  {
-                    name: "The Lodge Restaurant",
-                    type: "Fine Dining",
-                    description: "Elegant dining with contemporary cuisine",
-                  },
-                  {
-                    name: "Sunset Lake Dinner",
-                    type: "Casual Dining",
-                    description: "Tropical cocktails and light bites with stunning sunset views",
-                  },
-                  {
-                    name: "Room Service",
-                    type: "24/7 Available",
-                    description: "Gourmet meals delivered to your room anytime",
-                  },
-                ].map((restaurant, index) => (
-                  <div key={index} className="flex items-start space-x-4">
-                    <div className="bg-amber-600 p-2 rounded-full">
-                      <Utensils className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{restaurant.name}</h3>
-                      <p className="text-amber-600 text-sm font-medium">{restaurant.type}</p>
-                      <p className="text-gray-600 text-sm">{restaurant.description}</p>
-                    </div>
+                <CardHeader>
+                  <CardTitle className="text-xl">{service.name}</CardTitle>
+                  <div className="flex space-x-2">
+                    {service.amenities.map((Icon, iconIndex) => (
+                      <Icon key={iconIndex} className="h-4 w-4 text-muted-foreground/70" />
+                    ))}
                   </div>
-                ))}
-              </div>
-              <Button className="mt-8 bg-amber-600 hover:bg-amber-700">View Menus & Reservations</Button>
-            </div>
-            <div className="relative">
-              <Image
-                src="/images/restaurant-and-bar.webp"
-                alt="Fine dining restaurant"
-                width={500}
-                height={500}
-                className="rounded-lg shadow-lg"
-              />
-              <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-lg shadow-lg">
-                <div className="flex items-center space-x-2 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-                <p className="font-semibold text-gray-900">Highly Recommended</p>
-                <p className="text-sm text-gray-600">Excellent cuisine</p>
-              </div>
-            </div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {service.features.map((feature, featureIndex) => (
+                      <li
+                        key={featureIndex}
+                        className="flex items-center text-sm text-muted-foreground/80"
+                      >
+                        <div className="w-2 h-2 bg-primary rounded-full mr-3" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className="w-full bg-gold-gradient">Coming Soon</Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -395,8 +642,8 @@ export default function HomePage() {
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-6 w-6 text-yellow-400 fill-current" />
               ))}
-              <span className="text-lg font-semibold text-muted-foreground ml-2">4.9/5</span>
-              <span className="text-muted-foreground/60">(2,847 reviews)</span>
+              <span className="text-lg font-semibold text-muted-foreground ml-2">{averageRating.toFixed(2)}/5</span>
+              <span className="text-muted-foreground/60">({testimonials.length} reviews)</span>
             </div>
           </div>
           <div className="rounded-md flex flex-col antialiased bg-background dark:bg-grid-white/[0.05] items-center justify-center relative overflow-hidden">
@@ -415,31 +662,32 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">Prime Location</h2>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">Prime Locations</h2>
               <p className="text-lg text-gray-600 mb-8">
-                Nestled on pristine mountaintop with easy access to local attractions, shopping, and cultural
-                experiences. Discover the perfect blend of tranquility and adventure.
+                Situated in the world’s most sought-after destinations,
+                with effortless access to local attractions, dining, and
+                culture—experience the perfect balance of convenience and
+                exclusivity.
               </p>
               <div className="space-y-4">
                 {[
-                  { name: "Hunting with the Hadzabe", distance: "15min drive" },
-                  { name: "Lake Manyara National Park", distance: "1hr 25mins drive" },
-                  { name: "International Airport", distance: "4hr 19mins drive" },
-                  { name: "Lake Eyasi", distance: "16mins drive" },
+                  { name: "Nigeria" },
+                  { name: "Canada" },
+                  { name: "United States" },
+                  { name: "London" },
                 ].map((location, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-foreground rounded-lg">
                     <div className="flex items-center space-x-3">
                       <MapPin className="h-5 w-5 text-amber-600" />
                       <span className="font-medium text-background">{location.name}</span>
                     </div>
-                    <span className="text-sm text-gray-300 dark:text-gray-600">{location.distance}</span>
                   </div>
                 ))}
               </div>
             </div>
             <div className="relative">
               <Image
-                src="/images/hadzabe.webp"
+                src="https://lh3.googleusercontent.com/gps-cs-s/AC9h4noCA0DKxjI502fPj-_MDi_68liMJdbmwA95UlyVRsz-lo-l1zdEKkAaZgnRIc1kutqQSULV8FJc9crOnz8TmUcF2zbC-k48OgQSfgLCUD2riEM3Df7C2ciX0HvtCG34KEPNc7Orhw=s680-w680-h510-rw"
                 alt="Resort location map"
                 width={500}
                 height={500}
@@ -448,7 +696,7 @@ export default function HomePage() {
               <div className="absolute top-4 right-4 bg-foreground p-3 rounded-lg shadow-lg">
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-5 w-5 text-amber-600" />
-                  <span className="font-semibold text-background">Hunting with the Hadzabe</span>
+                  <span className="font-semibold text-background">Lekki Conservational Center, Nigeria</span>
                 </div>
               </div>
             </div>
@@ -479,21 +727,21 @@ export default function HomePage() {
             <Card className="bg-white/10 border-white/20 text-white">
               <CardHeader>
                 <Badge className="w-fit bg-white text-amber-600 mb-2">Popular</Badge>
-                <CardTitle className="text-2xl">Romance Package</CardTitle>
+                <CardTitle className="text-2xl">Long Stay Offer</CardTitle>
                 <CardDescription className="text-amber-100">
-                  Couples retreat with dining, and champagne
+                  Book for longer than 28 days and save up to 30%
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button variant="secondary" className="w-full">
-                  Learn More
+                  Book now
                 </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
-      
+
     </div>
   )
 }

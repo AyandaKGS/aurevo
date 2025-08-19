@@ -1,35 +1,36 @@
 "use client";
 import {
+    MobileNav,
+    MobileNavHeader,
+    MobileNavMenu,
+    MobileNavToggle,
     Navbar,
+    NavbarButton,
+    NavbarLogo,
     NavBody,
     NavItems,
-    MobileNav,
-    NavbarLogo,
-    NavbarButton,
-    MobileNavHeader,
-    MobileNavToggle,
-    MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { DarkModeToggle } from "./DarkModeToggle";
 
 export function NavbarComp() {
+    const { isSignedIn, signOut } = useAuth();
+    const router = useRouter();
+
     const navItems = [
         {
             name: "Rooms",
             link: "/rooms",
         },
         {
-            name: "Amenities",
-            link: "#amenities",
+            name: "Experiences",
+            link: "/experiences",
         },
         {
             name: "Services",
             link: "/services",
-        },
-        {
-            name: "Contact",
-            link: "#contact",
         },
     ];
 
@@ -45,7 +46,31 @@ export function NavbarComp() {
                     <NavbarButton variant="secondary" className="relative left-6">
                         <DarkModeToggle />
                     </NavbarButton>
-                    <NavbarButton variant="secondary">Login</NavbarButton>
+                    {isSignedIn ? (
+                        <>
+                            <NavbarButton
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    signOut();
+                                }}
+                                variant="secondary"
+                            >
+                                Sign Out
+                            </NavbarButton>
+                        </>
+                    ) :
+                        (
+                            <NavbarButton
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    router.push("/sign-in")
+                                }}
+                                variant="secondary"
+                            >
+                                Sign In
+                            </NavbarButton>
+                        )
+                    }
                     <NavbarButton variant="primary">Send a message</NavbarButton>
                 </div>
             </NavBody>
@@ -81,23 +106,46 @@ export function NavbarComp() {
                     >
                         <DarkModeToggle />
                     </NavbarButton>
-                        <NavbarButton
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            variant="primary"
-                            className="w-full"
-                        >
-                            Login
-                        </NavbarButton>
-                        <NavbarButton
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            variant="primary"
-                            className="w-full"
-                        >
-                            Book now
-                        </NavbarButton>
+                        {isSignedIn ? (
+                            <>
+                                <NavbarButton
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        signOut();
+                                    }}
+                                    variant="primary"
+                                    className="w-full"
+                                >
+                                    Sign Out
+                                </NavbarButton>
+                                <NavbarButton
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        router.push("/rooms")
+                                    }}
+                                    variant="primary"
+                                    className="w-full"
+                                >
+                                    Book now
+                                </NavbarButton>
+                            </>
+                        ) :
+                            (
+                                <NavbarButton
+                                    onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        router.push("/sign-in")
+                                    }}
+                                    variant="primary"
+                                    className="w-full"
+                                >
+                                    Sign In
+                                </NavbarButton>
+                            )
+                        }
                     </div>
                 </MobileNavMenu>
             </MobileNav>
-        </Navbar>
+        </Navbar >
     );
 }

@@ -59,7 +59,7 @@ export const FileUpload = ({
     onDrop,
     maxFiles: 4,
     accept: {
-      image: [".jpg", ".jpeg", ".png"]
+      image: [".jpg", ".jpeg", ".png", ".avif"]
     }
   });
 

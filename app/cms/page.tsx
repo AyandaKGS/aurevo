@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,7 @@ import {
     ImageIcon,
     Copy,
     CheckCircle,
+    Loader,
 } from "lucide-react"
 import Image from "next/image"
 import z from "zod"
@@ -32,97 +33,47 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { FileUpload } from "@/components/ui/file-upload";
 import { Checkbox } from "@/components/ui/checkbox"
-import { useMutation } from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query"
 import axios from "axios"
 import { toast } from "sonner"
+import { editRoomsLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
+import { room } from "@prisma/client"
+import { formatDate } from "date-fns"
+import Link from "next/link"
 
-interface Room {
-    id: string
-    name: string
-    category: string
-    price: number
-    originalPrice?: number
-    size: number
-    maxGuests: number
-    bedType: string
-    view: string
-    images: string[]
-    amenities: string[]
-    features: string[]
-    description: string
-    availability: "available" | "limited" | "booked"
-    rating?: number
-    reviewCount?: number
-    isPopular?: boolean
-    isNewlyRenovated?: boolean
-    status: "active" | "draft" | "archived"
-    createdAt: string
-    updatedAt: string
-}
-
-const initialRooms: Room[] = [
-    {
-        id: "ocean-suite-deluxe",
-        name: "Ocean View Deluxe Suite",
-        category: "suite",
-        price: 399,
-        originalPrice: 499,
-        size: 750,
-        maxGuests: 4,
-        bedType: "King + Sofa Bed",
-        view: "Ocean",
-        images: [
-            "/placeholder.svg?height=400&width=600&text=Ocean+Suite+Main",
-            "/placeholder.svg?height=400&width=600&text=Ocean+Suite+Bedroom",
-            "/placeholder.svg?height=400&width=600&text=Ocean+Suite+Bathroom",
-        ],
-        amenities: ["Ocean View", "Private Balcony", "Marble Bathroom", "Mini Bar", "Room Service", "Concierge"],
-        features: ["King Bed", "Living Area", "Work Desk", "Safe", "Robes & Slippers", "Premium Toiletries"],
-        description:
-            "Experience luxury with breathtaking ocean views from your private balcony. This spacious suite features elegant furnishings, marble bathroom, and premium amenities.",
-        availability: "available",
-        rating: 4.9,
-        reviewCount: 127,
-        isPopular: true,
-        status: "active",
-        createdAt: "2024-01-15",
-        updatedAt: "2024-01-20",
-    },
-    {
-        id: "garden-villa-premium",
-        name: "Garden Villa Premium",
-        category: "villa",
-        price: 299,
-        size: 650,
-        maxGuests: 3,
-        bedType: "Queen",
-        view: "Garden",
-        images: [
-            "/placeholder.svg?height=400&width=600&text=Garden+Villa+Main",
-            "/placeholder.svg?height=400&width=600&text=Garden+Villa+Patio",
-        ],
-        amenities: ["Garden View", "Private Patio", "Rainfall Shower", "Coffee Machine", "Free WiFi"],
-        features: ["Queen Bed", "Sitting Area", "Kitchenette", "Garden Access", "Outdoor Furniture"],
-        description:
-            "Nestled in our lush tropical gardens, this villa offers tranquility and privacy with direct garden access and a charming private patio.",
-        availability: "limited",
-        rating: 4.7,
-        reviewCount: 89,
-        isNewlyRenovated: true,
-        status: "active",
-        createdAt: "2024-01-10",
-        updatedAt: "2024-01-18",
-    },
-]
+// interface Room {
+//     id: string
+//     name: string
+//     category: string
+//     price: number
+//     originalPrice?: number
+//     size: number
+//     maxGuests: number
+//     bedType: string
+//     view: string
+//     images: string[]
+//     amenities: string[]
+//     features: string[]
+//     description: string
+//     availability: "available" | "limited" | "booked"
+//     rating: number
+//     reviewCount: number
+//     isPopular?: boolean
+//     isNewlyRenovated?: boolean
+//     status: "active" | "draft" | "archived"
+//     createdAt: string
+//     updatedAt: string
+// }
 
 const categories = [
+    { value: "apartment", label: "Apartment" },
     { value: "suite", label: "Suite" },
     { value: "villa", label: "Villa" },
     { value: "standard", label: "Standard Room" },
     { value: "family", label: "Family Room" },
     { value: "romantic", label: "Romantic Suite" },
     { value: "accessible", label: "Accessible Room" },
-]
+];
 
 const bedTypes = [
     { value: "king", label: "King Bed" },
@@ -130,7 +81,7 @@ const bedTypes = [
     { value: "twin", label: "Twin Beds" },
     { value: "king-sofa", label: "King + Sofa Bed" },
     { value: "multiple", label: "Multiple Beds" },
-]
+];
 
 const views = [
     { value: "ocean", label: "Ocean View" },
@@ -139,13 +90,17 @@ const views = [
     { value: "resort", label: "Resort View" },
     { value: "city", label: "City View" },
     { value: "mountain", label: "Mountain View" },
-]
+];
+
 
 const commonAmenities = [
     "Ocean View",
     "Private Balcony",
     "Marble Bathroom",
     "Mini Bar",
+    "Pool Table",
+    "Table Tennis",
+    "Gym",
     "Room Service",
     "Concierge",
     "Free WiFi",
@@ -156,7 +111,7 @@ const commonAmenities = [
     "Private Pool",
     "Butler Service",
     "Spa Access",
-]
+];
 
 const commonFeatures = [
     "King Bed",
@@ -171,14 +126,16 @@ const commonFeatures = [
     "Dining Area",
     "Walk-in Closet",
     "Entertainment System",
-]
+];
 
 const editRoomSchema = z.object({
+    id: z.string().optional(),
     name: z.string({ error: "Please enter a room name." }).min(1),
     category: z.string({ error: "Please select a category." }).min(1),
+    location: z.string({ error: "Please input a location" }).min(1),
     price: z.string({ error: "Please input a price." }).min(1),
     originalPrice: z.string().optional(),
-    size: z.string({ error: "Please input a size." }).min(1),
+    size: z.string({ error: "Please input a size." }).optional(),
     maxGuests: z.string({ error: "Please input a maximum number of guests." }).min(1),
     bedType: z.string({ error: "Please select a bed type." }).min(1),
     view: z.string({ error: "Please select a view." }).min(1),
@@ -195,24 +152,52 @@ const editRoomSchema = z.object({
 type EditRoomData = z.infer<typeof editRoomSchema>;
 
 export default function CMSDashboard() {
-    const [rooms, setRooms] = useState<Room[]>(initialRooms)
-    const [selectedRoom, setSelectedRoom] = useState({ amenities: [], features: [] })
+    const [rooms, setRooms] = useState<any[]>([])
+    const [selectedRoom, setSelectedRoom] = useState<EditRoomData | null>(null)
     const [isEditing, setIsEditing] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [filterCategory, setFilterCategory] = useState("all")
     const [filterStatus, setFilterStatus] = useState("all")
     const [activeTab, setActiveTab] = useState("overview")
 
-    // Form state for room editing
-    // const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
-    // const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
+    const getRooms = useInfiniteQuery({
+        queryKey: ["edit-rooms"],
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await axios.get("/api/get-rooms", {
+                params: {
+                    page: pageParam,
+                },
+            });
+
+            setRooms(rooms.concat(data));
+
+            return {
+                items: data,
+                nextPage: pageParam + 1,
+                hasNextPage: data.length === 5
+            };
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.hasNextPage ? lastPage.nextPage : undefined
+        }
+    });
 
     const editRoomForm = useForm<EditRoomData>({
         resolver: zodResolver(editRoomSchema),
         defaultValues: {
+            popular: false,
+            newlyRenovated: false,
+            images: [],
+            amenities: [],
+            features: [],
+            originalPrice: "",
+            price: selectedRoom?.price.toString(),
+            size: "",
+            maxGuests: selectedRoom?.maxGuests.toString(),
             ...selectedRoom,
         }
-    })
+    });
 
     const saveRoomMtn = useMutation({
         mutationFn: async (data: EditRoomData) => {
@@ -224,6 +209,18 @@ export default function CMSDashboard() {
         },
     });
 
+    const deleteRoomMtn = useMutation({
+        mutationFn: async (id: string) => {
+            const { data } = await axios.delete("/api/delete-room", {
+                params: {
+                    id
+                },
+            });
+
+            return data;
+        }
+    })
+
     const filteredRooms = rooms.filter((room) => {
         const matchesSearch = room.name.toLowerCase().includes(searchQuery.toLowerCase())
         const matchesCategory = filterCategory === "all" || room.category === filterCategory
@@ -231,57 +228,76 @@ export default function CMSDashboard() {
         return matchesSearch && matchesCategory && matchesStatus
     })
 
+    const totalRating = rooms.reduce((roomAcc, room) => {
+        const { review } = room;
+        if (review.length > 0) {
+            const roomTotal = review?.reduce((revAcc: number, review: any) => revAcc + review.rating, 0);
+            const roomAvg = roomTotal / review.length;
+            return roomAcc + roomAvg;
+        } else {
+            return roomAcc + 5
+        }
+    }, 0);
+
     const stats = {
         totalRooms: rooms.length,
-        activeRooms: rooms.filter((r) => r.status === "active").length,
-        averagePrice: Math.round(rooms.reduce((acc, r) => acc + r.price, 0) / rooms.length),
-        averageRating: (rooms.reduce((acc, r) => acc + r.rating, 0) / rooms.length).toFixed(1),
-    }
+        activeRooms: rooms.filter((room) => room.status === "active").length,
+        averagePrice: Math.round(rooms.reduce((acc, room) => acc + room.price, 0) / rooms.length),
+        averageRating: (totalRating / rooms.length).toFixed(1)
+    };
 
-    const startEditing = (room?: Room) => {
+    console.error("Reviews", rooms[0]?.review)
+
+    const startEditing = (room?: room) => {
         if (room) {
-            delete room?.reviewCount;
-            delete room.rating;
-
-            setSelectedRoom(room)
-        }
-        setIsEditing(true)
+            //@ts-expect-error error
+            setSelectedRoom(room);
+        };
+        setIsEditing(true);
     }
 
     const saveRoom = (data: EditRoomData) => {
         saveRoomMtn.mutate(data, {
             onSuccess: (data) => {
                 if (selectedRoom) {
-                    setRooms(rooms.map((r) => (r.id === selectedRoom.id ? data : r)))
+                    setRooms(rooms.map((room) => (room.id === data.id ? data : room)))
                 } else {
                     setRooms([...rooms, data])
                 }
-                toast.success("Successfully created room.");
+                editRoomForm.reset();
+                toast.success("Successfully saved room.");
+                setIsEditing(false)
+                setSelectedRoom(null)
             },
             onError: (error) => {
-                console.error("Error creating room", error);
-                toast.error("Error creating room. Please try again.")
+                console.error("Error saving room", error);
+                toast.error("Error saving room. Please try again.")
             },
         });
-
-        setIsEditing(false)
-        setSelectedRoom(null)
     }
 
     const deleteRoom = (roomId: string) => {
-        setRooms(rooms.filter((r) => r.id !== roomId))
+        deleteRoomMtn.mutate(roomId, {
+            onSuccess: () => {
+                setRooms(rooms.filter((room) => room.id !== roomId));
+                toast.success("Successfully deleted room.");
+            },
+            onError: (error) => {
+                console.error("Error deleting room", error.message);
+                toast.error("Error deleting room. Please try again");
+            },
+        });
     }
 
-    const duplicateRoom = (room: Room) => {
-        const duplicatedRoom: Room = {
+    const duplicateRoom = (room: EditRoomData) => {
+        delete room.id;
+        const duplicatedRoom = {
             ...room,
-            id: `room-${Date.now()}`,
             name: `${room.name} (Copy)`,
             status: "draft",
-            createdAt: new Date().toISOString().split("T")[0],
-            updatedAt: new Date().toISOString().split("T")[0],
-        }
-        setRooms([...rooms, duplicatedRoom])
+        };
+
+        saveRoom(duplicatedRoom);
     }
 
     const handleImageUpload = (images: string[]) => {
@@ -295,6 +311,14 @@ export default function CMSDashboard() {
         const formImages = editRoomForm.getValues("images");
         editRoomForm.setValue("images", formImages.filter((_, i) => i !== index))
     }
+
+    useEffect(() => {
+        if (selectedRoom) {
+            editRoomForm.reset({
+                ...selectedRoom,
+            });
+        }
+    }, [selectedRoom, editRoomForm]);
 
     if (isEditing) {
         const images = editRoomForm.watch("images");
@@ -317,13 +341,27 @@ export default function CMSDashboard() {
                                 </p>
                             </div>
                             <div className="flex space-x-3">
-                                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                                <Button variant="outline" onClick={() => {
+                                    editRoomForm.reset();
+                                    setIsEditing(false);
+                                }}>
                                     <X className="h-4 w-4 mr-2" />
                                     Cancel
                                 </Button>
                                 <Button>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Save Room
+                                    {
+                                        saveRoomMtn.isPending ? (
+                                            <>
+                                                <Loader className="animate-spin mr-2" />
+                                                Saving Room...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Save className="h-4 w-4 mr-2" />
+                                                Save Room
+                                            </>
+                                        )
+                                    }
                                 </Button>
                             </div>
                         </div>
@@ -337,7 +375,7 @@ export default function CMSDashboard() {
                                         <CardDescription>Essential room details and pricing</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                             <FormField
                                                 control={editRoomForm.control}
                                                 name="name"
@@ -347,6 +385,21 @@ export default function CMSDashboard() {
                                                         <Input
                                                             id="name"
                                                             placeholder="e.g., Ocean View Deluxe Suite"
+                                                            {...field}
+                                                        />
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="location"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel htmlFor="location">Location</FormLabel>
+                                                        <Input
+                                                            id="Location"
+                                                            placeholder="e.g., Nigeria"
                                                             {...field}
                                                         />
                                                         <FormMessage />
@@ -774,10 +827,6 @@ export default function CMSDashboard() {
                                                 </FormItem>
                                             )}
                                         />
-                                        <div className="flex items-center justify-between">
-
-
-                                        </div>
                                     </CardContent>
                                 </Card>
 
@@ -800,6 +849,7 @@ export default function CMSDashboard() {
                                             )}
                                             <div>
                                                 <h3 className="font-semibold">{editRoomForm.watch("name") || "Room Name"}</h3>
+                                                <h2 className="font-semibold text-sm">{editRoomForm.watch("location") || "Location"}</h2>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                                                     {editRoomForm.watch("description") || "Room description will appear here..."}
                                                 </p>
@@ -828,6 +878,14 @@ export default function CMSDashboard() {
             </div>
         )
     }
+
+    if (getRooms.isFetching) return (
+        <MultiStepLoader
+            loadingStates={editRoomsLoadingStates}
+            loading={getRooms.isFetching}
+            duration={2000}
+        />
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -896,7 +954,7 @@ export default function CMSDashboard() {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Average Rating</p>
-                                            <p className="text-3xl font-bold text-yellow-600">{stats.averageRating}★</p>
+                                            <p className="text-3xl font-bold text-yellow-600">{stats.averageRating !== "NaN" ? stats.averageRating : 0}★</p>
                                         </div>
                                         <Star className="h-8 w-8 text-yellow-600" />
                                     </div>
@@ -927,7 +985,7 @@ export default function CMSDashboard() {
                                                 />
                                                 <div>
                                                     <p className="font-medium">{room.name}</p>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400">Updated {room.updatedAt}</p>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">Updated {formatDate(room.updatedAt, "yyyy-MM-dd")}</p>
                                                 </div>
                                             </div>
                                             <Badge
@@ -1058,8 +1116,8 @@ export default function CMSDashboard() {
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
                                                             <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                                                            <span className="text-sm">{room.rating}</span>
-                                                            <span className="text-sm text-gray-500 ml-1">({room.reviewCount})</span>
+                                                            <span className="text-sm">{room.review.length > 0 ? (room.review?.reduce((acc: number, review: any) => acc + review.rating, 0)/room.review.length).toFixed(1) : 0}</span>
+                                                            <span className="text-sm text-gray-500 ml-1">({room.review.length})</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -1071,7 +1129,9 @@ export default function CMSDashboard() {
                                                                 <Copy className="h-4 w-4" />
                                                             </Button>
                                                             <Button variant="ghost" size="sm">
-                                                                <Eye className="h-4 w-4" />
+                                                                <Link href={`/rooms?search=${room.name}`}>
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Link>
                                                             </Button>
                                                             <Button
                                                                 variant="ghost"

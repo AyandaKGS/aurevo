@@ -4,10 +4,16 @@ import { z } from "zod";
 export const env = createEnv({
     server: {
         REDIS_URL: z.string().min(1),
+        STRIPE_SECRET_KEY: z.string().min(1),
+        CLERK_SIGNING_SECRET: z.string().min(1),
+        STRIPE_WEBHOOK_SECRET: z.string().min(1),
+        EMAIL_USER: z.string().min(1),
+        EMAIL_PASSWORD: z.string().min(1),
     },
     client: {
+        NEXT_PUBLIC_BASE_URL: z.string().min(1),
     },
     experimental__runtimeEnv: {
-
+        NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
     }
 })

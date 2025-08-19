@@ -1,258 +1,56 @@
 "use client"
 
+import BookingDialog from "@/components/BookingDialogue"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { hotelBookingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
+import { editRoomsLoadingStates, hotelBookingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RoomWithReviews } from "@/lib/types"
+import { cn } from "@/lib/utils"
+import { review } from "@prisma/client"
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import { format } from "date-fns"
 import {
     Bed,
+    CalendarIcon,
     ChevronRight,
     Eye,
     Grid3X3,
     Heart,
     List,
+    Loader2,
     Maximize,
+    Minus,
+    Plus,
     Search,
     Star,
-    Users
+    Users,
 } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
-
-interface Room {
-    id: string
-    name: string
-    category: string
-    price: number
-    originalPrice?: number
-    size: number
-    maxGuests: number
-    bedType: string
-    view: string
-    images: string[]
-    amenities: string[]
-    features: string[]
-    description: string
-    availability: "available" | "limited" | "booked"
-    rating: number
-    reviewCount: number
-    isPopular?: boolean
-    isNewlyRenovated?: boolean
-}
-
-const roomsData: Room[] = [
-    {
-        id: "ocean-suite-deluxe",
-        name: "Ocean View Deluxe Suite",
-        category: "suite",
-        price: 399,
-        originalPrice: 499,
-        size: 750,
-        maxGuests: 4,
-        bedType: "King + Sofa Bed",
-        view: "Ocean",
-        images: [
-            "https://images.unsplash.com/photo-1601586404677-a2e1fc310bdf?q=80&w=1035&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "/placeholder.svg?height=400&width=600&text=Ocean+Suite+Bedroom",
-            "/placeholder.svg?height=400&width=600&text=Ocean+Suite+Bathroom",
-            "/placeholder.svg?height=400&width=600&text=Ocean+Suite+Balcony",
-        ],
-        amenities: ["Ocean View", "Private Balcony", "Marble Bathroom", "Mini Bar", "Room Service", "Concierge"],
-        features: ["King Bed", "Living Area", "Work Desk", "Safe", "Robes & Slippers", "Premium Toiletries"],
-        description:
-            "Experience luxury with breathtaking ocean views from your private balcony. This spacious suite features elegant furnishings, marble bathroom, and premium amenities.",
-        availability: "available",
-        rating: 4.9,
-        reviewCount: 127,
-        isPopular: true,
-    },
-    {
-        id: "garden-villa-premium",
-        name: "Garden Villa Premium",
-        category: "villa",
-        price: 299,
-        size: 650,
-        maxGuests: 3,
-        bedType: "Queen",
-        view: "Garden",
-        images: [
-            "https://images.unsplash.com/photo-1721222204128-3f8262e14f35?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "/placeholder.svg?height=400&width=600&text=Garden+Villa+Patio",
-            "/placeholder.svg?height=400&width=600&text=Garden+Villa+Interior",
-        ],
-        amenities: ["Garden View", "Private Patio", "Rainfall Shower", "Coffee Machine", "Free WiFi"],
-        features: ["Queen Bed", "Sitting Area", "Kitchenette", "Garden Access", "Outdoor Furniture"],
-        description:
-            "Nestled in our lush tropical gardens, this villa offers tranquility and privacy with direct garden access and a charming private patio.",
-        availability: "limited",
-        rating: 4.7,
-        reviewCount: 89,
-        isNewlyRenovated: true,
-    },
-    {
-        id: "presidential-suite",
-        name: "Presidential Suite",
-        category: "suite",
-        price: 799,
-        size: 1200,
-        maxGuests: 6,
-        bedType: "2 Kings",
-        view: "Panoramic Ocean",
-        images: [
-            "https://images.unsplash.com/photo-1664780476492-fbb9fd277ce8?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "/placeholder.svg?height=400&width=600&text=Presidential+Suite+Master",
-            "/placeholder.svg?height=400&width=600&text=Presidential+Suite+Dining",
-            "/placeholder.svg?height=400&width=600&text=Presidential+Suite+Terrace",
-        ],
-        amenities: ["Panoramic Views", "Private Terrace", "Jacuzzi", "Butler Service", "Premium Bar", "Dining Area"],
-        features: ["2 Bedrooms", "Living Room", "Dining Room", "2 Bathrooms", "Walk-in Closet", "Entertainment System"],
-        description:
-            "The ultimate luxury experience with panoramic ocean views, private terrace with jacuzzi, and personalized butler service.",
-        availability: "available",
-        rating: 5.0,
-        reviewCount: 45,
-        isPopular: true,
-    },
-    {
-        id: "standard-deluxe",
-        name: "Deluxe Room",
-        category: "standard",
-        price: 199,
-        size: 400,
-        maxGuests: 2,
-        bedType: "Queen",
-        view: "Resort",
-        images: [
-            "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "/placeholder.svg?height=400&width=600&text=Deluxe+Room+Bathroom",
-        ],
-        amenities: ["Resort View", "Modern Bathroom", "Work Desk", "Free WiFi", "Daily Housekeeping"],
-        features: ["Queen Bed", "Seating Area", "Flat Screen TV", "Air Conditioning", "In-room Safe"],
-        description: "Comfortable and elegantly appointed room with modern amenities and beautiful resort views.",
-        availability: "available",
-        rating: 4.5,
-        reviewCount: 203,
-    },
-    {
-        id: "family-suite",
-        name: "Family Suite",
-        category: "family",
-        price: 449,
-        size: 800,
-        maxGuests: 6,
-        bedType: "King + 2 Twins",
-        view: "Pool & Garden",
-        images: [
-            "https://images.unsplash.com/photo-1558442074-3c19857bc1dc?q=80&w=2231&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "/placeholder.svg?height=400&width=600&text=Family+Suite+Kids",
-            "/placeholder.svg?height=400&width=600&text=Family+Suite+Living",
-        ],
-        amenities: ["Pool View", "Connecting Rooms", "Kids Area", "Mini Fridge", "Game Console", "Baby Amenities"],
-        features: ["Separate Kids Room", "Living Area", "2 Bathrooms", "Balcony", "Family Entertainment"],
-        description: "Perfect for families with separate kids area, pool views, and family-friendly amenities throughout.",
-        availability: "limited",
-        rating: 4.8,
-        reviewCount: 156,
-        isPopular: true,
-    },
-    {
-        id: "honeymoon-suite",
-        name: "Honeymoon Suite",
-        category: "romantic",
-        price: 549,
-        size: 600,
-        maxGuests: 2,
-        bedType: "King",
-        view: "Sunset Ocean",
-        images: [
-            "https://images.unsplash.com/photo-1571456803038-80efbf5c9d6b?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "/placeholder.svg?height=400&width=600&text=Honeymoon+Suite+Bathroom",
-            "/placeholder.svg?height=400&width=600&text=Honeymoon+Suite+Balcony",
-        ],
-        amenities: [
-            "Sunset Views",
-            "Private Jacuzzi",
-            "Champagne Service",
-            "Rose Petals",
-            "Couples Massage",
-            "Late Checkout",
-        ],
-        features: ["King Bed", "Romantic Decor", "Jacuzzi Tub", "Private Balcony", "Mood Lighting"],
-        description:
-            "Romance awaits in this intimate suite designed for couples, featuring sunset ocean views and luxurious amenities.",
-        availability: "available",
-        rating: 4.9,
-        reviewCount: 78,
-    },
-    {
-        id: "penthouse-villa",
-        name: "Penthouse Villa",
-        category: "villa",
-        price: 999,
-        size: 1500,
-        maxGuests: 8,
-        bedType: "3 Kings",
-        view: "360° Panoramic",
-        images: [
-            "https://images.unsplash.com/photo-1732370123320-a907db9ab0e7?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "/placeholder.svg?height=400&width=600&text=Penthouse+Villa+Living",
-            "/placeholder.svg?height=400&width=600&text=Penthouse+Villa+Kitchen",
-            "/placeholder.svg?height=400&width=600&text=Penthouse+Villa+Rooftop",
-        ],
-        amenities: ["360° Views", "Private Pool", "Full Kitchen", "Rooftop Terrace", "Personal Chef", "Concierge Service"],
-        features: ["3 Bedrooms", "Full Kitchen", "Living Room", "Dining Room", "3 Bathrooms", "Private Pool"],
-        description:
-            "The ultimate luxury villa experience with 360° panoramic views, private pool, and exclusive amenities.",
-        availability: "limited",
-        rating: 5.0,
-        reviewCount: 23,
-        isNewlyRenovated: true,
-    },
-    {
-        id: "accessible-suite",
-        name: "Accessible Deluxe Suite",
-        category: "accessible",
-        price: 279,
-        size: 550,
-        maxGuests: 3,
-        bedType: "King",
-        view: "Garden",
-        images: [
-            "https://images.unsplash.com/photo-1702411200201-3061d0eea802?q=80&w=2232&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "/placeholder.svg?height=400&width=600&text=Accessible+Suite+Bathroom",
-        ],
-        amenities: [
-            "Wheelchair Accessible",
-            "Roll-in Shower",
-            "Grab Bars",
-            "Lowered Fixtures",
-            "Visual Alerts",
-            "TTY Phone",
-        ],
-        features: ["Accessible Design", "Wide Doorways", "Accessible Bathroom", "Emergency Features", "Comfort Height Bed"],
-        description: "Thoughtfully designed accessible suite with full ADA compliance and luxury amenities for all guests.",
-        availability: "available",
-        rating: 4.6,
-        reviewCount: 67,
-    },
-]
+import { Input } from "./ui/input"
 
 interface EnhancedSearchProps {
     searchQuery: string
     setSearchQuery: (query: string) => void
-    rooms: Room[]
-    onRoomSelect: (room: Room) => void
+    rooms: RoomWithReviews[]
+    onRoomSelect: (room: RoomWithReviews) => void
 }
+
 
 const EnhancedSearch = ({ searchQuery, setSearchQuery, rooms, onRoomSelect }: EnhancedSearchProps) => {
     const [isOpen, setIsOpen] = useState(false)
-    const [suggestions, setSuggestions] = useState<Room[]>([])
-    const searchRef = useRef<HTMLDivElement>(null)
+    const [suggestions, setSuggestions] = useState<RoomWithReviews[]>([])
+    const searchRef = useRef<HTMLDivElement>(null);
 
     const popularSearches = [
         "Ocean View",
@@ -274,8 +72,8 @@ const EnhancedSearch = ({ searchQuery, setSearchQuery, rooms, onRoomSelect }: En
                     (room) =>
                         room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         room.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        room.amenities.some((amenity) => amenity.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                        room.features.some((feature) => feature.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                        room.amenities.some((amenity: string) => amenity.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                        room.features.some((feature: string) => feature.toLowerCase().includes(searchQuery.toLowerCase())) ||
                         room.view.toLowerCase().includes(searchQuery.toLowerCase()),
                 )
                 .slice(0, 5)
@@ -298,7 +96,7 @@ const EnhancedSearch = ({ searchQuery, setSearchQuery, rooms, onRoomSelect }: En
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
-    const handleSearchSelect = (room: Room) => {
+    const handleSearchSelect = (room: RoomWithReviews) => {
         setSearchQuery(room.name)
         setIsOpen(false)
         onRoomSelect(room)
@@ -352,9 +150,11 @@ const EnhancedSearch = ({ searchQuery, setSearchQuery, rooms, onRoomSelect }: En
                                     onClick={() => handleSearchSelect(room)}
                                     className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md flex items-center space-x-3"
                                 >
-                                    <img
+                                    <Image
                                         src={room.images[0] || "/placeholder.svg"}
                                         alt={room.name}
+                                        width={500}
+                                        height={500}
                                         className="w-12 h-12 object-cover rounded"
                                     />
                                     <div className="flex-1 min-w-0">
@@ -470,31 +270,114 @@ const EnhancedSearch = ({ searchQuery, setSearchQuery, rooms, onRoomSelect }: En
             )}
         </div>
     )
-}
+};
 
-export default function RoomsPage() {
+export default function RoomsComp() {
+    const searchParams = useSearchParams();
     const [activeLoader, setActiveLoader] = useState<string | null>(null)
-    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+    const [selectedRoom, setSelectedRoom] = useState<RoomWithReviews | null>(null)
+    const [rooms, setRooms] = useState<RoomWithReviews[]>([])
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
     const [sortBy, setSortBy] = useState("price-low")
     const [filterCategory, setFilterCategory] = useState("all")
     const [priceRange, setPriceRange] = useState([0, 1000])
     const [searchQuery, setSearchQuery] = useState("")
-    // const [showFilters, setShowFilters] = useState(false)
+
+    const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined)
+    const [checkOutDate, setCheckOutDate] = useState<Date | undefined>(undefined)
+    const [numberOfRooms, setNumberOfRooms] = useState(1)
+    const [numberOfGuests, setNumberOfGuests] = useState(2)
+    const [page, setPage] = useState(1),
+
+    const observerRef = useRef(null);
+
+    const getRooms = useInfiniteQuery({
+        queryKey: ["rooms"],
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await axios.get("/api/get-rooms", {
+                params: {
+                    page: pageParam,
+                },
+            });
+
+            setRooms(rooms.concat(data));
+            setPage(pageParam);
+
+            return {
+                items: data,
+                nextPage: pageParam + 1,
+                hasNextPage: data.length === 12
+            };
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.hasNextPage ? lastPage.nextPage : undefined
+        }
+    });
+
+    const getStats = useQuery({
+        queryKey: ["stats"],
+        queryFn: async () => {
+            const { data } = await axios.get("/api/get-stats", {
+                params: {
+                    from: "rooms"
+                }
+            });
+
+            return data;
+        },
+    });
+
 
     const handleBooking = (roomId: string) => {
-        console.log("Room Id", roomId);
+        console.log("Room Id", roomId)
         setActiveLoader("booking")
         setTimeout(() => {
             setActiveLoader(null)
         }, 10000)
     }
 
-    const filteredAndSortedRooms = roomsData
+    const calculateMinimumRooms = (totalGuests: number, roomCapacity: number) => {
+        return Math.ceil(totalGuests / roomCapacity)
+    };
+
+    const avgRating = (item: RoomWithReviews) => {
+        const reviews = item.review || [];
+        if (reviews.length === 0) return 0;
+        return reviews.reduce((acc: any, review: review) => acc + review.rating, 0) / reviews.length;
+    };
+
+    const categories = [
+        { value: "all", label: "All Rooms", count: rooms.length },
+        { value: "apartment", label: "Apartments", count: rooms.filter((room) => room.category === "apartment").length },
+        { value: "suite", label: "Suites", count: rooms.filter((room) => room.category === "suite").length },
+        { value: "villa", label: "Villas", count: rooms.filter((room) => room.category === "villa").length },
+        { value: "family", label: "Family", count: rooms.filter((room) => room.category === "family").length },
+        { value: "romantic", label: "Romantic", count: rooms.filter((room) => room.category === "romantic").length },
+        { value: "standard", label: "Standard", count: rooms.filter((room) => room.category === "standard").length },
+        { value: "accessible", label: "Accessible", count: rooms.filter((room) => room.category === "accessible").length },
+    ]
+
+    // Updated filtering logic to include availability filters
+    const filteredAndSortedRooms = rooms
         .filter((room) => {
             if (filterCategory !== "all" && room.category !== filterCategory) return false
             if (room.price < priceRange[0] || room.price > priceRange[1]) return false
             if (searchQuery && !room.name.toLowerCase().includes(searchQuery.toLowerCase())) return false
+
+            const minRoomsNeeded = calculateMinimumRooms(numberOfGuests, room.maxGuests)
+
+            // Only show rooms if we can book enough of this type to accommodate all guests
+            // and if the selected number of rooms is at least the minimum needed
+            if (numberOfRooms < minRoomsNeeded) return false
+
+            // For date availability, we'll assume rooms are available unless specifically booked
+            // In a real app, this would check against a booking database
+            if (checkInDate && checkOutDate) {
+                // Simple availability check - in production this would query actual bookings
+                if (room.availability === "booked") return false
+            }
+
             return true
         })
         .sort((a, b) => {
@@ -504,28 +387,18 @@ export default function RoomsPage() {
                 case "price-high":
                     return b.price - a.price
                 case "size":
-                    return b.size - a.size
+                    return (b.size || 0) - (a.size || 0)
                 case "rating":
-                    return b.rating - a.rating
+                    return avgRating(b) - avgRating(a)
                 case "popular":
-                    return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0)
+                    return (b.popular ? 1 : 0) - (a.popular ? 1 : 0)
                 default:
                     return 0
             }
-        })
+        });
 
-    const categories = [
-        { value: "all", label: "All Rooms", count: roomsData.length },
-        { value: "suite", label: "Suites", count: roomsData.filter((r) => r.category === "suite").length },
-        { value: "villa", label: "Villas", count: roomsData.filter((r) => r.category === "villa").length },
-        { value: "family", label: "Family", count: roomsData.filter((r) => r.category === "family").length },
-        { value: "romantic", label: "Romantic", count: roomsData.filter((r) => r.category === "romantic").length },
-        { value: "standard", label: "Standard", count: roomsData.filter((r) => r.category === "standard").length },
-        { value: "accessible", label: "Accessible", count: roomsData.filter((r) => r.category === "accessible").length },
-    ]
-
-    const RoomCard = ({ room }: { room: Room }) => (
-        <Card className="w-[300px] sm:w-full overflow-hidden hover:shadow-xl transition-all duration-300 group">
+    const RoomCard = ({ room }: { room: RoomWithReviews }) => (
+        <Card className="w-[300px] sm:w-full overflow-hidden hover:shadow-xl transition-all duration-300 group pt-0">
             <div className="relative">
                 <Image
                     src={room.images[0] || "/placeholder.svg"}
@@ -535,8 +408,8 @@ export default function RoomsPage() {
                     className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    {room.isPopular && <Badge className="bg-red-500">Popular</Badge>}
-                    {room.isNewlyRenovated && <Badge className="bg-green-500">Newly Renovated</Badge>}
+                    {room.popular && <Badge className="bg-red-500">Popular</Badge>}
+                    {room.newlyRenovated && <Badge className="bg-green-500">Newly Renovated</Badge>}
                     <Badge
                         className={`${room.availability === "available"
                             ? "bg-green-500"
@@ -549,7 +422,7 @@ export default function RoomsPage() {
                     </Badge>
                 </div>
                 <div className="absolute top-4 right-4">
-                    <Button variant="ghost" size="sm" className="bg-white/80 hover:bg-white">
+                    <Button variant="ghost" size="sm" className="bg-white/80 hover:bg-white text-black">
                         <Heart className="h-4 w-4" />
                     </Button>
                 </div>
@@ -557,7 +430,7 @@ export default function RoomsPage() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="bg-white/80 hover:bg-white"
+                        className="bg-white/80 hover:bg-white text-black"
                         onClick={() => setSelectedRoom(room)}
                     >
                         <Eye className="h-4 w-4 mr-1" />
@@ -565,7 +438,6 @@ export default function RoomsPage() {
                     </Button>
                 </div>
             </div>
-
             <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-3">
                     <div>
@@ -583,25 +455,23 @@ export default function RoomsPage() {
                         <div className="text-sm text-gray-500">per night</div>
                     </div>
                 </div>
-
                 <div className="flex items-center gap-2 mb-3">
                     <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
                             <Star
                                 key={i}
-                                className={`h-4 w-4 ${i < Math.floor(room.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                className={`h-4 w-4 ${i < Math.floor(avgRating(room)) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
                             />
                         ))}
                     </div>
                     <span className="text-sm text-gray-600">
-                        {room.rating} ({room.reviewCount} reviews)
+                        {avgRating(room).toFixed(1)} ({room.review.length} reviews)
                     </span>
                 </div>
-
                 <div className="mb-4">
                     <div className="text-sm font-medium mb-2">Key Features:</div>
                     <div className="grid grid-cols-2 gap-1">
-                        {room.features.slice(0, 4).map((feature, idx) => (
+                        {room.features.slice(0, 4).map((feature: any[], idx: number) => (
                             <div key={idx} className="flex items-center text-sm text-gray-600">
                                 <ChevronRight className="h-3 w-3 mr-1" />
                                 {feature}
@@ -609,24 +479,28 @@ export default function RoomsPage() {
                         ))}
                     </div>
                 </div>
-
                 <div className="flex gap-2 mb-4">
-                    <Button
-                        className="flex-1"
-                        onClick={() => handleBooking(room.id)}
-                        disabled={room.availability === "booked" || activeLoader === "booking"}
+                    <BookingDialog
+                        room={room}
+                        featured={false}
+                        page={page}
                     >
-                        {activeLoader === "booking" ? "Processing..." : "Book Now"}
-                    </Button>
-                    <Button variant="outline" onClick={() => setSelectedRoom(room)}>
-                        Details
+                        <Button className="flex-1" disabled={room.availability === "booked"}>
+                            {room.availability === "booked" ? "Booked" : "Book This Room"}
+                        </Button>
+                    </BookingDialog>
+                    <Button variant="outline">
+                        <Link href={`/rooms/${room.id}?page=${page}`} className="flex flex-row items-center">
+                            Details
+                        </Link>
                     </Button>
                 </div>
             </CardContent>
         </Card>
-    )
+    );
 
-    const RoomListItem = ({ room }: { room: Room }) => (
+
+    const RoomListItem = ({ room }: { room: RoomWithReviews }) => (
         <Card className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="flex">
                 <div className="relative w-80 h-48">
@@ -685,8 +559,8 @@ export default function RoomsPage() {
                     <p className="text-gray-600 mb-4 line-clamp-2">{room.description}</p>
 
                     <div className="flex flex-wrap gap-2 mb-4">
-                        {room.amenities.slice(0, 6).map((amenity, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
+                        {room.amenities.slice(0, 6).map((amenity: string, index: number) => (
+                            <Badge key={`room-list-item-${index}`} variant="secondary" className="text-xs">
                                 {amenity}
                             </Badge>
                         ))}
@@ -699,8 +573,10 @@ export default function RoomsPage() {
                         >
                             {activeLoader === "booking" ? "Processing..." : "Book Now"}
                         </Button>
-                        <Button variant="outline" onClick={() => setSelectedRoom(room)}>
-                            View Details
+                        <Button variant="outline">
+                            <Link href={`/rooms/${room.id}`} className="flex flex-row items-center">
+                                View Details
+                            </Link>
                         </Button>
                     </div>
                 </div>
@@ -708,44 +584,88 @@ export default function RoomsPage() {
         </Card>
     )
 
+
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            const [entry] = entries;
+            if (entry.isIntersecting && getRooms.hasNextPage) {
+                getRooms.fetchNextPage();
+            }
+        });
+
+        if (observerRef.current) {
+            observer.observe(observerRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, [observerRef, getRooms]);
+
+    useEffect(() => {
+        const checkIn = searchParams.get("checkIn")
+        const checkOut = searchParams.get("checkOut")
+        const guests = searchParams.get("guests")
+        const rooms = searchParams.get("rooms")
+
+        if (checkIn) {
+            setCheckInDate(new Date(checkIn))
+        }
+        if (checkOut) {
+            setCheckOutDate(new Date(checkOut))
+        }
+        if (guests) {
+            setNumberOfGuests(Number.parseInt(guests))
+        }
+        if (rooms) {
+            setNumberOfRooms(Number.parseInt(rooms))
+        }
+    }, [searchParams])
+
+    if (getRooms.isLoading || getStats.isLoading) return (
+        <MultiStepLoader
+            loadingStates={editRoomsLoadingStates}
+            loading={getRooms.isLoading || getStats.isLoading}
+            duration={2000}
+        />
+    );
+
+    const { totalRooms, totalAvailable, startingFrom, averageRating } = getStats.data
+
+
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Page Header */}
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">On-demand Services</h1>
+                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Our Accommodations</h1>
                     <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
-                        From daily cleaning to laundry and dry cleaning, Auvero offers a range of services arranged at your convenience.
+                        Discover the perfect room for your stay from our collection of luxury accommodations
                     </p>
                     <div className="w-fit mx-auto mb-5">
                         <EnhancedSearch
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
-                            rooms={roomsData}
+                            rooms={rooms}
                             onRoomSelect={setSelectedRoom}
                         />
                     </div>
-
                     {/* Quick Stats */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-                            <div className="text-2xl font-bold text-blue-600">{roomsData.length}</div>
+                            <div className="text-2xl font-bold text-blue-600">{totalRooms}</div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">Total Rooms</div>
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-                            <div className="text-2xl font-bold text-green-600">
-                                {roomsData.filter((r) => r.availability === "available").length}
-                            </div>
+                            <div className="text-2xl font-bold text-green-600">{totalAvailable}</div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">Available Now</div>
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-                            <div className="text-2xl font-bold text-yellow-600">${Math.min(...roomsData.map((r) => r.price))}</div>
+                            <div className="text-2xl font-bold text-yellow-600">${startingFrom}</div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">Starting From</div>
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-                            <div className="text-2xl font-bold text-purple-600">
-                                {(roomsData.reduce((acc, r) => acc + r.rating, 0) / roomsData.length).toFixed(1)}★
-                            </div>
+                            <div className="text-2xl font-bold text-purple-600">{averageRating}★</div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">Average Rating</div>
                         </div>
                     </div>
@@ -759,6 +679,128 @@ export default function RoomsPage() {
                                 <CardTitle className="text-lg">Filter Rooms</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-6">
+                                {/* Added availability filter section */}
+                                <div>
+                                    <Label className="text-sm font-medium mb-3 block">Check Availability</Label>
+
+                                    {/* Date Selection */}
+                                    <div className="grid grid-cols-2 gap-2 mb-4">
+                                        <div>
+                                            <Label className="text-xs text-gray-500 mb-1 block">Check-in</Label>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        className={cn(
+                                                            "w-full justify-start text-left font-normal",
+                                                            !checkInDate && "text-muted-foreground",
+                                                        )}
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                        {checkInDate ? format(checkInDate, "MMM dd") : "Select"}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={checkInDate}
+                                                        onSelect={setCheckInDate}
+                                                        disabled={(date) => date < new Date()}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        <div>
+                                            <Label className="text-xs text-gray-500 mb-1 block">Check-out</Label>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        className={cn(
+                                                            "w-full justify-start text-left font-normal",
+                                                            !checkOutDate && "text-muted-foreground",
+                                                        )}
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                        {checkOutDate ? format(checkOutDate, "MMM dd") : "Select"}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={checkOutDate}
+                                                        onSelect={setCheckOutDate}
+                                                        disabled={(date) => date < (checkInDate || new Date())}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                    </div>
+
+                                    {/* Rooms and Guests Selection */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <Label className="text-xs text-gray-500 mb-1 block">Rooms</Label>
+                                            <div className="flex items-center border rounded-md">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setNumberOfRooms(Math.max(1, numberOfRooms - 1))}
+                                                    disabled={numberOfRooms <= 1}
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    <Minus className="h-3 w-3" />
+                                                </Button>
+                                                <span className="flex-1 text-center text-sm">{numberOfRooms}</span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setNumberOfRooms(Math.min(5, numberOfRooms + 1))}
+                                                    disabled={numberOfRooms >= 5}
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    <Plus className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <Label className="text-xs text-gray-500 mb-1 block">Guests</Label>
+                                            <div className="flex items-center border rounded-md">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setNumberOfGuests(Math.max(1, numberOfGuests - 1))}
+                                                    disabled={numberOfGuests <= 1}
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    <Minus className="h-3 w-3" />
+                                                </Button>
+                                                <span className="flex-1 text-center text-sm">{numberOfGuests}</span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setNumberOfGuests(Math.min(10, numberOfGuests + 1))}
+                                                    disabled={numberOfGuests >= 10}
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    <Plus className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {numberOfGuests > 0 && (
+                                        <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                                            <p className="text-xs text-blue-700">
+                                                For {numberOfGuests} guests, you&apos;ll need at least {Math.ceil(numberOfGuests / 2)} room(s)
+                                                (assuming 2 guests per room max)
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {/* Category Filter */}
                                 <div>
                                     <Label className="text-sm font-medium mb-3 block">Room Category</Label>
@@ -775,19 +817,6 @@ export default function RoomsPage() {
                                             ))}
                                         </TabsList>
                                     </Tabs>
-                                    <div className="mt-2 space-y-1">
-                                        {categories.slice(4).map((category) => (
-                                            <Button
-                                                key={category.value}
-                                                variant={filterCategory === category.value ? "default" : "ghost"}
-                                                size="sm"
-                                                onClick={() => setFilterCategory(category.value)}
-                                                className="w-full justify-start text-xs"
-                                            >
-                                                {category.label} ({category.count})
-                                            </Button>
-                                        ))}
-                                    </div>
                                 </div>
 
                                 {/* Price Range */}
@@ -848,7 +877,12 @@ export default function RoomsPage() {
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex items-center gap-4">
                                 <span className="text-sm text-gray-600">
-                                    Showing {filteredAndSortedRooms.length} of {roomsData.length} rooms
+                                    Showing {filteredAndSortedRooms.length} of {rooms.length} rooms
+                                    {numberOfGuests > 2 && (
+                                        <span className="text-blue-600 ml-2">
+                                            (accommodating {numberOfGuests} guests in {numberOfRooms} room{numberOfRooms > 1 ? "s" : ""})
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                             <div className="flex items-center gap-4">
@@ -884,7 +918,7 @@ export default function RoomsPage() {
                             </div>
                         </div>
 
-                        {/* Rooms Grid/List */}
+                        {/* Rooms Grid */}
                         {viewMode === "grid" ? (
                             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {filteredAndSortedRooms.map((room) => (
@@ -898,7 +932,15 @@ export default function RoomsPage() {
                                 ))}
                             </div>
                         )}
+                        {getRooms.hasNextPage && (
+                            <div ref={observerRef} style={{ height: 1 }} />
+                        )}
+                        {getRooms.isFetchingNextPage && (
+                            <Loader2 size={35} className="mx-auto mt-7 animate-spin text-primary" />
+                        )}
 
+
+                        {/* Updated clear filters to include availability filters */}
                         {filteredAndSortedRooms.length === 0 && (
                             <div className="text-center py-12">
                                 <div className="text-gray-400 mb-4">
@@ -911,6 +953,10 @@ export default function RoomsPage() {
                                         setFilterCategory("all")
                                         setPriceRange([0, 1000])
                                         setSearchQuery("")
+                                        setCheckInDate(undefined)
+                                        setCheckOutDate(undefined)
+                                        setNumberOfRooms(1)
+                                        setNumberOfGuests(2)
                                     }}
                                 >
                                     Clear All Filters
@@ -921,7 +967,6 @@ export default function RoomsPage() {
                 </div>
             </div>
 
-            {/* Room Details Modal */}
             {selectedRoom && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -951,17 +996,21 @@ export default function RoomsPage() {
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                                 <div>
-                                    <img
+                                    <Image
                                         src={selectedRoom.images[0] || "/placeholder.svg"}
                                         alt={selectedRoom.name}
+                                        width={500}
+                                        height={500}
                                         className="w-full h-64 object-cover rounded-lg mb-4"
                                     />
                                     <div className="grid grid-cols-3 gap-2">
-                                        {selectedRoom.images.slice(1, 4).map((image, idx) => (
-                                            <img
-                                                key={idx}
+                                        {selectedRoom.images.slice(1, 4).map((image: string) => (
+                                            <Image
+                                                key={`selected-room-${selectedRoom.id}-${image}`}
                                                 src={image || "/placeholder.svg"}
-                                                alt=""
+                                                alt={`${selectedRoom.name}-cover-image`}
+                                                width={500}
+                                                height={500}
                                                 className="w-full h-20 object-cover rounded"
                                             />
                                         ))}
@@ -977,8 +1026,8 @@ export default function RoomsPage() {
                                         <div>
                                             <h4 className="font-semibold mb-2">Amenities</h4>
                                             <div className="flex flex-wrap gap-2">
-                                                {selectedRoom.amenities.map((amenity, idx) => (
-                                                    <Badge key={idx} variant="secondary">
+                                                {selectedRoom.amenities.map((amenity: string, index: number) => (
+                                                    <Badge key={`selected-room-amenity-${index}`} variant="secondary">
                                                         {amenity}
                                                     </Badge>
                                                 ))}
@@ -987,8 +1036,8 @@ export default function RoomsPage() {
                                         <div>
                                             <h4 className="font-semibold mb-2">Features</h4>
                                             <div className="grid grid-cols-2 gap-1">
-                                                {selectedRoom.features.map((feature, idx) => (
-                                                    <div key={idx} className="flex items-center text-sm text-gray-600">
+                                                {selectedRoom.features.map((feature: string, index: number) => (
+                                                    <div key={`selected-room-feature-${index}`} className="flex items-center text-sm text-gray-600">
                                                         <ChevronRight className="h-3 w-3 mr-1" />
                                                         {feature}
                                                     </div>
@@ -1019,6 +1068,7 @@ export default function RoomsPage() {
                 </div>
             )}
 
+
             {/* Multi-Step Loader */}
             <MultiStepLoader
                 loadingStates={hotelBookingStates}
@@ -1028,4 +1078,4 @@ export default function RoomsPage() {
             />
         </div>
     )
-}
+};

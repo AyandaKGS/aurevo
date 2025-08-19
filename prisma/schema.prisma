@@ -7,8 +7,42 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model bookings {
-    id String @id @default(auto()) @map("_id") @db.ObjectId
+enum Status {
+    active
+    archived
+    draft
+}
+
+enum Availability {
+    available
+    limited
+    booked
+}
+
+enum BookingStatus {
+    Pending
+    Paid
+    Cancelled
+}
+
+model booking {
+    id            String        @id @default(auto()) @map("_id") @db.ObjectId
+    roomId        String        @db.ObjectId
+    userId        String?
+    status        BookingStatus
+    checkedStatus Boolean?
+    checkIn       DateTime
+    checkOut      DateTime
+    guests        Int
+    name          String
+    email         String
+    phone         String?
+    notes         String?
+    room          room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    user          user?         @relation(fields: [userId], references: [userId])
+    review        review[]
+
+    @@map("bookings")
 }
 
 model availability {
@@ -22,12 +56,15 @@ model availability {
 }
 
 model room {
-    id             String   @id @default(auto()) @map("_id") @db.ObjectId
+    id             String       @id @default(auto()) @map("_id") @db.ObjectId
+    ngoziId        String?
     name           String
     category       String
+    featured       Boolean?
+    location       String
     price          Int
-    originalPrice  Int
-    size           Int
+    originalPrice  Int?
+    size           Int?
     maxGuests      Int
     bedType        String
     view           String
@@ -35,10 +72,48 @@ model room {
     images         String[]
     amenities      String[]
     features       String[]
-    status         String
-    availability   String
+    status         Status
+    availability   Availability
     popular        Boolean?
     newlyRenovated Boolean?
+    address        String?
 
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    bookings  booking[]
+    review    review[]
+
+    @@unique([ngoziId, name])
     @@map("rooms")
+}
+
+model user {
+    id               String    @id @default(auto()) @map("_id") @db.ObjectId
+    userId           String    @unique
+    email            String    @unique
+    firstName        String
+    lastName         String
+    imageUrl         String
+    role             String
+    receiveMarketing Boolean
+    review           review[]
+    booking          booking[]
+
+    @@map("users")
+}
+
+model review {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    userId    String?
+    roomId    String   @db.ObjectId
+    bookingId String   @db.ObjectId
+    review    String
+    rating    Int
+    user      user?    @relation(fields: [userId], references: [userId])
+    room      room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    booking   booking  @relation(fields: [bookingId], references: [id])
+    createdAt DateTime @default(now())
+
+    @@unique([bookingId])
+    @@map("reviews")
 }
