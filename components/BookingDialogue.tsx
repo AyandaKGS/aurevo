@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { SignedIn, useAuth } from "@clerk/nextjs"
+import { useAuth } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { booking } from "@prisma/client"
 import { useMutation } from "@tanstack/react-query"
@@ -64,18 +64,6 @@ type BookingDialogProps = {
     featured: boolean,
     page: number,
     children?: ReactNode // Trigger (e.g., your Button)
-    onConfirm?: (payload: {
-        room: Room
-        checkIn: string
-        checkOut: string
-        guests: number
-        name: string
-        email: string
-        phone?: string
-        notes?: string
-        nights: number
-        total?: number
-    }) => Promise<void> | void
 }
 
 function diffNights(checkIn: string, checkOut: string) {
@@ -185,7 +173,6 @@ export default function BookingDialog({
     featured,
     page,
     children,
-    onConfirm,
 }: BookingDialogProps) {
     const { userId } = useAuth();
     const [open, setOpen] = useState(false)
