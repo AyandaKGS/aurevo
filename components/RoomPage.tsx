@@ -282,12 +282,11 @@ export default function RoomsComp() {
     const [filterCategory, setFilterCategory] = useState("all")
     const [priceRange, setPriceRange] = useState([0, 1000])
     const [searchQuery, setSearchQuery] = useState("")
-
-    const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined)
-    const [checkOutDate, setCheckOutDate] = useState<Date | undefined>(undefined)
-    const [numberOfRooms, setNumberOfRooms] = useState(1)
-    const [numberOfGuests, setNumberOfGuests] = useState(2)
-    const [page, setPage] = useState(1),
+    const [checkInDate, setCheckInDate] = useState<Date | undefined>(undefined);
+    const [checkOutDate, setCheckOutDate] = useState<Date | undefined>(undefined);
+    const [numberOfRooms, setNumberOfRooms] = useState(1);
+    const [numberOfGuests, setNumberOfGuests] = useState(2);
+    const [page, setPage] = useState(1);
 
     const observerRef = useRef(null);
 
