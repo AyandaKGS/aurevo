@@ -16,6 +16,7 @@ enum Status {
 enum Availability {
     available
     limited
+    exclusive
     booked
 }
 
@@ -27,7 +28,9 @@ enum BookingStatus {
 
 model booking {
     id            String        @id @default(auto()) @map("_id") @db.ObjectId
-    roomId        String        @db.ObjectId
+    roomId        String?       @db.ObjectId
+    experienceId  String?       @db.ObjectId
+    serviceId     String?       @db.ObjectId
     userId        String?
     status        BookingStatus
     checkedStatus Boolean?
@@ -38,11 +41,63 @@ model booking {
     email         String
     phone         String?
     notes         String?
-    room          room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    room          room?         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    experience    experience?   @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+    service       service?      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
     user          user?         @relation(fields: [userId], references: [userId])
     review        review[]
 
     @@map("bookings")
+}
+
+model experience {
+    id            String       @id @default(auto()) @map("_id") @db.ObjectId
+    name          String
+    featured      Boolean?
+    location      String
+    price         Int
+    originalPrice Int?
+    maxPax        Int
+    description   String
+    images        String[]
+    amenities     String[]
+    features      String[]
+    status        Status
+    availability  Availability
+    popular       Boolean?
+    address       String?
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    bookings  booking[]
+    review    review[]
+
+    @@map("experiences")
+}
+
+model service {
+    id            String       @id @default(auto()) @map("_id") @db.ObjectId
+    name          String
+    featured      Boolean?
+    location      String
+    price         Int
+    originalPrice Int?
+    maxPax        Int
+    description   String
+    images        String[]
+    amenities     String[]
+    features      String[]
+    status        Status
+    availability  Availability
+    popular       Boolean?
+    address       String?
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    bookings  booking[]
+    review    review[]
+
+    @@map("services")
 }
 
 model availability {
@@ -103,15 +158,20 @@ model user {
 }
 
 model review {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    userId    String?
-    roomId    String   @db.ObjectId
-    bookingId String   @db.ObjectId
-    review    String
-    rating    Int
-    user      user?    @relation(fields: [userId], references: [userId])
-    room      room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-    booking   booking  @relation(fields: [bookingId], references: [id])
+    id           String      @id @default(auto()) @map("_id") @db.ObjectId
+    userId       String?
+    roomId       String?     @db.ObjectId
+    experienceId String?     @db.ObjectId
+    serviceId    String?     @db.ObjectId
+    bookingId    String      @db.ObjectId
+    review       String
+    rating       Int
+    user         user?       @relation(fields: [userId], references: [userId])
+    room         room?       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+    experience   experience? @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+    service      service?    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+    booking      booking     @relation(fields: [bookingId], references: [id])
+
     createdAt DateTime @default(now())
 
     @@unique([bookingId])

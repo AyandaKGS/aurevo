@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const page = searchParams.get("page");
     const pageSize = searchParams.get("pageSize") || "12";
     const featured = searchParams.get("featured") || false;
-    const cacheKey = `aurevo-rooms-${featured}-${page}`;
+    const cacheKey = `aurevo-experiences-${featured}-${page}`;
 
     const { remaining, isRateLimitReached } = await rateLimit(req, 1, 1);
 
@@ -26,16 +26,13 @@ export async function GET(req: NextRequest) {
             }
         });
 
-        let rooms;
+        let experiences;
         if (featured) {
-            rooms = await prisma.room.findMany({
+            experiences = await prisma.experience.findMany({
                 where: {
                     AND: [
                         {
                             featured: true,
-                        },
-                        {
-                            availability: "available"
                         },
                         {
                             status: "active"
@@ -50,7 +47,7 @@ export async function GET(req: NextRequest) {
                     availability: true,
                     images: true,
                     price: true,
-                    maxGuests: true,
+                    maxPax: true,
                     bookings: true,
                 },
                 take: parseInt(pageSize),
@@ -59,7 +56,7 @@ export async function GET(req: NextRequest) {
                 },
             });
         } else {
-            rooms = await prisma.room.findMany({
+            experiences = await prisma.experience.findMany({
                 take: parseInt(pageSize),
                 skip: (parseInt(page!) - 1) * parseInt(pageSize),
                 include: {
@@ -74,9 +71,9 @@ export async function GET(req: NextRequest) {
 
         const expiryDate = addDays(new Date(), 1);
 
-        await redisClient.set(cacheKey, JSON.stringify(rooms), "EX", Math.floor(expiryDate.getTime() / 1000));
+        await redisClient.set(cacheKey, JSON.stringify(experiences), "EX", Math.floor(expiryDate.getTime() / 1000));
 
-        return new NextResponse(JSON.stringify(rooms), {
+        return new NextResponse(JSON.stringify(experiences), {
             status: 200, headers: {
                 "X-RateLimit-Limit": "1",
                 "X-RateLimit-Remaining": remaining.toString(),
@@ -84,7 +81,7 @@ export async function GET(req: NextRequest) {
             }
         });
     } catch (error: any) {
-        console.error("Error getting rooms", error.message);
+        console.error("Error getting experiences", error.message);
         return new NextResponse(error.message, { status: 500 });
     }
 }

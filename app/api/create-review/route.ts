@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 export async function GET(req: NextRequest) {
-    console.log("Req", req);
+    console.log("Req", req)
 
     try {
-
         return new NextResponse("Review successfully created.", { status: 200 });
 
     } catch (error: any) {
