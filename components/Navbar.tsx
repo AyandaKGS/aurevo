@@ -71,7 +71,7 @@ export function NavbarComp() {
                             </NavbarButton>
                         )
                     }
-                    <NavbarButton variant="primary">Send a message</NavbarButton>
+                    {/* <NavbarButton variant="primary">Send a message</NavbarButton> */}
                 </div>
             </NavBody>
 

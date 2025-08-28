@@ -340,7 +340,7 @@ export function SignUpComp() {
                     </Form>
                     <div className="text-center text-sm text-muted-foreground">
                         Already have an account?{" "}
-                        <a href="/login" className="text-primary hover:underline">
+                        <a href="/sign-in" className="text-primary hover:underline">
                             Sign in
                         </a>
                     </div>

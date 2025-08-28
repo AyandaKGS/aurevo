@@ -276,7 +276,7 @@ export default function BookingDialog({
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="max-w-3xl p-0 overflow-hidden">
+            <DialogContent className="max-w-3xl p-0 overflow-hidden h-[93vh] overflow-y-scroll">
                 <DialogHeader className="px-6 pt-6">
                     <DialogTitle>Book {room.name}</DialogTitle>
                     <DialogDescription>Secure your stay by selecting your dates and providing your details.</DialogDescription>
