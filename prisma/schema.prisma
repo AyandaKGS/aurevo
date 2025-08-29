@@ -111,27 +111,30 @@ model availability {
 }
 
 model room {
-    id             String       @id @default(auto()) @map("_id") @db.ObjectId
-    ngoziId        String?
-    name           String
-    category       String
-    featured       Boolean?
-    location       String
-    price          Int
-    originalPrice  Int?
-    size           Int?
-    maxGuests      Int
-    bedType        String
-    view           String
-    description    String
-    images         String[]
-    amenities      String[]
-    features       String[]
-    status         Status
-    availability   Availability
-    popular        Boolean?
-    newlyRenovated Boolean?
-    address        String?
+    id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+    ngoziId            String?
+    name               String
+    category           String
+    featured           Boolean?
+    location           String?
+    country            String?
+    price              Int
+    originalPrice      Int?
+    size               Int?
+    maxGuests          Int
+    bedType            String
+    view               String
+    description        String
+    images             String[]
+    amenities          String[]
+    features           String[]
+    services           String[]
+    status             Status
+    availability       Availability
+    popular            Boolean?
+    newlyRenovated     Boolean?
+    address            String?
+    cancellationPolicy String[]
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -150,7 +153,7 @@ model user {
     lastName         String
     imageUrl         String
     role             String
-    receiveMarketing Boolean
+    receiveMarketing Boolean?
     review           review[]
     booking          booking[]
 

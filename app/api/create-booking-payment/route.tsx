@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         const { data } = await req.json();
         const { checkIn, checkOut, guests, name, email, phone, notes, room, roomId, image, description, amount, userId, receiveMarketing, featured, page } = data;
 
-        const cacheKey = `ngoziliving-rooms-${featured}-${page}`;
+        const cacheKey = `aurevo-rooms-${featured}-${page}`;
 
         const booking = await prisma.booking.create({
             data: {

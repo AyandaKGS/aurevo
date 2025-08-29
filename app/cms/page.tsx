@@ -1,69 +1,49 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import AddressAutocomplete from "@/components/AddressSelect"
+import { CountrySelect } from "@/components/CountrySelect"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import { FileUpload } from "@/components/ui/file-upload"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { editRoomsLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import {
-    Plus,
-    Edit,
-    Trash2,
-    Eye,
-    Save,
-    X,
-    Search,
-    Bed,
-    DollarSign,
-    Star,
-    ImageIcon,
-    Copy,
-    CheckCircle,
-    Loader,
-} from "lucide-react"
-import Image from "next/image"
-import z from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { FileUpload } from "@/components/ui/file-upload";
-import { Checkbox } from "@/components/ui/checkbox"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { useUser } from "@clerk/nextjs"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { room } from "@prisma/client"
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query"
 import axios from "axios"
-import { toast } from "sonner"
-import { editRoomsLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
-import { room } from "@prisma/client"
 import { formatDate } from "date-fns"
+import {
+    Bed,
+    CheckCircle,
+    Copy,
+    DollarSign,
+    Edit,
+    Eye,
+    ImageIcon,
+    Loader,
+    Plus,
+    Save,
+    Search,
+    Star,
+    Trash2,
+    X,
+} from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
-
-// interface Room {
-//     id: string
-//     name: string
-//     category: string
-//     price: number
-//     originalPrice?: number
-//     size: number
-//     maxGuests: number
-//     bedType: string
-//     view: string
-//     images: string[]
-//     amenities: string[]
-//     features: string[]
-//     description: string
-//     availability: "available" | "limited" | "booked"
-//     rating: number
-//     reviewCount: number
-//     isPopular?: boolean
-//     isNewlyRenovated?: boolean
-//     status: "active" | "draft" | "archived"
-//     createdAt: string
-//     updatedAt: string
-// }
+import { useRouter } from "next/navigation"
+import { useEffect, useLayoutEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import z from "zod"
 
 const categories = [
     { value: "apartment", label: "Apartment" },
@@ -132,7 +112,8 @@ const editRoomSchema = z.object({
     id: z.string().optional(),
     name: z.string({ error: "Please enter a room name." }).min(1),
     category: z.string({ error: "Please select a category." }).min(1),
-    location: z.string({ error: "Please input a location" }).min(1),
+    country: z.string({ error: "Please select a country" }).min(1),
+    address: z.string({ error: "Please select an address" }).min(1),
     price: z.string({ error: "Please input a price." }).min(1),
     originalPrice: z.string().optional(),
     size: z.string({ error: "Please input a size." }).optional(),
@@ -143,22 +124,34 @@ const editRoomSchema = z.object({
     images: z.array(z.string(), { error: "Please select at least 1 image." }).refine((value) => value.some((image) => image)),
     amenities: z.array(z.string(), { error: "Please select at least one amenity." }).refine((value) => value.some((amenity) => amenity)),
     features: z.array(z.string(), { error: "Please select at least 1 feature." }).refine((value) => value.some((feature) => feature)),
+    services: z.array(z.string()).refine((value) => value.some((service) => service)),
     status: z.string({ error: "Please select a status." }).min(1),
     availability: z.string({ error: "Please select an availability." }).min(1),
     popular: z.boolean().optional(),
     newlyRenovated: z.boolean().optional(),
+    cancellationPolicy: z
+        .array(z.string())
+        .refine(
+            (val) => !(val.includes("14-days-50") && val.includes("14-days-100")),
+            {
+                message: "You cannot select both 50% and 100% refund for 14 days.",
+            }
+        ),
 })
 
 type EditRoomData = z.infer<typeof editRoomSchema>;
 
 export default function CMSDashboard() {
+    const { user, isLoaded } = useUser();
     const [rooms, setRooms] = useState<any[]>([])
     const [selectedRoom, setSelectedRoom] = useState<EditRoomData | null>(null)
     const [isEditing, setIsEditing] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [filterCategory, setFilterCategory] = useState("all")
     const [filterStatus, setFilterStatus] = useState("all")
-    const [activeTab, setActiveTab] = useState("overview")
+    const [activeTab, setActiveTab] = useState("overview");
+
+    const router = useRouter();
 
     const getRooms = useInfiniteQuery({
         queryKey: ["edit-rooms"],
@@ -191,10 +184,12 @@ export default function CMSDashboard() {
             images: [],
             amenities: [],
             features: [],
+            services: [],
             originalPrice: "",
             price: selectedRoom?.price.toString(),
             size: "",
             maxGuests: selectedRoom?.maxGuests.toString(),
+            cancellationPolicy: [],
             ...selectedRoom,
         }
     });
@@ -245,8 +240,6 @@ export default function CMSDashboard() {
         averagePrice: Math.round(rooms.reduce((acc, room) => acc + room.price, 0) / rooms.length),
         averageRating: (totalRating / rooms.length).toFixed(1)
     };
-
-    console.error("Reviews", rooms[0]?.review)
 
     const startEditing = (room?: room) => {
         if (room) {
@@ -310,7 +303,17 @@ export default function CMSDashboard() {
     const removeImage = (index: number) => {
         const formImages = editRoomForm.getValues("images");
         editRoomForm.setValue("images", formImages.filter((_, i) => i !== index))
-    }
+    };
+
+    useEffect(() => {
+        if (isLoaded && user) {
+            const role = user.publicMetadata?.role;
+
+            if (role !== "host") router.replace("/unauthorised?role=host");
+
+        }
+
+    }, [isLoaded, user, router])
 
     useEffect(() => {
         if (selectedRoom) {
@@ -393,19 +396,31 @@ export default function CMSDashboard() {
                                             />
                                             <FormField
                                                 control={editRoomForm.control}
-                                                name="location"
+                                                name="country"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel htmlFor="location">Location</FormLabel>
-                                                        <Input
-                                                            id="Location"
-                                                            placeholder="e.g., Nigeria"
-                                                            {...field}
+                                                        <FormLabel htmlFor="country">Country</FormLabel>
+                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                            <CountrySelect value={field.value} onChange={field.onChange} />
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={editRoomForm.control}
+                                                name="address"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Property Address</FormLabel>
+                                                        <AddressAutocomplete
+                                                            onSelect={(val) => field.onChange(val)}
                                                         />
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
                                             />
+
                                             <FormField
                                                 control={editRoomForm.control}
                                                 name="category"
@@ -736,6 +751,182 @@ export default function CMSDashboard() {
                                         />
                                     </CardContent>
                                 </Card>
+                                {/* Services */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Services</CardTitle>
+                                        <CardDescription>Select all services available.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <FormField
+                                            control={editRoomForm.control}
+                                            name="services"
+                                            render={() => (
+                                                <FormItem>
+                                                    <FormLabel className="text-base font-semibold">Services</FormLabel>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+                                                        {["Cleaning", "Laundry", "Airport Pickup"].map((service) => (
+                                                            <FormField
+                                                                key={service}
+                                                                control={editRoomForm.control}
+                                                                name="services"
+                                                                render={({ field }) => {
+                                                                    return (
+                                                                        <FormItem
+                                                                            key={service}
+                                                                            className="flex flex-row items-start space-x-3 space-y-0"
+                                                                        >
+                                                                            <FormControl>
+                                                                                <Checkbox
+                                                                                    checked={field.value?.includes(service)}
+                                                                                    onCheckedChange={(checked) => {
+                                                                                        return checked
+                                                                                            ? field.onChange([
+                                                                                                ...field.value,
+                                                                                                service,
+                                                                                            ])
+                                                                                            : field.onChange(
+                                                                                                field.value?.filter(
+                                                                                                    (value: string) => value !== service
+                                                                                                )
+                                                                                            );
+                                                                                    }}
+                                                                                />
+                                                                            </FormControl>
+                                                                            <FormLabel className="text-sm font-normal">
+                                                                                {service}
+                                                                            </FormLabel>
+                                                                        </FormItem>
+                                                                    );
+                                                                }}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </CardContent>
+                                </Card>
+                                {/* Cancelation Policy */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Cancellation Policy</CardTitle>
+                                        <CardDescription>Select your cancellation policy</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <FormField
+                                            control={editRoomForm.control}
+                                            name="cancellationPolicy"
+                                            render={({ field }) => {
+                                                const isNonRefundable = field.value?.includes("non-refundable")
+
+                                                return (
+                                                    <FormItem>
+                                                        <FormLabel>Cancellation Policy</FormLabel>
+                                                        <div className="grid gap-3">
+                                                            {/* Non-refundable */}
+                                                            <FormItem className="flex flex-row items-start space-x-3">
+                                                                <FormControl>
+                                                                    <Checkbox
+                                                                        checked={isNonRefundable}
+                                                                        onCheckedChange={(checked) => {
+                                                                            if (checked) {
+                                                                                // If non-refundable is selected, clear all other options
+                                                                                field.onChange(["non-refundable"])
+                                                                            } else {
+                                                                                field.onChange([])
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </FormControl>
+                                                                <FormLabel className="text-sm font-normal">
+                                                                    Non-refundable
+                                                                </FormLabel>
+                                                            </FormItem>
+
+                                                            {/* Show other options ONLY if non-refundable is not selected */}
+                                                            {!isNonRefundable && (
+                                                                <>
+                                                                    {/* 14 days options */}
+                                                                    <FormItem className="flex flex-col space-y-2">
+                                                                        <span className="text-sm font-medium">
+                                                                            Refund if cancelled 14 days before booking:
+                                                                        </span>
+                                                                        <div className="flex gap-3">
+                                                                            <FormItem className="flex flex-row items-center space-x-2">
+                                                                                <FormControl>
+                                                                                    <Checkbox
+                                                                                        checked={field.value?.includes("14-days-50")}
+                                                                                        disabled={field.value?.includes("14-days-100")}
+                                                                                        onCheckedChange={(checked) =>
+                                                                                            checked
+                                                                                                ? field.onChange([...(field.value || []), "14-days-50"])
+                                                                                                : field.onChange(
+                                                                                                    field.value?.filter((v) => v !== "14-days-50")
+                                                                                                )
+                                                                                        }
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormLabel className="text-sm font-normal">
+                                                                                    50% refund
+                                                                                </FormLabel>
+                                                                            </FormItem>
+
+                                                                            <FormItem className="flex flex-row items-center space-x-2">
+                                                                                <FormControl>
+                                                                                    <Checkbox
+                                                                                        checked={field.value?.includes("14-days-100")}
+                                                                                        disabled={field.value?.includes("14-days-50")}
+                                                                                        onCheckedChange={(checked) =>
+                                                                                            checked
+                                                                                                ? field.onChange([...(field.value || []), "14-days-100"])
+                                                                                                : field.onChange(
+                                                                                                    field.value?.filter((v) => v !== "14-days-100")
+                                                                                                )
+                                                                                        }
+                                                                                    />
+                                                                                </FormControl>
+                                                                                <FormLabel className="text-sm font-normal">
+                                                                                    Full refund
+                                                                                </FormLabel>
+                                                                            </FormItem>
+                                                                        </div>
+                                                                    </FormItem>
+
+                                                                    {/* 30 days option */}
+                                                                    <FormItem className="flex flex-col items-start space-x-3">
+                                                                        <FormLabel className="text-sm font-medium">
+                                                                            Refund if cancelled 30 days before booking:
+                                                                        </FormLabel>
+                                                                        <div className="flex flex-row gap-2 items-center">
+                                                                            <FormControl>
+                                                                                <Checkbox
+                                                                                    checked={field.value?.includes("30-days-100")}
+                                                                                    onCheckedChange={(checked) =>
+                                                                                        checked
+                                                                                            ? field.onChange([...(field.value || []), "30-days-100"])
+                                                                                            : field.onChange(
+                                                                                                field.value?.filter((v) => v !== "30-days-100")
+                                                                                            )
+                                                                                    }
+                                                                                />
+                                                                            </FormControl>
+                                                                            <FormLabel className="text-sm font-normal">
+                                                                                Full refund if cancelled 30 days before booking
+                                                                            </FormLabel>
+                                                                        </div>
+                                                                    </FormItem>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )
+                                            }}
+                                        />
+                                    </CardContent>
+                                </Card>
                             </div>
                             {/* Sidebar */}
                             <div className="space-y-6">
@@ -849,7 +1040,7 @@ export default function CMSDashboard() {
                                             )}
                                             <div>
                                                 <h3 className="font-semibold">{editRoomForm.watch("name") || "Room Name"}</h3>
-                                                <h2 className="font-semibold text-sm">{editRoomForm.watch("location") || "Location"}</h2>
+                                                <h2 className="font-semibold text-sm">{editRoomForm.watch("address") || "Address"}</h2>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                                                     {editRoomForm.watch("description") || "Room description will appear here..."}
                                                 </p>
@@ -879,7 +1070,7 @@ export default function CMSDashboard() {
         )
     }
 
-    if (getRooms.isFetching) return (
+    if (getRooms.isFetching || !isLoaded) return (
         <MultiStepLoader
             loadingStates={editRoomsLoadingStates}
             loading={getRooms.isFetching}
@@ -1116,7 +1307,7 @@ export default function CMSDashboard() {
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="flex items-center">
                                                             <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                                                            <span className="text-sm">{room.review.length > 0 ? (room.review?.reduce((acc: number, review: any) => acc + review.rating, 0)/room.review.length).toFixed(1) : 0}</span>
+                                                            <span className="text-sm">{room.review.length > 0 ? (room.review?.reduce((acc: number, review: any) => acc + review.rating, 0) / room.review.length).toFixed(1) : 0}</span>
                                                             <span className="text-sm text-gray-500 ml-1">({room.review.length})</span>
                                                         </div>
                                                     </td>

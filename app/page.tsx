@@ -466,79 +466,6 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Private Chef",
-                status: "Available",
-                statusColor: "bg-primary",
-                image: "https://images.unsplash.com/photo-1572715376701-98568319fd0b?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                features: [
-                  "Custom gourmet menus",
-                  "Farm-to-table ingredients",
-                  "Fine dining setup",
-                  "Table-side service"
-                ],
-                amenities: [ChefHat, UtensilsCrossed, Wine, Table, Flame]
-              },
-              {
-                name: "Personal Trainer",
-                status: "Limited",
-                statusColor: "bg-primary",
-                image: "https://images.unsplash.com/photo-1534258936925-c58bed479fcb?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                features: [
-                  "Tailored workout programs",
-                  "1-on-1 training sessions",
-                  "State-of-the-art equipment",
-                  "Wellness & nutrition coaching"
-                ],
-                amenities: [Dumbbell, Timer, Droplets, Heart, IconYoga]
-              },
-              {
-                name: "Wine Tastings",
-                status: "Exclusive",
-                statusColor: "bg-primary",
-                image: "https://images.unsplash.com/photo-1643894708424-0ce015f720f8?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                features: [
-                  "Private sommelier-led tastings",
-                  "Curated fine wine selection",
-                  "Cheese & charcuterie pairing",
-                  "Stunning ambience"
-                ],
-                amenities: [Wine, IconCheese, GlassWater, Music, Sparkles]
-              },
-            ].map((room, index) => (
-              <Card key={index} className="overflow-hidden hover:shadow-xl bg-background transition-shadow duration-300 pt-0 px-0 border-0">
-                <div className="relative">
-                  <Image
-                    src={room.image}
-                    alt={room.name}
-                    width={500}
-                    height={500}
-                    className="w-full h-64 object-cover"
-                  />
-                  <Badge className={`absolute top-4 left-4 ${room.statusColor} text-white`}>{room.status}</Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle className="text-xl">{room.name}</CardTitle>
-                  <div className="flex space-x-2">
-                    {room.amenities.map((Icon, iconIndex) => (
-                      <Icon key={iconIndex} className="h-4 w-4 text-muted-foreground/70" />
-                    ))}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 mb-6">
-                    {room.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center text-sm text-muted-foreground/80">
-                        <div className="w-2 h-2 bg-primary rounded-full mr-3" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button className="w-full bg-gold-gradient">Coming Soon</Button>
-                </CardContent>
-              </Card>
-            ))}
             {getData?.data?.experiences?.map((experience: experience, index: number) => (
               <Card
                 key={`featured-rooms-${experience.id}`}
@@ -567,11 +494,11 @@ export default function HomePage() {
                   <CardTitle className="text-xl">{experience.name}</CardTitle>
                   <div className="flex space-x-2">
                     {
-                      index === 1 ? (
+                      experience.name === "Private Chef" ? (
                         [ChefHat, UtensilsCrossed, Wine, Table, Flame].map((Icon, iconIndex) => (
                           <Icon key={iconIndex} className="h-4 w-4 text-muted-foreground/70" />
                         ))
-                      ) : index === 2 ? (
+                      ) : experience.name === "Personal Trainer" ? (
                         [Dumbbell, Timer, Droplets, Heart, IconYoga].map((Icon, iconIndex) => (
                           <Icon key={iconIndex} className="h-4 w-4 text-muted-foreground/70" />
                         ))

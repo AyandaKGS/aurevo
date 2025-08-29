@@ -19,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hospitality App",
-  description: "Welcome to Hospitality App - your all-in-one hospitality companion.",
+  title: "Aurevo",
+  description: "Elevating luxury living around the world.",
 };
 
 export default function RootLayout({

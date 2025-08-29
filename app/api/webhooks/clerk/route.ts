@@ -1,6 +1,6 @@
 import { env } from "@/env";
 import { prisma } from "@/lib/db/prisma";
-import { WebhookEvent } from "@clerk/nextjs/server";
+import { clerkClient, WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { Webhook } from "svix";
@@ -45,6 +45,13 @@ export async function POST(req: NextRequest) {
             const { role } = unsafe_metadata;
 
             if (role === "guest") {
+
+                (await clerkClient()).users.updateUser(id!, {
+                    publicMetadata: {
+                        role: "guest"
+                    },
+                });
+
                 await prisma.user.create({
                     data: {
                         userId: id!,
@@ -58,6 +65,11 @@ export async function POST(req: NextRequest) {
                 return new NextResponse("Successfully processed webhook", { status: 200 });
             };
 
+            (await clerkClient()).users.updateUser(id!, {
+                publicMetadata: {
+                    role: "host"
+                },
+            });
 
             await prisma.user.create({
                 data: {
