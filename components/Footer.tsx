@@ -10,7 +10,7 @@ export default function Footer() {
                     <Separator className="my-5 bg-gray-800 w-11/12 mx-auto" />
           <div className="flex flex-row justify-between gap-8">
             <div className="flex flex-col md:flex-row justify-center items-center">
-            <p className="text-gray-400">&copy; {new Date().getFullYear()} Auvero. All rights reserved.</p>
+            <p className="text-gray-400">&copy; {new Date().getFullYear()} Aurevo. All rights reserved.</p>
           </div>
             <div>
               <Image

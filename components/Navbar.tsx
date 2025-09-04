@@ -10,13 +10,24 @@ import {
     NavBody,
     NavItems,
 } from "@/components/ui/resizable-navbar";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { DarkModeToggle } from "./DarkModeToggle";
 
+export default function NavBar() {
+    return (
+        <Suspense>
+            <NavbarComp />
+        </Suspense>
+    )
+};
+
 export function NavbarComp() {
+    const { user } = useUser();
     const { isSignedIn, signOut } = useAuth();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [role, setRole] = useState("");
     const router = useRouter();
 
     const navItems = [
@@ -26,22 +37,28 @@ export function NavbarComp() {
         },
         {
             name: "Experiences",
-            link: "/experiences",
+            link: "#experiences",
         },
         {
             name: "Services",
-            link: "/services",
+            link: "#services",
         },
     ];
 
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    useEffect(() => {
+        if (user) setRole(user.publicMetadata?.role as string);
+    }, [user]);
 
     return (
         <Navbar className="top-0">
             {/* Desktop Navigation */}
             <NavBody>
                 <NavbarLogo />
-                <NavItems items={navItems} />
+                <NavItems items={
+                    role === "host" ?
+                        navItems.concat([{ name: "CMS", link: "/cms" }])
+                        : navItems
+                } />
                 <div className="flex items-center gap-4">
                     <NavbarButton variant="secondary" className="relative left-6">
                         <DarkModeToggle />

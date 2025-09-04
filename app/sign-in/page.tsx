@@ -1,5 +1,6 @@
 "use client"
 
+import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -59,7 +60,7 @@ export default function LoginPage() {
                     emailAddressId,
                 });
             }
-            router.push("/verify-email?isSignedIn=true");
+            router.push(`/verify-email?isSignedIn=true`);
 
         } catch (error: any) {
             console.log("Error", JSON.stringify(error, null, 2));
@@ -99,6 +100,7 @@ export default function LoginPage() {
                     setActive({
                         session: res.createdSessionId,
                     });
+
                     router.push("/");
                     return
                 }
@@ -249,6 +251,7 @@ export default function LoginPage() {
                     </div>
                 </div>
             </main>
+            <Footer />
         </div>
     )
 }

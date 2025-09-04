@@ -13,15 +13,18 @@ export default function AddressAutocomplete({ onSelect }: { onSelect: (address: 
 
     const fetchSuggestionsMt = useMutation({
         mutationFn: async () => {
-            const { data } = await axios.get("/api/places", {
-                params: {
-                    input: debouncedQuery
-                }
-            });
+            try {
+                const { data } = await axios.get("/api/places", {
+                    params: {
+                        input: debouncedQuery
+                    }
+                });
 
-            console.error("Data", data);
+                return data;
+            } catch (error: any) {
+                console.error("Error getting suggestions", error.message);
+            }
 
-            return data;
         }
     });
 
@@ -45,7 +48,6 @@ export default function AddressAutocomplete({ onSelect }: { onSelect: (address: 
                 fetchSuggestionsMt.mutate(undefined, {
                     onSuccess: (data) => {
                         const preds = data.predictions || [];
-                        console.error(preds[0].description)
                         setSuggestions(preds.map((p: any) => p.description));
                     },
                     onError: (error) => {

@@ -31,6 +31,7 @@ import z from "zod"
 import { Calendar } from "./ui/calendar"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { AvailabilityStatus } from "@/generated"
 
 const bookingFormSchema = z.object({
     checkIn: z.date({ error: "Please select a check-in date." }),
@@ -56,6 +57,7 @@ type Room = {
     price?: number,
     currency?: string,
     maxGuests: number,
+    availabilityStatus: AvailabilityStatus[],
     bookings: booking[]
 }
 
@@ -95,7 +97,7 @@ function isDateRangeAvailable(checkIn: string, checkOut: string, bookings: booki
         // Check if there's any overlap
         return requestedStart < bookedEnd && requestedEnd > bookedStart
     })
-}
+};
 
 function getMinAvailableDate(bookings: booking[] = []): string {
     const today = new Date()
@@ -131,22 +133,33 @@ function getMinAvailableDate(bookings: booking[] = []): string {
     return availableDate.toISOString().split("T")[0]
 }
 
-function getBookedDates(bookings: booking[] = []): Date[] {
-    const bookedDates: Date[] = []
+function getBlockedDates(bookings: booking[] = [], availabilityStatus: AvailabilityStatus[]) {
+    const blockedDates: Date[] = []
 
+    // Expand bookings into individual days
     bookings.forEach((booking) => {
         const start = new Date(booking.checkIn)
         const end = new Date(booking.checkOut)
 
-        // Add all dates in the booking range
         let currentDate = new Date(start)
         while (currentDate <= end) {
-            bookedDates.push(new Date(currentDate))
+            blockedDates.push(new Date(currentDate))
             currentDate = addDays(currentDate, 1)
         }
     })
 
-    return bookedDates
+    // Add unavailable/maintenance days
+    availabilityStatus.forEach(({ dates, availability }) => {
+        if (["unavailable", "maintenance", "booked"].includes(availability)) {
+            dates.forEach((dateStr) => {
+                blockedDates.push(new Date(dateStr))
+            })
+        }
+    });
+
+    console.error("Availability", blockedDates);
+
+    return blockedDates
 }
 
 function isDateBooked(date: Date, bookings: booking[] = []): boolean {
@@ -168,6 +181,7 @@ export default function BookingDialog({
         price: 220,
         currency: "USD",
         maxGuests: 2,
+        availabilityStatus: [],
         bookings: []
     },
     featured,
@@ -179,6 +193,11 @@ export default function BookingDialog({
     const [checkInOpen, setCheckInOpen] = useState(false);
     const [checkOutOpen, setCheckOutOpen] = useState(false);
     const router = useRouter();
+
+    const blockedDates = useMemo(
+        () => getBlockedDates(room.bookings, room.availabilityStatus ?? []),
+        [room.bookings, room.availabilityStatus]
+    )
 
     const bookingForm = useForm<BookingFormData>({
         resolver: zodResolver(bookingFormSchema),
@@ -227,8 +246,6 @@ export default function BookingDialog({
     )
 
     const minDate = useMemo(() => new Date(getMinAvailableDate(room.bookings)), [room.bookings])
-
-    const bookedDates = useMemo(() => getBookedDates(room.bookings), [room.bookings])
 
     const canSubmit =
         !createBooking.isPending &&
@@ -395,9 +412,14 @@ export default function BookingDialog({
                                                         selected={field.value}
                                                         captionLayout="dropdown"
                                                         onSelect={field.onChange}
-                                                        disabled={(date) => date < minDate || isDateBooked(date, room.bookings) || isBefore(date, subDays(new Date(), 1)) || isBefore(date, addDays(checkOut, 1))}
+                                                        className="z-50"
+                                                        // disabled={(date) =>
+                                                        //     date < minDate ||
+                                                        //     blockedDates.some((d) => d.toDateString() === date.toDateString()) ||
+                                                        //     isBefore(date, subDays(new Date(), 1)) ||
+                                                        //     isBefore(date, addDays(checkOut, 1))}
                                                         modifiers={{
-                                                            booked: bookedDates,
+                                                            booked: blockedDates,
                                                         }}
                                                         modifiersStyles={{
                                                             booked: {
@@ -441,10 +463,13 @@ export default function BookingDialog({
                                                         captionLayout="dropdown"
                                                         onSelect={field.onChange}
                                                         disabled={(date) =>
-                                                            date < minDate || isBefore(date, addDays(checkIn, 1)) || isDateBooked(date, room.bookings)
+                                                            date < minDate ||
+                                                            isBefore(date, addDays(checkIn, 1))
+                                                            ||
+                                                            blockedDates.some((d) => d.toDateString() === date.toDateString())
                                                         }
                                                         modifiers={{
-                                                            booked: bookedDates,
+                                                            booked: blockedDates,
                                                         }}
                                                         modifiersStyles={{
                                                             booked: {

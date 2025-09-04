@@ -1,13 +1,12 @@
+import Footer from "@/components/Footer"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
     ArrowRight,
-    Briefcase,
     CheckCircle,
     Home,
     Lock,
-    MapPin,
     Shield,
     TrendingUp
 } from "lucide-react"
@@ -23,10 +22,10 @@ export default function UnauthorizedPage() {
                     <div className="bg-red-100 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
                         <Lock className="h-10 w-10 text-red-600" />
                     </div>
-                    <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-gray-400 mb-4">
                         Access <span className="text-amber-600">Restricted</span>
                     </h1>
-                    <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
                         You need to be a registered provider to access the Content Management System. Join thousands of successful
                         businesses on our platform.
                     </p>
@@ -39,13 +38,14 @@ export default function UnauthorizedPage() {
                 {/* Provider Types */}
                 <div className="mb-16">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Provider Type</h2>
-                        <p className="text-lg text-gray-600">
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-400 mb-4">Choose Your Provider Type</h2>
+                        <p className="text-lg text-gray-600 dark:text-gray-300">
                             Select the category that best describes your business to get started
                         </p>
                     </div>
 
-                    <div className="grid lg:grid-cols-3 gap-8">
+                    <div className="grid lg:grid-cols-3 mx-auto gap-8">
+                        <div />
                         {/* Host Provider */}
                         <Card className="relative overflow-hidden hover:shadow-xl transition-shadow duration-300 border-2 hover:border-primary">
                             <div className="absolute top-0 right-0 bg-amber-600 text-white px-3 py-1 text-sm font-medium">
@@ -62,7 +62,7 @@ export default function UnauthorizedPage() {
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="space-y-3">
-                                    <h4 className="font-semibold text-gray-900">What you can manage:</h4>
+                                    <h4 className="font-semibold text-gray-900 dark:text-gray-400">What you can manage:</h4>
                                     <ul className="space-y-2">
                                         {[
                                             "Property listings & rooms",
@@ -72,7 +72,7 @@ export default function UnauthorizedPage() {
                                             "Property photos & descriptions",
                                             "Guest reviews & ratings",
                                         ].map((feature, index) => (
-                                            <li key={index} className="flex items-center text-sm text-gray-600">
+                                            <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                                                 <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                                                 {feature}
                                             </li>
@@ -82,22 +82,24 @@ export default function UnauthorizedPage() {
                                 <div className="bg-blue-50 p-4 rounded-lg">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium text-gray-700">Average Monthly Revenue</span>
-                                        <span className="text-lg font-bold text-blue-600">$8,500</span>
+                                        <span className="text-lg font-bold text-blue-600">$1,150</span>
                                     </div>
                                     <div className="flex items-center text-sm text-gray-600">
                                         <TrendingUp className="h-4 w-4 mr-1" />
-                                        +23% vs last year
+                                        +43.8% vs last year
                                     </div>
                                 </div>
                                 <Button className="w-full bg-gold-gradient text-lg py-3">
-                                    Sign Up as Host
+                                    <Link href={"/sign-up?role=host"}>
+                                        Sign Up as Host
+                                    </Link>
                                     <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </CardContent>
                         </Card>
 
                         {/* Experience Provider */}
-                        <Card className="relative overflow-hidden hover:shadow-xl transition-shadow duration-300 border-2 hover:border-primary">
+                        {/* <Card className="relative overflow-hidden hover:shadow-xl transition-shadow duration-300 border-2 hover:border-primary">
                             <div className="absolute top-0 right-0 bg-green-600 text-white px-3 py-1 text-sm font-medium">
                                 Growing Fast
                             </div>
@@ -112,7 +114,7 @@ export default function UnauthorizedPage() {
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="space-y-3">
-                                    <h4 className="font-semibold text-gray-900">What you can manage:</h4>
+                                    <h4 className="font-semibold text-gray-900 dark:text-gray-400">What you can manage:</h4>
                                     <ul className="space-y-2">
                                         {[
                                             "Tours & activity listings",
@@ -122,7 +124,7 @@ export default function UnauthorizedPage() {
                                             "Experience photos & videos",
                                             "Customer feedback & testimonials",
                                         ].map((feature, index) => (
-                                            <li key={index} className="flex items-center text-sm text-gray-600">
+                                            <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                                                 <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                                                 {feature}
                                             </li>
@@ -132,7 +134,7 @@ export default function UnauthorizedPage() {
                                 <div className="bg-green-50 p-4 rounded-lg">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-sm font-medium text-gray-700">Average Monthly Revenue</span>
-                                        <span className="text-lg font-bold text-green-600">$6,200</span>
+                                        <span className="text-lg font-bold text-green-600">$750</span>
                                     </div>
                                     <div className="flex items-center text-sm text-gray-600">
                                         <TrendingUp className="h-4 w-4 mr-1" />
@@ -140,14 +142,16 @@ export default function UnauthorizedPage() {
                                     </div>
                                 </div>
                                 <Button className="w-full bg-gold-gradient text-lg py-3">
-                                    Sign Up as Experience Provider
+                                    <Link href={"/sign-up?role=experienceProvider"}>
+                                        Sign Up as Experience Provider
+                                    </Link>
                                     <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </CardContent>
-                        </Card>
+                        </Card> */}
 
                         {/* Service Provider */}
-                        <Card className="relative overflow-hidden hover:shadow-xl transition-shadow duration-300 border-2 hover:border-primary">
+                        {/* <Card className="relative overflow-hidden hover:shadow-xl transition-shadow duration-300 border-2 hover:border-primary">
                             <div className="absolute top-0 right-0 bg-purple-600 text-white px-3 py-1 text-sm font-medium">
                                 Versatile
                             </div>
@@ -162,7 +166,7 @@ export default function UnauthorizedPage() {
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <div className="space-y-3">
-                                    <h4 className="font-semibold text-gray-900">What you can manage:</h4>
+                                    <h4 className="font-semibold text-gray-900 dark:text-gray-400">What you can manage:</h4>
                                     <ul className="space-y-2">
                                         {[
                                             "Service listings & menus",
@@ -172,7 +176,7 @@ export default function UnauthorizedPage() {
                                             "Portfolio & service photos",
                                             "Client reviews & ratings",
                                         ].map((feature, index) => (
-                                            <li key={index} className="flex items-center text-sm text-gray-600">
+                                            <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                                                 <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                                                 {feature}
                                             </li>
@@ -190,11 +194,13 @@ export default function UnauthorizedPage() {
                                     </div>
                                 </div>
                                 <Button className="w-full bg-gold-gradient text-lg py-3">
-                                    Sign Up as Service Provider
+                                    <Link href={"/sign-up?role=serviceProvider"}>
+                                        Coming Soon
+                                    </Link>
                                     <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </CardContent>
-                        </Card>
+                        </Card> */}
                     </div>
                 </div>
 
@@ -336,13 +342,14 @@ export default function UnauthorizedPage() {
                 {/* Already Have Account */}
                 <div className="text-center mt-12">
                     <p className="text-gray-600 dark:text-gray-400 mb-4">Already have a provider account?</p>
-                    <Link href="/">
+                    <Link href="/cms">
                         <Button variant="outline" size="lg" className="dark:hover:text-primary">
                             Sign In to CMS
                         </Button>
                     </Link>
                 </div>
             </div>
+            <Footer />
         </div>
     )
 }

@@ -9,7 +9,8 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id") as string;
     const page = parseInt(searchParams.get("page")!);
-    const cacheKey = `auvero-rooms-${page}`;
+    const userId = searchParams.get("userId")!;
+    const cacheKey = `aurevo-rooms-${page}-${userId}`;
 
     const { isRateLimitReached, remaining } = await rateLimit(req, 1, 1);
 
@@ -19,7 +20,10 @@ export async function DELETE(req: NextRequest) {
 
         await prisma.room.delete({
             where: {
-                id
+                id_userId: {
+                    id,
+                    userId
+                }
             }
         });
 

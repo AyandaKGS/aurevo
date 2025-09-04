@@ -15,6 +15,7 @@ import z from "zod";
 import { OAuthStrategy } from "@clerk/types";
 import { toast } from "sonner"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import Footer from "@/components/Footer"
 
 const signUpSchema = z.object({
     firstName: z.string().min(1, "Please enter a first name"),
@@ -36,7 +37,7 @@ export function SignUpComp() {
     const searchParams = useSearchParams();
     const { isLoaded, signUp } = useSignUp();
     const { signIn, setActive } = useSignIn();
-    const [userRole, setUserRole] = useState<"guest" | "host">("guest");
+    const [userRole, setUserRole] = useState<"guest" | "host" | "experienceProvider" | "serviceProvider">("guest");
     const [loading, setLoading] = useState(true);
     const [from, setFrom] = useState("");
     const router = useRouter();
@@ -140,7 +141,9 @@ export function SignUpComp() {
 
     useEffect(() => {
         const from = searchParams.get("from");
+        const role = searchParams.get("role") as "guest" | "host" | "experienceProvider" | "serviceProvider";
         if (from) setFrom(from);
+        if (role) setUserRole(role);
         setLoading(false);
     }, [searchParams]);
 
@@ -376,6 +379,7 @@ export function SignUpComp() {
                     </div>
                 </CardContent>
             </Card>
+            <Footer />
         </div>
     )
 }

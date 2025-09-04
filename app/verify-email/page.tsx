@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
+import Footer from "@/components/Footer"
 
 const OTPFormSchema = z.object({
     code: z.string().min(6, "Your one-time password must be 6 characters"),
@@ -46,6 +47,7 @@ export default function VerifyEmailPage() {
                         </div>
                     </div>
                 </main>
+                <Footer/>
             </div>
         </Suspense>
     )
@@ -55,6 +57,7 @@ function FormComp() {
     const { isLoaded, signUp, setActive } = useSignUp();
     const { signIn } = useSignIn();
     const searchParams = useSearchParams();
+
     const isSignUp = searchParams.get("isSignUp");
 
     const router = useRouter();
@@ -78,7 +81,8 @@ function FormComp() {
                 })
 
                 if (completeSignUp.status === "complete") {
-                    await setActive({ session: completeSignUp.createdSessionId })
+                    await setActive({ session: completeSignUp.createdSessionId });
+                    router.push("/");
                 } else {
                     toast.error("Verification failed", {
                         description: "Please try again."
@@ -92,12 +96,12 @@ function FormComp() {
                 });
                 if (signInAttempt?.status === "complete") {
                     await setActive({ session: signInAttempt.createdSessionId });
+                    router.push("/");
                 } else {
                     toast.error("Unable to complete verification. Please try again.")
                     return console.error("Error signing in", signInAttempt);
                 }
             }
-            router.push("/")
         } catch (err: any) {
             console.error("Verification error:", err)
             toast.error(err.errors?.[0]?.message || "Invalid verification code")

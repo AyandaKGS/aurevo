@@ -1,6 +1,7 @@
 "use client"
 
 import BookingDialog from "@/components/BookingDialogue"
+import Footer from "@/components/Footer"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -457,7 +458,7 @@ export default function HomePage() {
       </section>
 
       {/* Experiences Section */}
-      <section id="amenities" className="py-20 bg-background">
+      <section id="experiences" className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">World-Class Experiences</h2>
@@ -547,7 +548,7 @@ export default function HomePage() {
       </section>
 
       {/* Services Section */}
-      <section id="rooms" className="py-20 bg-foreground">
+      <section id="services" className="py-20 bg-foreground">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-neutral-300 dark:text-[#4A3322] mb-4">Exceptional Services</h2>
@@ -752,7 +753,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
+      <Footer />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 generator client {
     provider = "prisma-client-js"
+    output   = "../generated"
 }
 
 datasource db {
@@ -22,8 +23,13 @@ enum Availability {
 
 enum BookingStatus {
     Pending
-    Paid
+    Confirmed
     Cancelled
+}
+
+type AvailabilityStatus {
+    availability String
+    dates        String[]
 }
 
 model booking {
@@ -51,21 +57,25 @@ model booking {
 }
 
 model experience {
-    id            String       @id @default(auto()) @map("_id") @db.ObjectId
-    name          String
-    featured      Boolean?
-    location      String
-    price         Int
-    originalPrice Int?
-    maxPax        Int
-    description   String
-    images        String[]
-    amenities     String[]
-    features      String[]
-    status        Status
-    availability  Availability
-    popular       Boolean?
-    address       String?
+    id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+    userId             String?
+    name               String
+    featured           Boolean?
+    location           String
+    price              Int
+    originalPrice      Int?
+    maxPax             Int
+    description        String
+    images             String[]
+    amenities          String[]
+    features           String[]
+    status             Status
+    availability       Availability
+    popular            Boolean?
+    address            String?
+    availabilityStatus AvailabilityStatus[]
+    cancellationPolicy String[]
+    user               user?                @relation(fields: [userId], references: [userId])
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -76,21 +86,25 @@ model experience {
 }
 
 model service {
-    id            String       @id @default(auto()) @map("_id") @db.ObjectId
-    name          String
-    featured      Boolean?
-    location      String
-    price         Int
-    originalPrice Int?
-    maxPax        Int
-    description   String
-    images        String[]
-    amenities     String[]
-    features      String[]
-    status        Status
-    availability  Availability
-    popular       Boolean?
-    address       String?
+    id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+    userId             String?
+    name               String
+    featured           Boolean?
+    location           String
+    price              Int
+    originalPrice      Int?
+    maxPax             Int
+    description        String
+    images             String[]
+    amenities          String[]
+    features           String[]
+    status             Status
+    availability       Availability
+    popular            Boolean?
+    address            String?
+    availabilityStatus AvailabilityStatus[]
+    cancellationPolicy String[]
+    user               user?                @relation(fields: [userId], references: [userId])
 
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
@@ -111,7 +125,8 @@ model availability {
 }
 
 model room {
-    id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+    id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+    userId             String?
     ngoziId            String?
     name               String
     category           String
@@ -134,21 +149,25 @@ model room {
     popular            Boolean?
     newlyRenovated     Boolean?
     address            String?
+    availabilityStatus AvailabilityStatus[]
     cancellationPolicy String[]
+    user               user?                @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    bookings  booking[]
-    review    review[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    bookings booking[]
+    review   review[]
 
     @@unique([ngoziId, name])
+    @@unique([id, userId])
     @@map("rooms")
 }
 
 model user {
-    id               String    @id @default(auto()) @map("_id") @db.ObjectId
-    userId           String    @unique
-    email            String    @unique
+    id               String       @id @default(auto()) @map("_id") @db.ObjectId
+    userId           String       @unique
+    email            String       @unique
     firstName        String
     lastName         String
     imageUrl         String
@@ -156,6 +175,9 @@ model user {
     receiveMarketing Boolean?
     review           review[]
     booking          booking[]
+    room             room[]
+    experience       experience[]
+    service          service[]
 
     @@map("users")
 }

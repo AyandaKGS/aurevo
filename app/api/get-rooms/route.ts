@@ -17,14 +17,14 @@ export async function GET(req: NextRequest) {
     if (isRateLimitReached) return new NextResponse("Too many requests.", { status: 429 });
 
     try {
-        const cachedData = await redisClient.get(cacheKey);
-        if (cachedData) return new NextResponse(cachedData, {
-            status: 200, headers: {
-                "X-RateLimit-Limit": "1",
-                "X-RateLimit-Remaining": remaining.toString(),
-                "X-RateLimit-Reset": new Date(Date.now() + 1000).toISOString(),
-            }
-        });
+        // const cachedData = await redisClient.get(cacheKey);
+        // if (cachedData) return new NextResponse(cachedData, {
+        //     status: 200, headers: {
+        //         "X-RateLimit-Limit": "1",
+        //         "X-RateLimit-Remaining": remaining.toString(),
+        //         "X-RateLimit-Reset": new Date(Date.now() + 1000).toISOString(),
+        //     }
+        // });
 
         let rooms;
         if (featured) {

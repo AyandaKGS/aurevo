@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Status {
+  active
+  archived
+  draft
+}
+
+enum Availability {
+  available
+  limited
+  exclusive
+  booked
+}
+
+enum BookingStatus {
+  Pending
+  Confirmed
+  Cancelled
+}
+
+type AvailabilityStatus {
+  availability String
+  dates        String[]
+}
+
+model booking {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  roomId        String?       @db.ObjectId
+  experienceId  String?       @db.ObjectId
+  serviceId     String?       @db.ObjectId
+  userId        String?
+  status        BookingStatus
+  checkedStatus Boolean?
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int
+  name          String
+  email         String
+  phone         String?
+  notes         String?
+  room          room?         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  experience    experience?   @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  service       service?      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  user          user?         @relation(fields: [userId], references: [userId])
+  review        review[]
+
+  @@map("bookings")
+}
+
+model experience {
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String?
+  name               String
+  featured           Boolean?
+  location           String
+  price              Int
+  originalPrice      Int?
+  maxPax             Int
+  description        String
+  images             String[]
+  amenities          String[]
+  features           String[]
+  status             Status
+  availability       Availability
+  popular            Boolean?
+  address            String?
+  availabilityStatus AvailabilityStatus
+  cancellationPolicy String[]
+  user               user?              @relation(fields: [userId], references: [userId])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  booking[]
+  review    review[]
+
+  @@map("experiences")
+}
+
+model service {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String?
+  name               String
+  featured           Boolean?
+  location           String
+  price              Int
+  originalPrice      Int?
+  maxPax             Int
+  description        String
+  images             String[]
+  amenities          String[]
+  features           String[]
+  status             Status
+  availability       Availability
+  popular            Boolean?
+  address            String?
+  availabilityStatus AvailabilityStatus[]
+  cancellationPolicy String[]
+  user               user?                @relation(fields: [userId], references: [userId])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  booking[]
+  review    review[]
+
+  @@map("services")
+}
+
+model availability {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  guests      Int       @default(40)
+  rooms       Int       @default(20)
+  maxCheckIn  DateTime? @default(now())
+  maxCheckOut DateTime?
+
+  @@map("availability")
+}
+
+model room {
+  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String?
+  ngoziId            String?
+  name               String
+  category           String
+  featured           Boolean?
+  location           String?
+  country            String?
+  price              Int
+  originalPrice      Int?
+  size               Int?
+  maxGuests          Int
+  bedType            String
+  view               String
+  description        String
+  images             String[]
+  amenities          String[]
+  features           String[]
+  services           String[]
+  status             Status
+  availability       Availability
+  popular            Boolean?
+  newlyRenovated     Boolean?
+  address            String?
+  availabilityStatus AvailabilityStatus[]
+  cancellationPolicy String[]
+  user               user?                @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings booking[]
+  review   review[]
+
+  @@unique([ngoziId, name])
+  @@unique([id, userId])
+  @@map("rooms")
+}
+
+model user {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String       @unique
+  email            String       @unique
+  firstName        String
+  lastName         String
+  imageUrl         String
+  role             String
+  receiveMarketing Boolean?
+  review           review[]
+  booking          booking[]
+  room             room[]
+  experience       experience[]
+  service          service[]
+
+  @@map("users")
+}
+
+model review {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String?
+  roomId       String?     @db.ObjectId
+  experienceId String?     @db.ObjectId
+  serviceId    String?     @db.ObjectId
+  bookingId    String      @db.ObjectId
+  review       String
+  rating       Int
+  user         user?       @relation(fields: [userId], references: [userId])
+  room         room?       @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  experience   experience? @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  service      service?    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  booking      booking     @relation(fields: [bookingId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([bookingId])
+  @@map("reviews")
+}

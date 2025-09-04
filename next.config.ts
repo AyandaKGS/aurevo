@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  allowedDevOrigins: ["e97d8225fdd9.ngrok-free.app"],
   typescript: {
     ignoreBuildErrors: true
   }

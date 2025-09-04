@@ -38,6 +38,7 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Input } from "./ui/input"
+import Footer from "./Footer"
 
 interface EnhancedSearchProps {
     searchQuery: string
@@ -470,7 +471,7 @@ export default function RoomsComp() {
                 <div className="mb-4">
                     <div className="text-sm font-medium mb-2">Key Features:</div>
                     <div className="grid grid-cols-2 gap-1">
-                        {room.features.slice(0, 4).map((feature: any[], idx: number) => (
+                        {room.features.slice(0, 4).map((feature: string, idx: number) => (
                             <div key={idx} className="flex items-center text-sm text-gray-600">
                                 <ChevronRight className="h-3 w-3 mr-1" />
                                 {feature}
@@ -511,8 +512,8 @@ export default function RoomsComp() {
                         className="w-full h-full object-cover"
                     />
                     <div className="absolute top-2 left-2 flex gap-1">
-                        {room.isPopular && <Badge className="bg-red-500 text-xs">Popular</Badge>}
-                        {room.isNewlyRenovated && <Badge className="bg-green-500 text-xs">New</Badge>}
+                        {room.popular && <Badge className="bg-red-500 text-xs">Popular</Badge>}
+                        {room.newlyRenovated && <Badge className="bg-green-500 text-xs">New</Badge>}
                     </div>
                 </div>
                 <div className="flex-1 p-6">
@@ -538,13 +539,13 @@ export default function RoomsComp() {
                                     {[...Array(5)].map((_, i) => (
                                         <Star
                                             key={i}
-                                            className={`h-4 w-4 ${i < Math.floor(room.rating) ? "text-yellow-400 fill-current" : "text-gray-300"
+                                            className={`h-4 w-4 ${i < Math.floor(avgRating(room)) ? "text-yellow-400 fill-current" : "text-gray-300"
                                                 }`}
                                         />
                                     ))}
                                 </div>
                                 <span className="text-sm text-gray-600">
-                                    {room.rating} ({room.reviewCount} reviews)
+                                    {avgRating(room).toFixed(1)} ({room.review.length} reviews)
                                 </span>
                             </div>
                         </div>
@@ -1075,6 +1076,7 @@ export default function RoomsComp() {
                 duration={2000}
                 loop={false}
             />
+            <Footer />
         </div>
     )
 };
