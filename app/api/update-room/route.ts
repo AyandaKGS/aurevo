@@ -17,44 +17,51 @@ export async function PUT(req: NextRequest) {
 
     try {
 
-        console.log("Data", data);
-
         if (data.roomIds) {
             const { roomIds, userId, pricePerNight, ...rest } = data;
-
+            
             for (const id of roomIds) {
-                if (pricePerNight) {
-                    await prisma.room.update({
-                        where: {
-                            id_userId: {
-                                id,
-                                userId
-                            },
+                // 1. Fetch the existing room
+                const room = await prisma.room.findUnique({
+                    where: {
+                        id_userId: {
+                            id,
+                            userId,
                         },
-                        data: {
-                            price: pricePerNight,
-                            availabilityStatus: {
-                                push: rest,
-                            },
-                        },
-                    });
-                } else {
-                    await prisma.room.update({
-                        where: {
-                            id_userId: {
-                                id,
-                                userId
-                            },
-                        },
-                        data: {
-                            availabilityStatus: {
-                                push: rest,
-                            },
-                        },
-                    });
-                }
-            }
+                    },
+                    select: {
+                        availabilityStatus: true,
+                    },
+                });
 
+                let updatedStatus = room?.availabilityStatus ?? [];
+
+                // 2. Remove overlapping dates from existing entries
+                updatedStatus = updatedStatus.map((entry: { availability: string; dates: string[] }) => ({
+                    ...entry,
+                    dates: entry.dates.filter((d) => !rest.dates.includes(d)),
+                }));
+
+                // 3. Drop empty date groups
+                updatedStatus = updatedStatus.filter((entry) => entry.dates.length > 0);
+
+                // 4. Add the new entry
+                updatedStatus.push(rest);
+
+                // 5. Save back to DB
+                await prisma.room.update({
+                    where: {
+                        id_userId: {
+                            id,
+                            userId,
+                        },
+                    },
+                    data: {
+                        price: pricePerNight ?? undefined,
+                        availabilityStatus: updatedStatus,
+                    },
+                });
+            }
 
             return new NextResponse("Successfully updated rooms", { status: 200 });
         };

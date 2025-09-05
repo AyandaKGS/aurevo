@@ -26,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { room } from "@prisma/client"
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query"
 import axios from "axios"
-import { formatDate } from "date-fns"
+import { format, formatDate } from "date-fns"
 import {
     AlertTriangle,
     Bed,
@@ -207,17 +207,11 @@ export default function CMSDashboard() {
         }
 
         return days
-    }
-
-    const formatDateKey = (date: Date) => {
-        return date.toISOString().split("T")[0]
-    }
-
+    };
+    
     const handleDateClick = (date: Date) => {
-        const dateKey = formatDateKey(date)
+        const dateKey = format(date, "yyyy-MM-dd");
         const newSelected = pickedDates;
-
-        console.error("Date", dateKey);
 
         if (newSelected.includes(dateKey)) {
             availabilityCalenderForm.setValue("dates", newSelected.filter((date) => date !== dateKey));
@@ -409,7 +403,6 @@ export default function CMSDashboard() {
 
     const submitAvailabilityCal = useMutation({
         mutationFn: async (data: AvailabilityCalenderData) => {
-            console.error("Data", data);
             if (!data.pricePerNight || parseInt(data.pricePerNight) === 0) delete data.pricePerNight;
             const { data: returnData } = await axios.put("/api/update-room", {
                 data: {
@@ -2350,7 +2343,7 @@ export default function CMSDashboard() {
                                                         const today = new Date();
                                                         today.setHours(0, 0, 0, 0);
 
-                                                        const dateKey = formatDateKey(date);
+                                                        const dateKey = format(date, "yyyy-MM-dd");
 
                                                         const selectedRoom = rooms.find((room) => room.id === selectedRoomIds[0]);
 

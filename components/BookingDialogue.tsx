@@ -19,7 +19,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { booking } from "@prisma/client"
 import { useMutation } from "@tanstack/react-query"
 import axios from "axios"
-import { addDays, formatDate, isBefore, isWithinInterval, subDays } from "date-fns"
+import { addDays, format, formatDate, isBefore, isWithinInterval, parseISO, subDays } from "date-fns"
 import { AlertTriangle, CalendarDays, CheckCircle2, ChevronDownIcon, Loader, Mail, Phone, Users } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -131,45 +131,39 @@ function getMinAvailableDate(bookings: booking[] = []): string {
     }
 
     return availableDate.toISOString().split("T")[0]
+};
+
+function normalizeDate(date: Date): Date {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0) // ✅ normalize to local midnight
+    return d
 }
 
-function getBlockedDates(bookings: booking[] = [], availabilityStatus: AvailabilityStatus[]) {
-    const blockedDates: Date[] = []
+function parseDateOnly(dateStr: string): Date {
+    // parse "YYYY-MM-DD" safely as local date
+    const [year, month, day] = dateStr.split("-").map(Number)
+    return normalizeDate(new Date(year, month - 1, day))
+}
 
-    // Expand bookings into individual days
-    bookings.forEach((booking) => {
-        const start = new Date(booking.checkIn)
-        const end = new Date(booking.checkOut)
+function getBlockedDates(
+    availabilityStatus: AvailabilityStatus[] = []
+): Date[] {
+    const blockedDates: Date[] = [];
 
-        let currentDate = new Date(start)
-        while (currentDate <= end) {
-            blockedDates.push(new Date(currentDate))
-            currentDate = addDays(currentDate, 1)
-        }
-    })
-
-    // Add unavailable/maintenance days
+    console.error("Availability", availabilityStatus);
+    // Add unavailable/maintenance/booked days
     availabilityStatus.forEach(({ dates, availability }) => {
-        if (["unavailable", "maintenance", "booked"].includes(availability)) {
+        if (["unavailable", "booked"].includes(availability)) {
             dates.forEach((dateStr) => {
-                blockedDates.push(new Date(dateStr))
+                console.error("Date", dateStr);
+                blockedDates.push(parseDateOnly(dateStr))
             })
         }
-    });
+    })
 
-    console.error("Availability", blockedDates);
-
+    console.error("Blocked dates:", blockedDates.map(d => d.toDateString()))
     return blockedDates
 }
-
-function isDateBooked(date: Date, bookings: booking[] = []): boolean {
-    return bookings.some((booking) => {
-        const start = new Date(booking.checkIn)
-        const end = new Date(booking.checkOut)
-        return isWithinInterval(date, { start, end })
-    })
-}
-
 
 export default function BookingDialog({
     room = {
@@ -189,14 +183,12 @@ export default function BookingDialog({
     children,
 }: BookingDialogProps) {
     const { userId } = useAuth();
-    const [open, setOpen] = useState(false)
-    const [checkInOpen, setCheckInOpen] = useState(false);
-    const [checkOutOpen, setCheckOutOpen] = useState(false);
+    const [open, setOpen] = useState(false);
     const router = useRouter();
 
     const blockedDates = useMemo(
-        () => getBlockedDates(room.bookings, room.availabilityStatus ?? []),
-        [room.bookings, room.availabilityStatus]
+        () => getBlockedDates(room.availabilityStatus ?? []),
+        [room.availabilityStatus]
     )
 
     const bookingForm = useForm<BookingFormData>({
@@ -392,46 +384,51 @@ export default function BookingDialog({
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel htmlFor="check-in">Check-in</FormLabel>
-                                            <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
-                                                <PopoverTrigger asChild>
+                                            <Dialog>
+                                                <DialogTrigger asChild>
                                                     <FormControl>
                                                         <Button
                                                             variant="outline"
                                                             id="date"
-                                                            className={cn("w-full justify-between font-normal", !field.value && "text-muted-foreground")
-                                                            }
+                                                            className={cn(
+                                                                "w-full justify-between font-normal",
+                                                                !field.value && "text-muted-foreground"
+                                                            )}
                                                         >
-                                                            {field.value ? formatDate(field.value, "dd/MM/yyyy") : "Select date"}
-                                                            <ChevronDownIcon />
+                                                            {field.value ? format(field.value, "dd/MM/yyyy") : "Select date"}
+                                                            <ChevronDownIcon className="ml-2 h-4 w-4" />
                                                         </Button>
                                                     </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                                                    <Calendar
-                                                        mode="single"
-                                                        selected={field.value}
-                                                        captionLayout="dropdown"
-                                                        onSelect={field.onChange}
-                                                        className="z-50"
-                                                        // disabled={(date) =>
-                                                        //     date < minDate ||
-                                                        //     blockedDates.some((d) => d.toDateString() === date.toDateString()) ||
-                                                        //     isBefore(date, subDays(new Date(), 1)) ||
-                                                        //     isBefore(date, addDays(checkOut, 1))}
-                                                        modifiers={{
-                                                            booked: blockedDates,
-                                                        }}
-                                                        modifiersStyles={{
-                                                            booked: {
-                                                                backgroundColor: "#fee2e2",
-                                                                color: "#dc2626",
-                                                                textDecoration: "line-through",
-                                                            },
-                                                        }}
-                                                        autoFocus
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                                </DialogTrigger>
+
+                                                <DialogContent className="p-0 w-auto">
+                                                    <div className="p-4">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={field.value}
+                                                            onSelect={field.onChange}
+                                                            captionLayout="dropdown"
+                                                            disabled={[
+                                                                { before: minDate },
+                                                                { before: subDays(new Date(), 1) },
+                                                                ...(checkIn ? [{ before: addDays(checkIn, 1) }] : []),
+                                                                { after: subDays(checkOut, 1) },
+                                                                ...blockedDates,
+                                                            ]}
+                                                            modifiers={{
+                                                                booked: blockedDates,
+                                                            }}
+                                                            modifiersStyles={{
+                                                                booked: {
+                                                                    backgroundColor: "#fee2e2",
+                                                                    color: "#dc2626",
+                                                                    textDecoration: "line-through",
+                                                                },
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -442,45 +439,49 @@ export default function BookingDialog({
                                     render={({ field }) => (
                                         <FormItem className="space-y-1.5">
                                             <FormLabel htmlFor="check-out">Check-out</FormLabel>
-                                            <Popover open={checkOutOpen} onOpenChange={setCheckOutOpen}>
-                                                <PopoverTrigger asChild>
+                                            <Dialog>
+                                                <DialogTrigger asChild>
                                                     <FormControl>
                                                         <Button
                                                             variant="outline"
                                                             id="date"
-                                                            className={cn("w-full justify-between font-normal", !field.value && "text-muted-foreground")
-                                                            }
+                                                            className={cn(
+                                                                "w-full justify-between font-normal",
+                                                                !field.value && "text-muted-foreground"
+                                                            )}
                                                         >
-                                                            {field.value ? formatDate(field.value, "dd/MM/yyyy") : "Select date"}
+                                                            {field.value ? format(field.value, "dd/MM/yyyy") : "Select date"}
                                                             <ChevronDownIcon />
                                                         </Button>
                                                     </FormControl>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                                                    <Calendar
-                                                        mode="single"
-                                                        selected={field.value}
-                                                        captionLayout="dropdown"
-                                                        onSelect={field.onChange}
-                                                        disabled={(date) =>
-                                                            date < minDate ||
-                                                            isBefore(date, addDays(checkIn, 1))
-                                                            ||
-                                                            blockedDates.some((d) => d.toDateString() === date.toDateString())
-                                                        }
-                                                        modifiers={{
-                                                            booked: blockedDates,
-                                                        }}
-                                                        modifiersStyles={{
-                                                            booked: {
-                                                                backgroundColor: "#fee2e2",
-                                                                color: "#dc2626",
-                                                                textDecoration: "line-through",
-                                                            },
-                                                        }}
-                                                    />
-                                                </PopoverContent>
-                                            </Popover>
+                                                </DialogTrigger>
+                                                <DialogContent className="w-fit p-0">
+                                                    <div className="p-4">
+                                                        <Calendar
+                                                            mode="single"
+                                                            selected={field.value}
+                                                            captionLayout="dropdown"
+                                                            onSelect={field.onChange}
+                                                            disabled={(date) =>
+                                                                date < minDate ||
+                                                                isBefore(date, addDays(checkIn, 1))
+                                                                ||
+                                                                blockedDates.some((d) => d.toDateString() === date.toDateString())
+                                                            }
+                                                            modifiers={{
+                                                                booked: blockedDates,
+                                                            }}
+                                                            modifiersStyles={{
+                                                                booked: {
+                                                                    backgroundColor: "#fee2e2",
+                                                                    color: "#dc2626",
+                                                                    textDecoration: "line-through",
+                                                                },
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </DialogContent>
+                                            </Dialog>
                                             <FormMessage />
                                         </FormItem>
                                     )}

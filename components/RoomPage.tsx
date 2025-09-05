@@ -45,8 +45,13 @@ interface EnhancedSearchProps {
     setSearchQuery: (query: string) => void
     rooms: RoomWithReviews[]
     onRoomSelect: (room: RoomWithReviews) => void
-}
+};
 
+const avgRating = (item: RoomWithReviews) => {
+    const reviews = item.review || [];
+    if (reviews.length === 0) return 0;
+    return reviews.reduce((acc: any, review: review) => acc + review.rating, 0) / reviews.length;
+};
 
 const EnhancedSearch = ({ searchQuery, setSearchQuery, rooms, onRoomSelect }: EnhancedSearchProps) => {
     const [isOpen, setIsOpen] = useState(false)
@@ -167,7 +172,7 @@ const EnhancedSearch = ({ searchQuery, setSearchQuery, rooms, onRoomSelect }: En
                                             <span>•</span>
                                             <span className="flex items-center">
                                                 <Star className="h-3 w-3 text-yellow-400 fill-current mr-1" />
-                                                {room.rating}
+                                                {avgRating(room).toFixed(1)}
                                             </span>
                                         </div>
                                         <div className="text-xs text-gray-400 truncate">{room.amenities.slice(0, 3).join(" • ")}</div>
@@ -339,12 +344,6 @@ export default function RoomsComp() {
 
     const calculateMinimumRooms = (totalGuests: number, roomCapacity: number) => {
         return Math.ceil(totalGuests / roomCapacity)
-    };
-
-    const avgRating = (item: RoomWithReviews) => {
-        const reviews = item.review || [];
-        if (reviews.length === 0) return 0;
-        return reviews.reduce((acc: any, review: review) => acc + review.rating, 0) / reviews.length;
     };
 
     const categories = [
@@ -1049,16 +1048,15 @@ export default function RoomsComp() {
                             </div>
 
                             <div className="flex gap-4">
-                                <Button
-                                    className="flex-1"
-                                    onClick={() => {
-                                        handleBooking(selectedRoom.id)
-                                        setSelectedRoom(null)
-                                    }}
-                                    disabled={selectedRoom.availability === "booked"}
+                                <BookingDialog
+                                    room={selectedRoom}
+                                    featured={false}
+                                    page={page}
                                 >
-                                    Book This Room
-                                </Button>
+                                    <Button className="flex-1" disabled={selectedRoom.availability === "booked"}>
+                                        {selectedRoom.availability === "booked" ? "Booked" : "Book This Room"}
+                                    </Button>
+                                </BookingDialog>
                                 <Button variant="outline" onClick={() => setSelectedRoom(null)}>
                                     Close
                                 </Button>
