@@ -43,6 +43,7 @@ model booking {
     checkIn       DateTime
     checkOut      DateTime
     guests        Int
+    price         Int?
     name          String
     email         String
     phone         String?
@@ -173,6 +174,7 @@ model user {
     imageUrl         String
     role             String
     receiveMarketing Boolean?
+    stripeAccountId  String?
     review           review[]
     booking          booking[]
     room             room[]

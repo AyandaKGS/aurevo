@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { redisClient } from "@/lib/redis";
 import { rateLimit } from "@/lib/utils/rate-limit";
-import { addDays } from "date-fns";
+import { addDays, addYears, eachDayOfInterval, format } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -18,8 +18,33 @@ export async function PUT(req: NextRequest) {
     try {
 
         if (data.roomIds) {
-            const { roomIds, userId, pricePerNight, ...rest } = data;
-            
+            const { roomIds, userId, pricePerNight, startDate, endDate, days, ...rest } = data;
+
+            // If there's a start and end date, expand it into all days in between
+            let dates: string[] = rest.dates ?? [];
+            if (startDate && endDate) {
+                const allDates = eachDayOfInterval({
+                    start: new Date(startDate),
+                    end: new Date(endDate),
+                }).map((d) => format(d, "yyyy-MM-dd")); // format as YYYY-MM-DD
+
+                dates = allDates;
+            } else if (days && Array.isArray(days) && days.length > 0) {
+                // Expand recurring weekdays for 1 year from today
+                const today = new Date();
+                const oneYearLater = addYears(today, 1);
+
+                const allDates = eachDayOfInterval({
+                    start: today,
+                    end: oneYearLater,
+                }).filter((d) => {
+                    const dayName = format(d, "EEE"); // Sun, Mon, Tue...
+                    return days.includes(dayName);
+                }).map((d) => format(d, "yyyy-MM-dd"));
+
+                dates = allDates;
+            }
+
             for (const id of roomIds) {
                 // 1. Fetch the existing room
                 const room = await prisma.room.findUnique({
@@ -37,19 +62,23 @@ export async function PUT(req: NextRequest) {
                 let updatedStatus = room?.availabilityStatus ?? [];
 
                 // 2. Remove overlapping dates from existing entries
-                updatedStatus = updatedStatus.map((entry: { availability: string; dates: string[] }) => ({
-                    ...entry,
-                    dates: entry.dates.filter((d) => !rest.dates.includes(d)),
-                }));
+                updatedStatus = updatedStatus.map(
+                    (entry: { availability: string; dates: string[] }) => ({
+                        ...entry,
+                        dates: entry.dates.filter((d) => !dates.includes(d)),
+                    })
+                );
 
                 // 3. Drop empty date groups
                 updatedStatus = updatedStatus.filter((entry) => entry.dates.length > 0);
 
                 // 4. Add the new entry
-                updatedStatus.push(rest);
-
+                updatedStatus.push({
+                    ...rest,
+                    dates,
+                });
                 // 5. Save back to DB
-                await prisma.room.update({
+                if (pricePerNight) await prisma.room.update({
                     where: {
                         id_userId: {
                             id,
@@ -57,7 +86,18 @@ export async function PUT(req: NextRequest) {
                         },
                     },
                     data: {
-                        price: pricePerNight ?? undefined,
+                        price: pricePerNight,
+                        availabilityStatus: updatedStatus,
+                    },
+                });
+                else await prisma.room.update({
+                    where: {
+                        id_userId: {
+                            id,
+                            userId,
+                        },
+                    },
+                    data: {
                         availabilityStatus: updatedStatus,
                     },
                 });

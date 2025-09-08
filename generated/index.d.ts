@@ -1700,10 +1700,12 @@ export namespace Prisma {
 
   export type BookingAvgAggregateOutputType = {
     guests: number | null
+    price: number | null
   }
 
   export type BookingSumAggregateOutputType = {
     guests: number | null
+    price: number | null
   }
 
   export type BookingMinAggregateOutputType = {
@@ -1717,6 +1719,7 @@ export namespace Prisma {
     checkIn: Date | null
     checkOut: Date | null
     guests: number | null
+    price: number | null
     name: string | null
     email: string | null
     phone: string | null
@@ -1734,6 +1737,7 @@ export namespace Prisma {
     checkIn: Date | null
     checkOut: Date | null
     guests: number | null
+    price: number | null
     name: string | null
     email: string | null
     phone: string | null
@@ -1751,6 +1755,7 @@ export namespace Prisma {
     checkIn: number
     checkOut: number
     guests: number
+    price: number
     name: number
     email: number
     phone: number
@@ -1761,10 +1766,12 @@ export namespace Prisma {
 
   export type BookingAvgAggregateInputType = {
     guests?: true
+    price?: true
   }
 
   export type BookingSumAggregateInputType = {
     guests?: true
+    price?: true
   }
 
   export type BookingMinAggregateInputType = {
@@ -1778,6 +1785,7 @@ export namespace Prisma {
     checkIn?: true
     checkOut?: true
     guests?: true
+    price?: true
     name?: true
     email?: true
     phone?: true
@@ -1795,6 +1803,7 @@ export namespace Prisma {
     checkIn?: true
     checkOut?: true
     guests?: true
+    price?: true
     name?: true
     email?: true
     phone?: true
@@ -1812,6 +1821,7 @@ export namespace Prisma {
     checkIn?: true
     checkOut?: true
     guests?: true
+    price?: true
     name?: true
     email?: true
     phone?: true
@@ -1916,6 +1926,7 @@ export namespace Prisma {
     checkIn: Date
     checkOut: Date
     guests: number
+    price: number | null
     name: string
     email: string
     phone: string | null
@@ -1952,6 +1963,7 @@ export namespace Prisma {
     checkIn?: boolean
     checkOut?: boolean
     guests?: boolean
+    price?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
@@ -1977,13 +1989,14 @@ export namespace Prisma {
     checkIn?: boolean
     checkOut?: boolean
     guests?: boolean
+    price?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
     notes?: boolean
   }
 
-  export type bookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "roomId" | "experienceId" | "serviceId" | "userId" | "status" | "checkedStatus" | "checkIn" | "checkOut" | "guests" | "name" | "email" | "phone" | "notes", ExtArgs["result"]["booking"]>
+  export type bookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "roomId" | "experienceId" | "serviceId" | "userId" | "status" | "checkedStatus" | "checkIn" | "checkOut" | "guests" | "price" | "name" | "email" | "phone" | "notes", ExtArgs["result"]["booking"]>
   export type bookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     room?: boolean | booking$roomArgs<ExtArgs>
     experience?: boolean | booking$experienceArgs<ExtArgs>
@@ -2013,6 +2026,7 @@ export namespace Prisma {
       checkIn: Date
       checkOut: Date
       guests: number
+      price: number | null
       name: string
       email: string
       phone: string | null
@@ -2424,6 +2438,7 @@ export namespace Prisma {
     readonly checkIn: FieldRef<"booking", 'DateTime'>
     readonly checkOut: FieldRef<"booking", 'DateTime'>
     readonly guests: FieldRef<"booking", 'Int'>
+    readonly price: FieldRef<"booking", 'Int'>
     readonly name: FieldRef<"booking", 'String'>
     readonly email: FieldRef<"booking", 'String'>
     readonly phone: FieldRef<"booking", 'String'>
@@ -3286,7 +3301,7 @@ export namespace Prisma {
       updatedAt: Date
     }, ExtArgs["result"]["experience"]>
     composites: {
-      availabilityStatus: Prisma.$AvailabilityStatusPayload
+      availabilityStatus: Prisma.$AvailabilityStatusPayload[]
     }
   }
 
@@ -7710,6 +7725,7 @@ export namespace Prisma {
     imageUrl: string | null
     role: string | null
     receiveMarketing: boolean | null
+    stripeAccountId: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -7721,6 +7737,7 @@ export namespace Prisma {
     imageUrl: string | null
     role: string | null
     receiveMarketing: boolean | null
+    stripeAccountId: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -7732,6 +7749,7 @@ export namespace Prisma {
     imageUrl: number
     role: number
     receiveMarketing: number
+    stripeAccountId: number
     _all: number
   }
 
@@ -7745,6 +7763,7 @@ export namespace Prisma {
     imageUrl?: true
     role?: true
     receiveMarketing?: true
+    stripeAccountId?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -7756,6 +7775,7 @@ export namespace Prisma {
     imageUrl?: true
     role?: true
     receiveMarketing?: true
+    stripeAccountId?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -7767,6 +7787,7 @@ export namespace Prisma {
     imageUrl?: true
     role?: true
     receiveMarketing?: true
+    stripeAccountId?: true
     _all?: true
   }
 
@@ -7851,6 +7872,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing: boolean | null
+    stripeAccountId: string | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -7879,6 +7901,7 @@ export namespace Prisma {
     imageUrl?: boolean
     role?: boolean
     receiveMarketing?: boolean
+    stripeAccountId?: boolean
     review?: boolean | user$reviewArgs<ExtArgs>
     booking?: boolean | user$bookingArgs<ExtArgs>
     room?: boolean | user$roomArgs<ExtArgs>
@@ -7898,9 +7921,10 @@ export namespace Prisma {
     imageUrl?: boolean
     role?: boolean
     receiveMarketing?: boolean
+    stripeAccountId?: boolean
   }
 
-  export type userOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "email" | "firstName" | "lastName" | "imageUrl" | "role" | "receiveMarketing", ExtArgs["result"]["user"]>
+  export type userOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "email" | "firstName" | "lastName" | "imageUrl" | "role" | "receiveMarketing" | "stripeAccountId", ExtArgs["result"]["user"]>
   export type userInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     review?: boolean | user$reviewArgs<ExtArgs>
     booking?: boolean | user$bookingArgs<ExtArgs>
@@ -7928,6 +7952,7 @@ export namespace Prisma {
       imageUrl: string
       role: string
       receiveMarketing: boolean | null
+      stripeAccountId: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -8333,6 +8358,7 @@ export namespace Prisma {
     readonly imageUrl: FieldRef<"user", 'String'>
     readonly role: FieldRef<"user", 'String'>
     readonly receiveMarketing: FieldRef<"user", 'Boolean'>
+    readonly stripeAccountId: FieldRef<"user", 'String'>
   }
     
 
@@ -10005,6 +10031,7 @@ export namespace Prisma {
     checkIn: 'checkIn',
     checkOut: 'checkOut',
     guests: 'guests',
+    price: 'price',
     name: 'name',
     email: 'email',
     phone: 'phone',
@@ -10116,7 +10143,8 @@ export namespace Prisma {
     lastName: 'lastName',
     imageUrl: 'imageUrl',
     role: 'role',
-    receiveMarketing: 'receiveMarketing'
+    receiveMarketing: 'receiveMarketing',
+    stripeAccountId: 'stripeAccountId'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -10280,6 +10308,7 @@ export namespace Prisma {
     checkIn?: DateTimeFilter<"booking"> | Date | string
     checkOut?: DateTimeFilter<"booking"> | Date | string
     guests?: IntFilter<"booking"> | number
+    price?: IntNullableFilter<"booking"> | number | null
     name?: StringFilter<"booking"> | string
     email?: StringFilter<"booking"> | string
     phone?: StringNullableFilter<"booking"> | string | null
@@ -10302,6 +10331,7 @@ export namespace Prisma {
     checkIn?: SortOrder
     checkOut?: SortOrder
     guests?: SortOrder
+    price?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -10327,6 +10357,7 @@ export namespace Prisma {
     checkIn?: DateTimeFilter<"booking"> | Date | string
     checkOut?: DateTimeFilter<"booking"> | Date | string
     guests?: IntFilter<"booking"> | number
+    price?: IntNullableFilter<"booking"> | number | null
     name?: StringFilter<"booking"> | string
     email?: StringFilter<"booking"> | string
     phone?: StringNullableFilter<"booking"> | string | null
@@ -10349,6 +10380,7 @@ export namespace Prisma {
     checkIn?: SortOrder
     checkOut?: SortOrder
     guests?: SortOrder
+    price?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -10374,6 +10406,7 @@ export namespace Prisma {
     checkIn?: DateTimeWithAggregatesFilter<"booking"> | Date | string
     checkOut?: DateTimeWithAggregatesFilter<"booking"> | Date | string
     guests?: IntWithAggregatesFilter<"booking"> | number
+    price?: IntNullableWithAggregatesFilter<"booking"> | number | null
     name?: StringWithAggregatesFilter<"booking"> | string
     email?: StringWithAggregatesFilter<"booking"> | string
     phone?: StringNullableWithAggregatesFilter<"booking"> | string | null
@@ -10400,7 +10433,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFilter<"experience"> | $Enums.Availability
     popular?: BoolNullableFilter<"experience"> | boolean | null
     address?: StringNullableFilter<"experience"> | string | null
-    availabilityStatus?: XOR<AvailabilityStatusCompositeFilter, AvailabilityStatusObjectEqualityInput>
+    availabilityStatus?: AvailabilityStatusCompositeListFilter | AvailabilityStatusObjectEqualityInput[]
     cancellationPolicy?: StringNullableListFilter<"experience">
     createdAt?: DateTimeFilter<"experience"> | Date | string
     updatedAt?: DateTimeFilter<"experience"> | Date | string
@@ -10426,7 +10459,7 @@ export namespace Prisma {
     availability?: SortOrder
     popular?: SortOrder
     address?: SortOrder
-    availabilityStatus?: AvailabilityStatusOrderByInput
+    availabilityStatus?: AvailabilityStatusOrderByCompositeAggregateInput
     cancellationPolicy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10455,7 +10488,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFilter<"experience"> | $Enums.Availability
     popular?: BoolNullableFilter<"experience"> | boolean | null
     address?: StringNullableFilter<"experience"> | string | null
-    availabilityStatus?: XOR<AvailabilityStatusCompositeFilter, AvailabilityStatusObjectEqualityInput>
+    availabilityStatus?: AvailabilityStatusCompositeListFilter | AvailabilityStatusObjectEqualityInput[]
     cancellationPolicy?: StringNullableListFilter<"experience">
     createdAt?: DateTimeFilter<"experience"> | Date | string
     updatedAt?: DateTimeFilter<"experience"> | Date | string
@@ -10896,6 +10929,7 @@ export namespace Prisma {
     imageUrl?: StringFilter<"user"> | string
     role?: StringFilter<"user"> | string
     receiveMarketing?: BoolNullableFilter<"user"> | boolean | null
+    stripeAccountId?: StringNullableFilter<"user"> | string | null
     review?: ReviewListRelationFilter
     booking?: BookingListRelationFilter
     room?: RoomListRelationFilter
@@ -10912,6 +10946,7 @@ export namespace Prisma {
     imageUrl?: SortOrder
     role?: SortOrder
     receiveMarketing?: SortOrder
+    stripeAccountId?: SortOrder
     review?: reviewOrderByRelationAggregateInput
     booking?: bookingOrderByRelationAggregateInput
     room?: roomOrderByRelationAggregateInput
@@ -10931,6 +10966,7 @@ export namespace Prisma {
     imageUrl?: StringFilter<"user"> | string
     role?: StringFilter<"user"> | string
     receiveMarketing?: BoolNullableFilter<"user"> | boolean | null
+    stripeAccountId?: StringNullableFilter<"user"> | string | null
     review?: ReviewListRelationFilter
     booking?: BookingListRelationFilter
     room?: RoomListRelationFilter
@@ -10947,6 +10983,7 @@ export namespace Prisma {
     imageUrl?: SortOrder
     role?: SortOrder
     receiveMarketing?: SortOrder
+    stripeAccountId?: SortOrder
     _count?: userCountOrderByAggregateInput
     _max?: userMaxOrderByAggregateInput
     _min?: userMinOrderByAggregateInput
@@ -10964,6 +11001,7 @@ export namespace Prisma {
     imageUrl?: StringWithAggregatesFilter<"user"> | string
     role?: StringWithAggregatesFilter<"user"> | string
     receiveMarketing?: BoolNullableWithAggregatesFilter<"user"> | boolean | null
+    stripeAccountId?: StringNullableWithAggregatesFilter<"user"> | string | null
   }
 
   export type reviewWhereInput = {
@@ -11062,6 +11100,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -11084,6 +11123,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -11097,6 +11137,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -11118,6 +11159,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -11136,6 +11178,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -11148,6 +11191,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -11164,6 +11208,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -11186,7 +11231,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11212,7 +11257,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11235,7 +11280,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11260,7 +11305,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11285,7 +11330,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11306,7 +11351,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11328,7 +11373,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11779,6 +11824,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewCreateNestedManyWithoutUserInput
     booking?: bookingCreateNestedManyWithoutUserInput
     room?: roomCreateNestedManyWithoutUserInput
@@ -11795,6 +11841,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewUncheckedCreateNestedManyWithoutUserInput
     booking?: bookingUncheckedCreateNestedManyWithoutUserInput
     room?: roomUncheckedCreateNestedManyWithoutUserInput
@@ -11810,6 +11857,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUpdateManyWithoutUserNestedInput
     booking?: bookingUpdateManyWithoutUserNestedInput
     room?: roomUpdateManyWithoutUserNestedInput
@@ -11825,6 +11873,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUncheckedUpdateManyWithoutUserNestedInput
     booking?: bookingUncheckedUpdateManyWithoutUserNestedInput
     room?: roomUncheckedUpdateManyWithoutUserNestedInput
@@ -11841,6 +11890,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
   }
 
   export type userUpdateManyMutationInput = {
@@ -11851,6 +11901,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type userUncheckedUpdateManyInput = {
@@ -11861,6 +11912,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type reviewCreateInput = {
@@ -12004,6 +12056,18 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
+  }
+
   export type RoomNullableScalarRelationFilter = {
     is?: roomWhereInput | null
     isNot?: roomWhereInput | null
@@ -12045,6 +12109,7 @@ export namespace Prisma {
     checkIn?: SortOrder
     checkOut?: SortOrder
     guests?: SortOrder
+    price?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -12053,6 +12118,7 @@ export namespace Prisma {
 
   export type bookingAvgOrderByAggregateInput = {
     guests?: SortOrder
+    price?: SortOrder
   }
 
   export type bookingMaxOrderByAggregateInput = {
@@ -12066,6 +12132,7 @@ export namespace Prisma {
     checkIn?: SortOrder
     checkOut?: SortOrder
     guests?: SortOrder
+    price?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -12083,6 +12150,7 @@ export namespace Prisma {
     checkIn?: SortOrder
     checkOut?: SortOrder
     guests?: SortOrder
+    price?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
@@ -12091,6 +12159,7 @@ export namespace Prisma {
 
   export type bookingSumOrderByAggregateInput = {
     guests?: SortOrder
+    price?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -12179,7 +12248,7 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
     notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -12187,7 +12256,12 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
     isSet?: boolean
   }
 
@@ -12213,10 +12287,13 @@ export namespace Prisma {
     not?: NestedEnumAvailabilityFilter<$PrismaModel> | $Enums.Availability
   }
 
-  export type AvailabilityStatusCompositeFilter = {
-    equals?: AvailabilityStatusObjectEqualityInput
-    is?: AvailabilityStatusWhereInput
-    isNot?: AvailabilityStatusWhereInput
+  export type AvailabilityStatusCompositeListFilter = {
+    equals?: AvailabilityStatusObjectEqualityInput[]
+    every?: AvailabilityStatusWhereInput
+    some?: AvailabilityStatusWhereInput
+    none?: AvailabilityStatusWhereInput
+    isEmpty?: boolean
+    isSet?: boolean
   }
 
   export type AvailabilityStatusObjectEqualityInput = {
@@ -12230,9 +12307,8 @@ export namespace Prisma {
     none?: bookingWhereInput
   }
 
-  export type AvailabilityStatusOrderByInput = {
-    availability?: SortOrder
-    dates?: SortOrder
+  export type AvailabilityStatusOrderByCompositeAggregateInput = {
+    _count?: SortOrder
   }
 
   export type bookingOrderByRelationAggregateInput = {
@@ -12309,23 +12385,6 @@ export namespace Prisma {
     maxPax?: SortOrder
   }
 
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-    isSet?: boolean
-  }
-
   export type EnumStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.Status | EnumStatusFieldRefInput<$PrismaModel>
     in?: $Enums.Status[] | ListEnumStatusFieldRefInput<$PrismaModel>
@@ -12344,19 +12403,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAvailabilityFilter<$PrismaModel>
     _max?: NestedEnumAvailabilityFilter<$PrismaModel>
-  }
-
-  export type AvailabilityStatusCompositeListFilter = {
-    equals?: AvailabilityStatusObjectEqualityInput[]
-    every?: AvailabilityStatusWhereInput
-    some?: AvailabilityStatusWhereInput
-    none?: AvailabilityStatusWhereInput
-    isEmpty?: boolean
-    isSet?: boolean
-  }
-
-  export type AvailabilityStatusOrderByCompositeAggregateInput = {
-    _count?: SortOrder
   }
 
   export type serviceCountOrderByAggregateInput = {
@@ -12633,6 +12679,7 @@ export namespace Prisma {
     imageUrl?: SortOrder
     role?: SortOrder
     receiveMarketing?: SortOrder
+    stripeAccountId?: SortOrder
   }
 
   export type userMaxOrderByAggregateInput = {
@@ -12644,6 +12691,7 @@ export namespace Prisma {
     imageUrl?: SortOrder
     role?: SortOrder
     receiveMarketing?: SortOrder
+    stripeAccountId?: SortOrder
   }
 
   export type userMinOrderByAggregateInput = {
@@ -12655,6 +12703,7 @@ export namespace Prisma {
     imageUrl?: SortOrder
     role?: SortOrder
     receiveMarketing?: SortOrder
+    stripeAccountId?: SortOrder
   }
 
   export type BookingScalarRelationFilter = {
@@ -12765,6 +12814,15 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+    unset?: boolean
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -12854,8 +12912,8 @@ export namespace Prisma {
     set: string[]
   }
 
-  export type AvailabilityStatusCreateEnvelopeInput = {
-    set?: AvailabilityStatusCreateInput
+  export type AvailabilityStatusListCreateEnvelopeInput = {
+    set?: AvailabilityStatusCreateInput | AvailabilityStatusCreateInput[]
   }
 
   export type AvailabilityStatusCreateInput = {
@@ -12901,15 +12959,6 @@ export namespace Prisma {
     connect?: reviewWhereUniqueInput | reviewWhereUniqueInput[]
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-    unset?: boolean
-  }
-
   export type experienceUpdateimagesInput = {
     set?: string[]
     push?: string | string[]
@@ -12933,9 +12982,11 @@ export namespace Prisma {
     set?: $Enums.Availability
   }
 
-  export type AvailabilityStatusUpdateEnvelopeInput = {
-    set?: AvailabilityStatusCreateInput
-    update?: AvailabilityStatusUpdateInput
+  export type AvailabilityStatusListUpdateEnvelopeInput = {
+    set?: AvailabilityStatusCreateInput | AvailabilityStatusCreateInput[]
+    push?: AvailabilityStatusCreateInput | AvailabilityStatusCreateInput[]
+    updateMany?: AvailabilityStatusUpdateManyInput
+    deleteMany?: AvailabilityStatusDeleteManyInput
   }
 
   export type experienceUpdatecancellationPolicyInput = {
@@ -13021,10 +13072,6 @@ export namespace Prisma {
     set: string[]
   }
 
-  export type AvailabilityStatusListCreateEnvelopeInput = {
-    set?: AvailabilityStatusCreateInput | AvailabilityStatusCreateInput[]
-  }
-
   export type serviceCreatecancellationPolicyInput = {
     set: string[]
   }
@@ -13076,13 +13123,6 @@ export namespace Prisma {
   export type serviceUpdatefeaturesInput = {
     set?: string[]
     push?: string | string[]
-  }
-
-  export type AvailabilityStatusListUpdateEnvelopeInput = {
-    set?: AvailabilityStatusCreateInput | AvailabilityStatusCreateInput[]
-    push?: AvailabilityStatusCreateInput | AvailabilityStatusCreateInput[]
-    updateMany?: AvailabilityStatusUpdateManyInput
-    deleteMany?: AvailabilityStatusDeleteManyInput
   }
 
   export type serviceUpdatecancellationPolicyInput = {
@@ -13658,6 +13698,18 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    isSet?: boolean
+  }
+
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -13690,18 +13742,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
-    isSet?: boolean
-  }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
   }
 
@@ -13765,28 +13805,6 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type NestedEnumStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.Status | EnumStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.Status[] | ListEnumStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Status[] | ListEnumStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumStatusFilter<$PrismaModel> | $Enums.Status
-  }
-
-  export type NestedEnumAvailabilityFilter<$PrismaModel = never> = {
-    equals?: $Enums.Availability | EnumAvailabilityFieldRefInput<$PrismaModel>
-    in?: $Enums.Availability[] | ListEnumAvailabilityFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Availability[] | ListEnumAvailabilityFieldRefInput<$PrismaModel>
-    not?: NestedEnumAvailabilityFilter<$PrismaModel> | $Enums.Availability
-  }
-
-  export type AvailabilityStatusWhereInput = {
-    AND?: AvailabilityStatusWhereInput | AvailabilityStatusWhereInput[]
-    OR?: AvailabilityStatusWhereInput[]
-    NOT?: AvailabilityStatusWhereInput | AvailabilityStatusWhereInput[]
-    availability?: StringFilter<"AvailabilityStatus"> | string
-    dates?: StringNullableListFilter<"AvailabilityStatus">
-  }
-
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -13814,6 +13832,28 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
     isSet?: boolean
+  }
+
+  export type NestedEnumStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.Status | EnumStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.Status[] | ListEnumStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Status[] | ListEnumStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumStatusFilter<$PrismaModel> | $Enums.Status
+  }
+
+  export type NestedEnumAvailabilityFilter<$PrismaModel = never> = {
+    equals?: $Enums.Availability | EnumAvailabilityFieldRefInput<$PrismaModel>
+    in?: $Enums.Availability[] | ListEnumAvailabilityFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Availability[] | ListEnumAvailabilityFieldRefInput<$PrismaModel>
+    not?: NestedEnumAvailabilityFilter<$PrismaModel> | $Enums.Availability
+  }
+
+  export type AvailabilityStatusWhereInput = {
+    AND?: AvailabilityStatusWhereInput | AvailabilityStatusWhereInput[]
+    OR?: AvailabilityStatusWhereInput[]
+    NOT?: AvailabilityStatusWhereInput | AvailabilityStatusWhereInput[]
+    availability?: StringFilter<"AvailabilityStatus"> | string
+    dates?: StringNullableListFilter<"AvailabilityStatus">
   }
 
   export type NestedEnumStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -13948,7 +13988,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13973,7 +14013,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14047,6 +14087,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewCreateNestedManyWithoutUserInput
     room?: roomCreateNestedManyWithoutUserInput
     experience?: experienceCreateNestedManyWithoutUserInput
@@ -14062,6 +14103,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewUncheckedCreateNestedManyWithoutUserInput
     room?: roomUncheckedCreateNestedManyWithoutUserInput
     experience?: experienceUncheckedCreateNestedManyWithoutUserInput
@@ -14203,7 +14245,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14227,7 +14269,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14310,6 +14352,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUpdateManyWithoutUserNestedInput
     room?: roomUpdateManyWithoutUserNestedInput
     experience?: experienceUpdateManyWithoutUserNestedInput
@@ -14324,6 +14367,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUncheckedUpdateManyWithoutUserNestedInput
     room?: roomUncheckedUpdateManyWithoutUserNestedInput
     experience?: experienceUncheckedUpdateManyWithoutUserNestedInput
@@ -14374,6 +14418,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewCreateNestedManyWithoutUserInput
     booking?: bookingCreateNestedManyWithoutUserInput
     room?: roomCreateNestedManyWithoutUserInput
@@ -14389,6 +14434,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewUncheckedCreateNestedManyWithoutUserInput
     booking?: bookingUncheckedCreateNestedManyWithoutUserInput
     room?: roomUncheckedCreateNestedManyWithoutUserInput
@@ -14407,6 +14453,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -14427,6 +14474,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -14474,9 +14522,13 @@ export namespace Prisma {
     data: reviewCreateManyExperienceInput | reviewCreateManyExperienceInput[]
   }
 
-  export type AvailabilityStatusUpdateInput = {
-    availability?: StringFieldUpdateOperationsInput | string
-    dates?: AvailabilityStatusUpdatedatesInput | string[]
+  export type AvailabilityStatusUpdateManyInput = {
+    where: AvailabilityStatusWhereInput
+    data: AvailabilityStatusUpdateInput
+  }
+
+  export type AvailabilityStatusDeleteManyInput = {
+    where: AvailabilityStatusWhereInput
   }
 
   export type userUpsertWithoutExperienceInput = {
@@ -14498,6 +14550,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUpdateManyWithoutUserNestedInput
     booking?: bookingUpdateManyWithoutUserNestedInput
     room?: roomUpdateManyWithoutUserNestedInput
@@ -14512,6 +14565,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUncheckedUpdateManyWithoutUserNestedInput
     booking?: bookingUncheckedUpdateManyWithoutUserNestedInput
     room?: roomUncheckedUpdateManyWithoutUserNestedInput
@@ -14548,6 +14602,7 @@ export namespace Prisma {
     checkIn?: DateTimeFilter<"booking"> | Date | string
     checkOut?: DateTimeFilter<"booking"> | Date | string
     guests?: IntFilter<"booking"> | number
+    price?: IntNullableFilter<"booking"> | number | null
     name?: StringFilter<"booking"> | string
     email?: StringFilter<"booking"> | string
     phone?: StringNullableFilter<"booking"> | string | null
@@ -14579,6 +14634,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewCreateNestedManyWithoutUserInput
     booking?: bookingCreateNestedManyWithoutUserInput
     room?: roomCreateNestedManyWithoutUserInput
@@ -14594,6 +14650,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewUncheckedCreateNestedManyWithoutUserInput
     booking?: bookingUncheckedCreateNestedManyWithoutUserInput
     room?: roomUncheckedCreateNestedManyWithoutUserInput
@@ -14612,6 +14669,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -14632,6 +14690,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -14679,15 +14738,6 @@ export namespace Prisma {
     data: reviewCreateManyServiceInput | reviewCreateManyServiceInput[]
   }
 
-  export type AvailabilityStatusUpdateManyInput = {
-    where: AvailabilityStatusWhereInput
-    data: AvailabilityStatusUpdateInput
-  }
-
-  export type AvailabilityStatusDeleteManyInput = {
-    where: AvailabilityStatusWhereInput
-  }
-
   export type userUpsertWithoutServiceInput = {
     update: XOR<userUpdateWithoutServiceInput, userUncheckedUpdateWithoutServiceInput>
     create: XOR<userCreateWithoutServiceInput, userUncheckedCreateWithoutServiceInput>
@@ -14707,6 +14757,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUpdateManyWithoutUserNestedInput
     booking?: bookingUpdateManyWithoutUserNestedInput
     room?: roomUpdateManyWithoutUserNestedInput
@@ -14721,6 +14772,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUncheckedUpdateManyWithoutUserNestedInput
     booking?: bookingUncheckedUpdateManyWithoutUserNestedInput
     room?: roomUncheckedUpdateManyWithoutUserNestedInput
@@ -14768,6 +14820,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewCreateNestedManyWithoutUserInput
     booking?: bookingCreateNestedManyWithoutUserInput
     experience?: experienceCreateNestedManyWithoutUserInput
@@ -14783,6 +14836,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     review?: reviewUncheckedCreateNestedManyWithoutUserInput
     booking?: bookingUncheckedCreateNestedManyWithoutUserInput
     experience?: experienceUncheckedCreateNestedManyWithoutUserInput
@@ -14801,6 +14855,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -14821,6 +14876,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -14887,6 +14943,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUpdateManyWithoutUserNestedInput
     booking?: bookingUpdateManyWithoutUserNestedInput
     experience?: experienceUpdateManyWithoutUserNestedInput
@@ -14901,6 +14958,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     review?: reviewUncheckedUpdateManyWithoutUserNestedInput
     booking?: bookingUncheckedUpdateManyWithoutUserNestedInput
     experience?: experienceUncheckedUpdateManyWithoutUserNestedInput
@@ -14977,6 +15035,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -14997,6 +15056,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -15102,7 +15162,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15126,7 +15186,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15372,6 +15432,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     booking?: bookingCreateNestedManyWithoutUserInput
     room?: roomCreateNestedManyWithoutUserInput
     experience?: experienceCreateNestedManyWithoutUserInput
@@ -15387,6 +15448,7 @@ export namespace Prisma {
     imageUrl: string
     role: string
     receiveMarketing?: boolean | null
+    stripeAccountId?: string | null
     booking?: bookingUncheckedCreateNestedManyWithoutUserInput
     room?: roomUncheckedCreateNestedManyWithoutUserInput
     experience?: experienceUncheckedCreateNestedManyWithoutUserInput
@@ -15483,7 +15545,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15508,7 +15570,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15580,6 +15642,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -15601,6 +15664,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -15631,6 +15695,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     booking?: bookingUpdateManyWithoutUserNestedInput
     room?: roomUpdateManyWithoutUserNestedInput
     experience?: experienceUpdateManyWithoutUserNestedInput
@@ -15645,6 +15710,7 @@ export namespace Prisma {
     imageUrl?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     receiveMarketing?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    stripeAccountId?: NullableStringFieldUpdateOperationsInput | string | null
     booking?: bookingUncheckedUpdateManyWithoutUserNestedInput
     room?: roomUncheckedUpdateManyWithoutUserNestedInput
     experience?: experienceUncheckedUpdateManyWithoutUserNestedInput
@@ -15750,7 +15816,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15774,7 +15840,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15855,6 +15921,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15875,6 +15942,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15932,6 +16000,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -15949,9 +16018,9 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
-  export type AvailabilityStatusUpdatedatesInput = {
-    set?: string[]
-    push?: string | string[]
+  export type AvailabilityStatusUpdateInput = {
+    availability?: StringFieldUpdateOperationsInput | string
+    dates?: AvailabilityStatusUpdatedatesInput | string[]
   }
 
   export type bookingUpdateWithoutExperienceInput = {
@@ -15960,6 +16029,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15979,6 +16049,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15995,6 +16066,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16041,6 +16113,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -16064,6 +16137,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16083,6 +16157,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16099,6 +16174,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16145,6 +16221,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -16168,6 +16245,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16187,6 +16265,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16203,6 +16282,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16260,6 +16340,7 @@ export namespace Prisma {
     checkIn: Date | string
     checkOut: Date | string
     guests: number
+    price?: number | null
     name: string
     email: string
     phone?: string | null
@@ -16312,7 +16393,7 @@ export namespace Prisma {
     availability: $Enums.Availability
     popular?: boolean | null
     address?: string | null
-    availabilityStatus: XOR<AvailabilityStatusCreateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -16376,6 +16457,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16395,6 +16477,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16411,6 +16494,7 @@ export namespace Prisma {
     checkIn?: DateTimeFieldUpdateOperationsInput | Date | string
     checkOut?: DateTimeFieldUpdateOperationsInput | Date | string
     guests?: IntFieldUpdateOperationsInput | number
+    price?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16523,7 +16607,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16546,7 +16630,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16569,7 +16653,7 @@ export namespace Prisma {
     availability?: EnumAvailabilityFieldUpdateOperationsInput | $Enums.Availability
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
-    availabilityStatus?: XOR<AvailabilityStatusUpdateEnvelopeInput, AvailabilityStatusCreateInput>
+    availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
     cancellationPolicy?: experienceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16640,6 +16724,11 @@ export namespace Prisma {
     cancellationPolicy?: serviceUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AvailabilityStatusUpdatedatesInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
 

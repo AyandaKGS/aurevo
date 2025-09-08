@@ -6,6 +6,7 @@ import Footer from "@/components/Footer"
 import LoadingIcon from "@/components/LoadinIcon"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
@@ -21,30 +22,37 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { booking } from "@/generated"
 import { BookingWithRoom, RoomWithReviews } from "@/lib/types"
+import { cn } from "@/lib/utils"
 import { useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { room } from "@prisma/client"
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query"
 import axios from "axios"
-import { format, formatDate } from "date-fns"
+import { addDays, format, formatDate } from "date-fns"
 import {
     AlertTriangle,
     Bed,
     Calendar,
+    CalendarIcon,
     CheckCircle,
     ChevronLeft,
     ChevronRight,
     ChevronsUpDown,
     Copy,
+    CreditCard,
     DollarSign,
     Edit,
     Eye,
     ImageIcon,
     Loader,
     Lock,
+    LogIn,
+    LogOut,
     Plus,
+    RefreshCw,
     Save,
     Search,
+    Shield,
     Star,
     Trash2,
     Wrench,
@@ -121,7 +129,7 @@ const commonFeatures = [
 
 const editRoomSchema = z.object({
     id: z.string().optional(),
-    name: z.string({ error: "Please enter a room name." }).min(1),
+    name: z.string({ error: "Please enter a unit name." }).min(1),
     category: z.string({ error: "Please select a category." }).min(1),
     country: z.string({ error: "Please select a country" }).min(1),
     address: z.string({ error: "Please select an address" }).min(1),
@@ -154,10 +162,25 @@ const availabilityCalenderSchema = z.object({
     dates: z.array(z.string(), { error: "Please select at least 1 date." }).refine((value) => value.some((date) => date)),
     availability: z.string({ error: "Please select an availability status." }),
     pricePerNight: z.string().optional(),
+});
+
+const bulkOperationsSchema = z.object({
+    startDate: z.date({ error: "Please select a start date." }),
+    endDate: z.date({ error: "Please select an end date." }),
+    availability: z.string({ error: "Please select an availability." }).min(1),
+    pricePerNight: z.string().optional(),
+});
+
+const recurringPatternsSchema = z.object({
+    days: z.array(z.string()).refine((value) => value.some((days) => days)),
+    availability: z.string({ error: "Please select an availability." }).min(1),
+    pricePerNight: z.string().optional(),
 })
 
 type EditRoomData = z.infer<typeof editRoomSchema>;
 type AvailabilityCalenderData = z.infer<typeof availabilityCalenderSchema>;
+type BulkOperationsData = z.infer<typeof bulkOperationsSchema>;
+type RecurringPatternsData = z.infer<typeof recurringPatternsSchema>;
 
 export default function CMSDashboard() {
     const { user, isLoaded } = useUser();
@@ -172,6 +195,7 @@ export default function CMSDashboard() {
     const [page, setPage] = useState(1);
     const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
     const [selectedTab, setSelectedTab] = useState("calendar");
+    const [form, setForm] = useState("applyDates");
     const itemsPerPage = 5;
     const loader = useRef<HTMLDivElement | null>(null)
     const loader2 = useRef<HTMLDivElement | null>(null)
@@ -184,8 +208,11 @@ export default function CMSDashboard() {
         unavailable: { label: "Unavailable", color: "bg-red-500", icon: XCircle },
         maintenance: { label: "Maintenance", color: "bg-yellow-500", icon: Wrench },
         limited: { label: "Limited", color: "bg-orange-500", icon: AlertTriangle },
-        booked: { label: "Booked", color: "bg-blue-500", icon: Lock }, // ✅ new entry
-    }
+        booked: { label: "Booked", color: "bg-blue-600", icon: Lock },
+        checkIn: { label: "Check-In Only", color: "bg-indigo-500", icon: LogIn },
+        checkOut: { label: "Check-Out Only", color: "bg-purple-500", icon: LogOut },
+    };
+
     const getDaysInMonth = (date: Date) => {
         const year = date.getFullYear()
         const month = date.getMonth()
@@ -208,7 +235,7 @@ export default function CMSDashboard() {
 
         return days
     };
-    
+
     const handleDateClick = (date: Date) => {
         const dateKey = format(date, "yyyy-MM-dd");
         const newSelected = pickedDates;
@@ -251,9 +278,7 @@ export default function CMSDashboard() {
         Confirmed: "bg-green-500/70 text-white dark:bg-green-700/60 dark:text-green-300",
         Pending: "bg-yellow-500/70 text-black dark:bg-yellow-700/60 dark:text-yellow-300",
         Cancelled: "bg-red-500/70 text-white dark:bg-red-700/60 dark:text-red-300",
-    }
-
-
+    };
 
     // const revenueData = [
     //     { month: "Jan", revenue: 45000, bookings: 120, occupancy: 78 },
@@ -368,7 +393,24 @@ export default function CMSDashboard() {
     const availabilityCalenderForm = useForm<AvailabilityCalenderData>({
         resolver: zodResolver(availabilityCalenderSchema),
         defaultValues: {
-            dates: []
+            dates: [],
+            availability: "available",
+        }
+    });
+
+    const bulkOperationsForm = useForm<BulkOperationsData>({
+        resolver: zodResolver(bulkOperationsSchema),
+        defaultValues: {
+            startDate: undefined,
+            endDate: undefined,
+            availability: "available",
+        }
+    });
+
+    const recurringPatternsForm = useForm<RecurringPatternsData>({
+        resolver: zodResolver(recurringPatternsSchema),
+        defaultValues: {
+            availability: "available"
         }
     });
 
@@ -402,7 +444,7 @@ export default function CMSDashboard() {
     });
 
     const submitAvailabilityCal = useMutation({
-        mutationFn: async (data: AvailabilityCalenderData) => {
+        mutationFn: async (data: AvailabilityCalenderData | BulkOperationsData | RecurringPatternsData) => {
             if (!data.pricePerNight || parseInt(data.pricePerNight) === 0) delete data.pricePerNight;
             const { data: returnData } = await axios.put("/api/update-room", {
                 data: {
@@ -458,13 +500,13 @@ export default function CMSDashboard() {
                     setRooms([...rooms, data])
                 }
                 editRoomForm.reset();
-                toast.success("Successfully saved room.");
+                toast.success("Successfully saved unit.");
                 setIsEditing(false)
                 setSelectedRoom(null)
             },
             onError: (error) => {
-                console.error("Error saving room", error);
-                toast.error("Error saving room. Please try again.")
+                console.error("Error saving unit", error);
+                toast.error("Error saving unit. Please try again.")
             },
         });
     }
@@ -473,11 +515,11 @@ export default function CMSDashboard() {
         deleteRoomMtn.mutate(roomId, {
             onSuccess: () => {
                 setRooms(rooms.filter((room) => room.id !== roomId));
-                toast.success("Successfully deleted room.");
+                toast.success("Successfully deleted unit.");
             },
             onError: (error) => {
-                console.error("Error deleting room", error.message);
-                toast.error("Error deleting room. Please try again");
+                console.error("Error deleting unit.", error.message);
+                toast.error("Error deleting unit. Please try again");
             },
         });
     }
@@ -505,7 +547,7 @@ export default function CMSDashboard() {
         editRoomForm.setValue("images", formImages.filter((_, i) => i !== index))
     };
 
-    const onAvailabilityCalSubmit = async (data: AvailabilityCalenderData) => {
+    const onAvailabilityCalSubmit = async (data: AvailabilityCalenderData | BulkOperationsData | RecurringPatternsData) => {
         if (selectedRoomIds.length === 0) {
             toast.error("Error", {
                 description: "Please select at least 1 unit to update"
@@ -516,17 +558,17 @@ export default function CMSDashboard() {
         submitAvailabilityCal.mutate(data, {
             onSuccess: () => {
                 toast.success("Success", {
-                    description: `Successfully updated unit${selectedRoomIds.length > 1 ? "s " : ""}availability. It may take up to 24hrs for your changes to take effect.`
+                    description: `Successfully updated unit ${selectedRoomIds.length > 1 ? "s " : ""} availability. It may take up to 24hrs for your changes to take effect.`
                 });
             },
             onError: () => {
                 toast.error("Error", {
-                    description: "Error updating room availability. Please try again."
+                    description: "Error updating unit availability. Please try again."
                 });
             },
         });
 
-    }
+    };
 
     function formatCategoryLabel(slug: string) {
         return slug
@@ -635,10 +677,10 @@ export default function CMSDashboard() {
                         <div className="flex flex-col md:flex-row gap-y-2 items-start md:items-center justify-between mb-6">
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                    {selectedRoom ? "Edit Room" : "Add New Room"}
+                                    {selectedRoom ? "Edit Unit" : "Add New Unit"}
                                 </h1>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    {selectedRoom ? "Update room details and settings" : "Create a new room listing"}
+                                    {selectedRoom ? "Update unit details and settings" : "Create a new unit listing"}
                                 </p>
                             </div>
                             <div className="flex space-x-3">
@@ -654,12 +696,12 @@ export default function CMSDashboard() {
                                         saveRoomMtn.isPending ? (
                                             <>
                                                 <Loader className="animate-spin mr-2" />
-                                                Saving Room...
+                                                Saving Unit...
                                             </>
                                         ) : (
                                             <>
                                                 <Save className="h-4 w-4 mr-2" />
-                                                Save Room
+                                                Save Unit
                                             </>
                                         )
                                     }
@@ -673,7 +715,7 @@ export default function CMSDashboard() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Basic Information</CardTitle>
-                                        <CardDescription>Essential room details and pricing</CardDescription>
+                                        <CardDescription>Essential unit details and pricing</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -682,7 +724,7 @@ export default function CMSDashboard() {
                                                 name="name"
                                                 render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel htmlFor="name">Room Name</FormLabel>
+                                                        <FormLabel htmlFor="name">Unit Name</FormLabel>
                                                         <Input
                                                             id="name"
                                                             placeholder="e.g., Ocean View Deluxe Suite"
@@ -880,7 +922,7 @@ export default function CMSDashboard() {
                                                         <Textarea
                                                             id="description"
                                                             {...field}
-                                                            placeholder="Describe the room's features, ambiance, and unique selling points..."
+                                                            placeholder="Describe the unit's features, ambiance, and unique selling points..."
                                                             rows={4}
                                                         />
                                                         <FormMessage />
@@ -893,8 +935,8 @@ export default function CMSDashboard() {
                                 {/* Images */}
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Room Images</CardTitle>
-                                        <CardDescription>Upload high-quality photos of the room</CardDescription>
+                                        <CardTitle>Unit Images</CardTitle>
+                                        <CardDescription>Upload high-quality photos of the unit</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-4">
@@ -916,7 +958,7 @@ export default function CMSDashboard() {
                                                         <div key={index} className="relative group">
                                                             <Image
                                                                 src={image || "/placeholder.svg"}
-                                                                alt={`Room image ${index + 1}`}
+                                                                alt={`Unit image ${index + 1}`}
                                                                 width={500}
                                                                 height={500}
                                                                 className="w-full h-32 object-cover rounded-lg"
@@ -940,7 +982,7 @@ export default function CMSDashboard() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Amenities</CardTitle>
-                                        <CardDescription>Select all amenities available in this room</CardDescription>
+                                        <CardDescription>Select all amenities available in this unit</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <FormField
@@ -995,7 +1037,7 @@ export default function CMSDashboard() {
                                 {/* Features */}
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Room Features</CardTitle>
+                                        <CardTitle>Unit Features</CardTitle>
                                         <CardDescription>Select key features and furnishings</CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -1322,24 +1364,24 @@ export default function CMSDashboard() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Preview</CardTitle>
-                                        <CardDescription>How this room will appear to guests</CardDescription>
+                                        <CardDescription>How this unit will appear to guests</CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-3">
                                             {images[0] && (
                                                 <Image
                                                     src={images[0] || "/placeholder.svg"}
-                                                    alt="Room preview"
+                                                    alt="Unit preview"
                                                     width={500}
                                                     height={500}
                                                     className="w-full h-32 object-cover rounded-lg"
                                                 />
                                             )}
                                             <div>
-                                                <h3 className="font-semibold">{editRoomForm.watch("name") || "Room Name"}</h3>
+                                                <h3 className="font-semibold">{editRoomForm.watch("name") || "Unit Name"}</h3>
                                                 <h2 className="font-semibold text-sm">{editRoomForm.watch("address") || "Address"}</h2>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                                    {editRoomForm.watch("description") || "Room description will appear here..."}
+                                                    {editRoomForm.watch("description") || "Unit description will appear here..."}
                                                 </p>
                                             </div>
                                             <div className="flex justify-between items-center">
@@ -1381,19 +1423,19 @@ export default function CMSDashboard() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row gap-y-2 items-start md:items-center justify-between mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Room Management</h1>
-                        <p className="text-gray-600 dark:text-gray-400">Manage your property&apos;s room inventory and details</p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Unit Management</h1>
+                        <p className="text-gray-600 dark:text-gray-400">Manage your property&apos;s unit inventory and details</p>
                     </div>
                     <Button onClick={() => startEditing()}>
                         <Plus className="h-4 w-4 mr-2" />
-                        Add New Room
+                        Add New Unit
                     </Button>
                 </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <TabsList>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="rooms">All Rooms</TabsTrigger>
+                        <TabsTrigger value="units">All Units</TabsTrigger>
                         <TabsTrigger value="analytics">Analytics</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
                     </TabsList>
@@ -1405,7 +1447,7 @@ export default function CMSDashboard() {
                                 <CardContent className="p-6">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Rooms</p>
+                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Units</p>
                                             <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalRooms}</p>
                                         </div>
                                         <Bed className="h-8 w-8 text-blue-600" />
@@ -1417,7 +1459,7 @@ export default function CMSDashboard() {
                                 <CardContent className="p-6">
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Rooms</p>
+                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Units</p>
                                             <p className="text-3xl font-bold text-green-600">{stats.activeRooms}</p>
                                         </div>
                                         <CheckCircle className="h-8 w-8 text-green-600" />
@@ -1453,7 +1495,7 @@ export default function CMSDashboard() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Recent Activity</CardTitle>
-                                <CardDescription>Latest updates to your room listings</CardDescription>
+                                <CardDescription>Latest updates to your unitlistings</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
@@ -1493,13 +1535,13 @@ export default function CMSDashboard() {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="rooms" className="space-y-6">
+                    <TabsContent value="units" className="space-y-6">
                         {/* Filters and Search */}
                         <div className="flex flex-col sm:flex-row gap-4">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                 <Input
-                                    placeholder="Search rooms..."
+                                    placeholder="Search units..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="pl-10"
@@ -1539,7 +1581,7 @@ export default function CMSDashboard() {
                                         <thead className="bg-gray-50 dark:bg-gray-800">
                                             <tr>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Room
+                                                    Unit
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                     Category
@@ -1647,7 +1689,7 @@ export default function CMSDashboard() {
                                     <CardHeader>
                                         <CardTitle className="text-card-foreground">Room Performance</CardTitle>
                                         <CardDescription className="dark:text-gray-300">
-                                            Booking rates and revenue by room type
+                                            Booking rates and revenue by unit type
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="max-h-[500px] overflow-y-auto no-scrollbar">
@@ -1668,7 +1710,7 @@ export default function CMSDashboard() {
                                                         <div>
                                                             <p className="font-medium dark:text-white">{category.label}</p>
                                                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                                {categoryRooms.length} rooms
+                                                                {categoryRooms.length} units
                                                             </p>
                                                         </div>
                                                         <div className="text-right">
@@ -2164,8 +2206,8 @@ export default function CMSDashboard() {
                                 selectedTab === "calendar" ? (
                                     <Card className="mb-5">
                                         <CardHeader>
-                                            <CardTitle>Select Room</CardTitle>
-                                            <CardDescription>Choose which room you want to manage</CardDescription>
+                                            <CardTitle>Select Unit</CardTitle>
+                                            <CardDescription>Choose which unit you want to manage</CardDescription>
                                         </CardHeader>
                                         <CardContent>
                                             <Select
@@ -2174,7 +2216,7 @@ export default function CMSDashboard() {
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue
-                                                        placeholder="Select a room"
+                                                        placeholder="Select a unit"
                                                     />
                                                 </SelectTrigger>
                                                 <SelectContent className="max-h-[500px]">
@@ -2193,9 +2235,9 @@ export default function CMSDashboard() {
                                 ) : (
                                     <Card className="mb-5">
                                         <CardHeader>
-                                            <CardTitle>Select Rooms</CardTitle>
+                                            <CardTitle>Select Units</CardTitle>
                                             <CardDescription>
-                                                Choose which rooms you want to manage (select all or specific rooms)
+                                                Choose which units you want to manage (select all or specific units)
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent>
@@ -2207,10 +2249,10 @@ export default function CMSDashboard() {
                                                         className="w-fit justify-between hover:text-neutral-400"
                                                     >
                                                         {selectedRoomIds.length === 0
-                                                            ? "Select rooms"
+                                                            ? "Select units"
                                                             : selectedRoomIds.length === rooms.length
-                                                                ? "All Rooms"
-                                                                : `${selectedRoomIds.length} room(s) selected`}
+                                                                ? "All Units"
+                                                                : `${selectedRoomIds.length} unit(s) selected`}
                                                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                     </Button>
                                                 </PopoverTrigger>
@@ -2221,11 +2263,11 @@ export default function CMSDashboard() {
                                                 >
                                                     <Command >
                                                         {/* Search bar */}
-                                                        <CommandInput placeholder="Search rooms..." />
-                                                        <CommandEmpty>No rooms found.</CommandEmpty>
+                                                        <CommandInput placeholder="Search units..." />
+                                                        <CommandEmpty>No units found.</CommandEmpty>
 
                                                         <CommandGroup className="max-h-[500px] overflow-y-scroll no-scrollbar">
-                                                            {/* All Rooms */}
+                                                            {/* All Units */}
                                                             <CommandItem
                                                                 onSelect={() => {
                                                                     if (selectedRoomIds.length === rooms.length) {
@@ -2239,7 +2281,7 @@ export default function CMSDashboard() {
                                                                     className="mr-2"
                                                                     checked={selectedRoomIds.length === rooms.length}
                                                                 />
-                                                                All Rooms
+                                                                All Units
                                                             </CommandItem>
 
                                                             {/* Individual Rooms */}
@@ -2436,7 +2478,7 @@ export default function CMSDashboard() {
                                                                     <Label htmlFor="status" className="">
                                                                         Availability Status
                                                                     </Label>
-                                                                    <Select onValueChange={field.onChange} value={field.value}>
+                                                                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                                                                         <FormControl>
                                                                             <SelectTrigger>
                                                                                 <SelectValue placeholder="Select status" />
@@ -2539,121 +2581,284 @@ export default function CMSDashboard() {
                                                 <CardDescription>Apply settings to multiple dates at once</CardDescription>
                                             </CardHeader>
                                             <CardContent className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <Label htmlFor="start-date">Start Date</Label>
-                                                        <Input id="start-date" type="date" />
-                                                    </div>
-                                                    <div>
-                                                        <Label htmlFor="end-date">End Date</Label>
-                                                        <Input id="end-date" type="date" />
-                                                    </div>
-                                                </div>
+                                                <Form {...bulkOperationsForm}>
+                                                    <form
+                                                        onSubmit={bulkOperationsForm.handleSubmit(onAvailabilityCalSubmit)}
+                                                        className="space-y-3"
+                                                    >
+                                                        <div className="grid md:grid-cols-2 gap-4">
 
-                                                <div>
-                                                    <Label htmlFor="bulk-status">Status</Label>
-                                                    <Select>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select status" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {Object.entries(statusConfig).map(([key, config]) => (
-                                                                <SelectItem key={key} value={key}>
-                                                                    <div className="flex items-center">
-                                                                        <div className={`w-3 h-3 rounded-full ${config.color} mr-2`}></div>
-                                                                        {config.label}
-                                                                    </div>
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
+                                                            {/* Start Date */}
+                                                            <FormField
+                                                                control={bulkOperationsForm.control}
+                                                                name="startDate"
+                                                                render={({ field }) => (
+                                                                    <FormItem className="flex flex-col space-y-2">
+                                                                        <Label>Start Date</Label>
+                                                                        <Popover>
+                                                                            <PopoverTrigger asChild>
+                                                                                <FormControl>
+                                                                                    <Button
+                                                                                        variant="outline"
+                                                                                        className={cn("w-[240px] pl-3 text-left font-normal justify-start",
+                                                                                            !field.value && "text-muted-foreground"
+                                                                                        )}
+                                                                                    >
+                                                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                                                        {field.value ? (
+                                                                                            format(field.value, "PPP")
+                                                                                        ) : (
+                                                                                            <span>Pick a date</span>
+                                                                                        )}
+                                                                                    </Button>
+                                                                                </FormControl>
+                                                                            </PopoverTrigger>
+                                                                            <PopoverContent className="p-0" align="start">
+                                                                                <CalendarPicker
+                                                                                    mode="single"
+                                                                                    disabled={{ before: new Date() }}
+                                                                                    selected={field.value}
+                                                                                    onSelect={field.onChange}
+                                                                                    captionLayout="dropdown"
+                                                                                    autoFocus
+                                                                                />
+                                                                            </PopoverContent>
+                                                                        </Popover>
+                                                                        <FormMessage className="dark:text-red-300" />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
 
-                                                <div>
-                                                    <Label htmlFor="bulk-price-range">Price per Night ($)</Label>
-                                                    <Input id="bulk-price-range" type="number" placeholder="450" />
-                                                </div>
+                                                            {/* End Date */}
+                                                            <FormField
+                                                                control={bulkOperationsForm.control}
+                                                                name="endDate"
+                                                                render={({ field }) => (
+                                                                    <FormItem className="flex flex-col space-y-2">
+                                                                        <Label>End Date</Label>
+                                                                        <Popover>
+                                                                            <PopoverTrigger asChild>
+                                                                                <FormControl>
+                                                                                    <Button
+                                                                                        variant="outline"
+                                                                                        className={cn("w-[240px] pl-3 text-left font-normal justify-start",
+                                                                                            !field.value && "text-muted-foreground"
+                                                                                        )}
+                                                                                    >
+                                                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                                                        {field.value ? (
+                                                                                            format(field.value, "PPP")
+                                                                                        ) : (
+                                                                                            <span>Pick a date</span>
+                                                                                        )}
+                                                                                    </Button>
+                                                                                </FormControl>
+                                                                            </PopoverTrigger>
+                                                                            <PopoverContent className="p-0" align="start">
+                                                                                <CalendarPicker
+                                                                                    mode="single"
+                                                                                    disabled={[{ before: new Date() },
+                                                                                    { before: addDays(bulkOperationsForm.watch("startDate"), 1) }
+                                                                                    ]}
+                                                                                    selected={field.value}
+                                                                                    onSelect={field.onChange}
+                                                                                    captionLayout="dropdown"
+                                                                                    autoFocus
+                                                                                />
+                                                                            </PopoverContent>
+                                                                        </Popover>
+                                                                        <FormMessage className="dark:text-red-300" />
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        </div>
+                                                        <FormField
+                                                            control={bulkOperationsForm.control}
+                                                            name="availability"
+                                                            render={({ field }) => (
+                                                                <FormItem className="space-y-1.5">
+                                                                    <Label htmlFor="bulk-status">Status</Label>
+                                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                        <FormControl>
+                                                                            <SelectTrigger>
+                                                                                <SelectValue placeholder="Select status" />
+                                                                            </SelectTrigger>
+                                                                        </FormControl>
+                                                                        <SelectContent>
+                                                                            {Object.entries(statusConfig).map(([key, config]) => (
+                                                                                <SelectItem key={key} value={key}>
+                                                                                    <div className="flex items-center">
+                                                                                        <div className={`w-3 h-3 rounded-full ${config.color} mr-2`}></div>
+                                                                                        {config.label}
+                                                                                    </div>
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                    <FormMessage className="dark:text-red-300" />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        {
+                                                            bulkOperationsForm.watch("availability") === "available" && (
+                                                                <FormField
+                                                                    control={bulkOperationsForm.control}
+                                                                    name="pricePerNight"
+                                                                    render={({ field }) => (
+                                                                        <FormItem>
+                                                                            <Label htmlFor="bulk-price-range">Price per Night ($)</Label>
+                                                                            <Input
+                                                                                id="bulk-price-range"
+                                                                                type="number"
+                                                                                min={0}
+                                                                                placeholder="450"
+                                                                                {...field}
+                                                                            />
+                                                                            <FormMessage className="dark:text-red-300" />
+                                                                        </FormItem>
+                                                                    )}
+                                                                />
+                                                            )
+                                                        }
+                                                        <Button
+                                                            className="w-full bg-amber-600 hover:bg-amber-700"
+                                                            disabled={submitAvailabilityCal.isPending}
+                                                            onClick={() => setForm("applyDates")}
+                                                        >
+                                                            {
+                                                                submitAvailabilityCal.isPending && form === "applyDates" ? (
+                                                                    <>
+                                                                        <Loader className="mr-2 animate-spin" />
+                                                                        Applying to Date Range...
 
-                                                <Button className="w-full bg-amber-600 hover:bg-amber-700">Apply to Date Range</Button>
+                                                                    </>
+                                                                ) : (
+                                                                    "Apply to Date Range"
+                                                                )
+                                                            }
+                                                        </Button>
+                                                    </form>
+                                                </Form>
                                             </CardContent>
                                         </Card>
 
                                         <Card>
                                             <CardHeader>
                                                 <CardTitle>Recurring Patterns</CardTitle>
-                                                <CardDescription>Set up recurring availability patterns</CardDescription>
+                                                <CardDescription>Set up recurring availability patterns (patterns apply for 1 year from today   )</CardDescription>
                                             </CardHeader>
                                             <CardContent className="space-y-4">
-                                                <div>
-                                                    <Label>Days of Week</Label>
-                                                    <div className="grid grid-cols-7 gap-2 mt-2">
-                                                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                                                            <div key={day} className="flex items-center space-x-2">
-                                                                <Checkbox id={day} />
-                                                                <Label htmlFor={day} className="text-xs">
-                                                                    {day}
-                                                                </Label>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                                <Form {...recurringPatternsForm}>
+                                                    <form
+                                                        onSubmit={recurringPatternsForm.handleSubmit(onAvailabilityCalSubmit)}
+                                                        className="space-y-3"
+                                                    >
 
-                                                <div>
-                                                    <Label htmlFor="pattern-status">Status</Label>
-                                                    <Select>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select status" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {Object.entries(statusConfig).map(([key, config]) => (
-                                                                <SelectItem key={key} value={key}>
-                                                                    <div className="flex items-center">
-                                                                        <div className={`w-3 h-3 rounded-full ${config.color} mr-2`}></div>
-                                                                        {config.label}
-                                                                    </div>
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
+                                                        <FormField
+                                                            control={recurringPatternsForm.control}
+                                                            name="days"
+                                                            render={({ field }) => (
+                                                                <div className="space-y-1.5">
+                                                                    <FormLabel>Days of Week</FormLabel>
+                                                                    <FormItem className="flex flex-row w-full justify-between">
+                                                                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => {
+                                                                            const isChecked = field.value?.includes(day);
 
-                                                <div>
-                                                    <Label htmlFor="pattern-price">Price per Night ($)</Label>
-                                                    <Input id="pattern-price" type="number" placeholder="450" />
-                                                </div>
-
-                                                <Button className="w-full bg-amber-600 hover:bg-amber-700">Apply Pattern</Button>
+                                                                            return (
+                                                                                <div key={day} className="flex items-center space-x-2">
+                                                                                    <Checkbox
+                                                                                        id={day}
+                                                                                        checked={isChecked}
+                                                                                        onCheckedChange={(checked) => {
+                                                                                            if (checked) {
+                                                                                                field.onChange([...(field.value || []), day]);
+                                                                                            } else {
+                                                                                                field.onChange(field.value?.filter((d: string) => d !== day));
+                                                                                            }
+                                                                                        }}
+                                                                                    />
+                                                                                    <FormLabel htmlFor={day} className="text-xs">
+                                                                                        {day}
+                                                                                    </FormLabel>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </FormItem>
+                                                                </div>
+                                                            )}
+                                                        />
+                                                        <FormField
+                                                            control={recurringPatternsForm.control}
+                                                            name="availability"
+                                                            render={({ field }) => (
+                                                                <FormItem className="space-y-1.5">
+                                                                    <FormLabel htmlFor="pattern-status">Status</FormLabel>
+                                                                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                                                        <FormControl>
+                                                                            <SelectTrigger>
+                                                                                <SelectValue placeholder="Select status" />
+                                                                            </SelectTrigger>
+                                                                        </FormControl>
+                                                                        <SelectContent>
+                                                                            {(["available", "checkIn", "checkOut", "maintenance"] as const).map((key) => {
+                                                                                const config = statusConfig[key];
+                                                                                return (
+                                                                                    <SelectItem key={key} value={key}>
+                                                                                        <div className="flex items-center">
+                                                                                            <div className={`w-3 h-3 rounded-full ${config.color} mr-2`} />
+                                                                                            {config.label}
+                                                                                        </div>
+                                                                                    </SelectItem>
+                                                                                );
+                                                                            })}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                    <FormMessage className="dark:text-red-300" />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        {
+                                                            recurringPatternsForm.watch("availability") === "available" && (
+                                                                <FormField
+                                                                    control={recurringPatternsForm.control}
+                                                                    name="pricePerNight"
+                                                                    render={({ field }) => (
+                                                                        <FormItem>
+                                                                            <FormLabel htmlFor="pattern-price">Price per Night ($)</FormLabel>
+                                                                            <Input
+                                                                                id="pattern-price"
+                                                                                type="number"
+                                                                                min={0}
+                                                                                placeholder="450"
+                                                                                {...field}
+                                                                            />
+                                                                            <FormMessage className="dark:text-red-300" />
+                                                                        </FormItem>
+                                                                    )}
+                                                                />
+                                                            )
+                                                        }
+                                                        <Button
+                                                            className="w-full bg-amber-600 hover:bg-amber-700"
+                                                            onClick={() => setForm("recurringPatterns")}
+                                                            disabled={submitAvailabilityCal.isPending}
+                                                        >
+                                                            {
+                                                                submitAvailabilityCal.isPending && form === "recurringPatterns" ? (
+                                                                    <>
+                                                                        <Loader className="animate-spin mr-2" />
+                                                                        Applying Pattern...
+                                                                    </>
+                                                                ) : (
+                                                                    "Apply Pattern"
+                                                                )
+                                                            }
+                                                        </Button>
+                                                    </form>
+                                                </Form>
                                             </CardContent>
                                         </Card>
                                     </div>
-
-                                    {/* Quick Actions */}
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Quick Actions</CardTitle>
-                                            <CardDescription>Common availability operations</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                <Button variant="outline" className="h-20 flex flex-col bg-transparent">
-                                                    <CheckCircle className="h-6 w-6 mb-2 text-green-600" />
-                                                    <span className="text-sm">Open All Weekends</span>
-                                                </Button>
-                                                <Button variant="outline" className="h-20 flex flex-col bg-transparent">
-                                                    <XCircle className="h-6 w-6 mb-2 text-red-600" />
-                                                    <span className="text-sm">Close All Mondays</span>
-                                                </Button>
-                                                <Button variant="outline" className="h-20 flex flex-col bg-transparent">
-                                                    <AlertTriangle className="h-6 w-6 mb-2 text-orange-600" />
-                                                    <span className="text-sm">Holiday Pricing</span>
-                                                </Button>
-                                                <Button variant="outline" className="h-20 flex flex-col bg-transparent">
-                                                    <Wrench className="h-6 w-6 mb-2 text-yellow-600" />
-                                                    <span className="text-sm">Maintenance Block</span>
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
                                 </TabsContent>
 
                                 {/* Settings Tab */}
@@ -2664,6 +2869,10 @@ export default function CMSDashboard() {
                                             <CardDescription>Configure your property details and preferences</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
+                                            <div>
+                                                <Label htmlFor="property-name">Property Name</Label>
+                                                <Input id="property-name" defaultValue="Grand Vista Resort" />
+                                            </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
                                                     <Label htmlFor="check-in">Default Check-in Time</Label>
@@ -2717,6 +2926,135 @@ export default function CMSDashboard() {
                                                 <Save className="h-4 w-4 mr-2" />
                                                 Save Rules
                                             </Button>
+                                        </CardContent>
+                                    </Card>
+
+                                    {/* Stripe Payout Settings */}
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center">
+                                                <CreditCard className="h-5 w-5 mr-2" />
+                                                Payout Settings
+                                            </CardTitle>
+                                            <CardDescription>Configure your details to receive payments from bookings</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-6">
+                                            {/* Stripe Fee Information */}
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                                <h4 className="font-semibold text-blue-900 mb-2">Stripe Transaction Fees</h4>
+                                                <div className="space-y-2 text-sm text-blue-800">
+                                                    <div className="flex justify-between">
+                                                        <span>Online card payments:</span>
+                                                        <span className="font-medium">2.9% + $0.30 per transaction</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>International cards:</span>
+                                                        <span className="font-medium">3.4% + $0.30 per transaction</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Payout schedule:</span>
+                                                        <span className="font-medium">Daily (2-day rolling basis)</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Standard payout fee:</span>
+                                                        <span className="font-medium">Free for bank transfers</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Instant payout fee:</span>
+                                                        <span className="font-medium">1.5% (min $0.50)</span>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-3 pt-3 border-t border-blue-200">
+                                                    <p className="text-xs text-blue-700">
+                                                        <strong>Example:</strong> For a $500 booking, you&apos;ll receive $485.20 after Stripe fees ($500 -
+                                                        $14.80 in fees). Instant payouts would cost an additional $7.50.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Account Details */}
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <Label htmlFor="account-holder">Account Holder Name</Label>
+                                                    <Input id="account-holder" placeholder="John Doe" className="mt-1" />
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <Label htmlFor="email">Email</Label>
+                                                        <Input id="email" placeholder="jdoe@email.com" className="mt-1" />
+                                                        <p className="text-xs text-gray-500 mt-1">Email address</p>
+                                                    </div>
+                                                    <div>
+                                                        <Label htmlFor="country">Country</Label>
+                                                        <Input id="country" placeholder="Canada" className="mt-1" />
+                                                        <p className="text-xs text-gray-500 mt-1">Your Country</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Verification Status */}
+                                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                                <div className="flex items-center mb-2">
+                                                    <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
+                                                    <h4 className="font-semibold text-yellow-900">Account Verification Required</h4>
+                                                </div>
+                                                <p className="text-sm text-yellow-800 mb-3">
+                                                    To receive payouts, you&apos;ll need to verify your identity and business information with Stripe. This
+                                                    typically takes 1-2 business days.
+                                                </p>
+                                                <div className="space-y-2 text-sm text-yellow-800">
+                                                    <div className="flex items-center">
+                                                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                                        <span>Government-issued ID verification</span>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                                        <span>Bank account verification</span>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                                        <span>Business documentation (if applicable)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex flex-col sm:flex-row gap-3">
+                                                <Button className="bg-amber-600 hover:bg-amber-700 flex-1">
+                                                    <Save className="h-4 w-4 mr-2" />
+                                                    Save Payout Details
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    className="flex-1 bg-transparent"
+                                                    onClick={async () => {
+                                                        const { data } = await axios.post("/api/create-connected-account", {
+                                                            userId: user?.id,
+                                                            role: user?.publicMetadata?.role,
+                                                        });
+                                                        const { url } = data;
+                                                        window.location.href = url; // send host to Stripe onboarding
+                                                    }}
+                                                >
+                                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                                    Verify with Stripe
+                                                </Button>
+                                            </div>
+
+                                            {/* Security Notice */}
+                                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                                <div className="flex items-start">
+                                                    <Shield className="h-5 w-5 text-gray-600 mr-2 mt-0.5" />
+                                                    <div>
+                                                        <h4 className="font-semibold text-gray-900 mb-1">Security & Privacy</h4>
+                                                        <p className="text-sm text-gray-600">
+                                                            Your banking information is encrypted and securely stored by Stripe, our payment processor. We
+                                                            never store your full account details on our servers. All transactions are PCI DSS compliant.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </TabsContent>

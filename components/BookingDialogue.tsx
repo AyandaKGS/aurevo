@@ -99,40 +99,6 @@ function isDateRangeAvailable(checkIn: string, checkOut: string, bookings: booki
     })
 };
 
-function getMinAvailableDate(bookings: booking[] = []): string {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    // If no bookings, return today
-    if (bookings.length === 0) {
-        return today.toISOString().split("T")[0]
-    }
-
-    // Find the earliest available date after today
-    const sortedBookings = bookings
-        .map((b) => ({
-            start: new Date(b.checkIn),
-            end: new Date(b.checkOut),
-        }))
-        .sort((a, b) => a.start.getTime() - b.start.getTime())
-
-    let availableDate = today
-
-    for (const booking of sortedBookings) {
-        if (availableDate < booking.start) {
-            // Found a gap before this booking
-            break
-        }
-        if (availableDate < booking.end) {
-            // Move to after this booking
-            availableDate = new Date(booking.end)
-            availableDate.setDate(availableDate.getDate() + 1)
-        }
-    }
-
-    return availableDate.toISOString().split("T")[0]
-};
-
 function normalizeDate(date: Date): Date {
     const d = new Date(date)
     d.setHours(0, 0, 0, 0) // ✅ normalize to local midnight
@@ -235,9 +201,7 @@ export default function BookingDialog({
     const isAvailable = useMemo(
         () => isDateRangeAvailable(checkIn, checkOut, room.bookings),
         [checkIn, checkOut, room.bookings],
-    )
-
-    const minDate = useMemo(() => new Date(getMinAvailableDate(room.bookings)), [room.bookings])
+    );
 
     const canSubmit =
         !createBooking.isPending &&
@@ -409,8 +373,7 @@ export default function BookingDialog({
                                                             onSelect={field.onChange}
                                                             captionLayout="dropdown"
                                                             disabled={[
-                                                                { before: minDate },
-                                                                { before: subDays(new Date(), 1) },
+                                                                { before: new Date() },
                                                                 ...(checkIn ? [{ before: addDays(checkIn, 1) }] : []),
                                                                 { after: subDays(checkOut, 1) },
                                                                 ...blockedDates,
@@ -463,7 +426,7 @@ export default function BookingDialog({
                                                             captionLayout="dropdown"
                                                             onSelect={field.onChange}
                                                             disabled={(date) =>
-                                                                date < minDate ||
+                                                                date < new Date() ||
                                                                 isBefore(date, addDays(checkIn, 1))
                                                                 ||
                                                                 blockedDates.some((d) => d.toDateString() === date.toDateString())

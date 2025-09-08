@@ -5,77 +5,78 @@ import Stripe from "stripe";
 import nodemailer from "nodemailer";
 import { formatDate } from "date-fns";
 
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!);
+
 export async function POST(req: NextRequest) {
-    const chunks = [];
+  const chunks = [];
 
-    //@ts-expect-error error
-    for await (const chunk of req.body) {
-        chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-    }
+  //@ts-expect-error error
+  for await (const chunk of req.body) {
+    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  }
 
-    const buffer = Buffer.concat(chunks);
+  const buffer = Buffer.concat(chunks);
 
-    const rawBody = buffer.toString("utf-8");
+  const rawBody = buffer.toString("utf-8");
 
-    let event;
+  let event;
 
+  try {
+    const sig = req.headers.get("stripe-signature");
+
+    event = Stripe.webhooks.constructEvent(
+      rawBody,
+      sig as string | string[],
+      env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (error: any) {
+    console.error("Error processing stripe webhook.", error);
+    return new NextResponse(`Webhook error: ${error.message}`, { status: 400 });
+  }
+
+  if (event.type === "checkout.session.completed" && event.data.object.metadata?.userId) {
     try {
-        const sig = req.headers.get("stripe-signature");
+      const userId = event.data.object.metadata?.userId;
+      const bookingId = event.data.object.metadata?.bookingId;
+      const email = event.data.object.metadata?.email;
+      
+      const booking = await prisma.booking.findFirst({
+        where: {
+          id: bookingId,
+          userId
+        },
+        include: {
+          room: true
+        },
+      });
 
-        event = Stripe.webhooks.constructEvent(
-            rawBody,
-            sig as string | string[],
-            env.STRIPE_WEBHOOK_SECRET
-        );
-    } catch (error: any) {
-        console.error("Error processing stripe webhook.", error);
-        return new NextResponse(`Webhook error: ${error.message}`, { status: 400 });
-    }
+      if (booking) {
+        await prisma.booking.update({
+          where: {
+            id: bookingId
+          },
+          data: {
+            status: "Confirmed"
+          }
+        });
 
-    if (event.type === "checkout.session.completed" && event.data.object.metadata?.userId) {
-        try {
-            const userId = event.data.object.metadata?.userId;
-            const bookingId = event.data.object.metadata?.bookingId;
-            const email = event.data.object.metadata?.email;
-            const amount = event.data.object.metadata?.amount;
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: env.EMAIL_USER,
+            pass: env.EMAIL_PASSWORD
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
 
-            const booking = await prisma.booking.findFirst({
-                where: {
-                    id: bookingId,
-                    userId
-                },
-                include: {
-                    room: true
-                },
-            });
-
-            if (booking) {
-                await prisma.booking.update({
-                    where: {
-                        id: bookingId
-                    },
-                    data: {
-                        status: "Paid"
-                    }
-                });
-
-                const transporter = nodemailer.createTransport({
-                    service: "gmail",
-                    auth: {
-                        user: env.EMAIL_USER,
-                        pass: env.EMAIL_PASSWORD
-                    },
-                    tls: {
-                        rejectUnauthorized: false,
-                    },
-                });
-
-                const mailOptions = {
-                    from: `<${env.EMAIL_USER}>`,
-                    to: `${email}`,
-                    subject: `Your Aurevo booking has been confirmed`,
-                    replyTo: `${env.EMAIL_USER}`,
-                    html: `
+        const mailOptions = {
+          from: `<${env.EMAIL_USER}>`,
+          to: `${email}`,
+          subject: `Your Aurevo booking has been confirmed`,
+          replyTo: `${env.EMAIL_USER}`,
+          html: `
   <div style="font-family: Arial, sans-serif; background-color: #f5f8fa; padding: 30px; text-align: center;">
     <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
       
@@ -134,23 +135,43 @@ export async function POST(req: NextRequest) {
     </div>
   </div>
   `
-                };
+        };
 
-                //                 <p>
-                //   <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" style="height:40px; margin-right:5px;"></a>
-                //   <a href="#"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="App Store" style="height:40px;"></a>
-                // </p>
-
-
-                await transporter.sendMail(mailOptions)
+        //                 <p>
+        //   <a href="#"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" style="height:40px; margin-right:5px;"></a>
+        //   <a href="#"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="App Store" style="height:40px;"></a>
+        // </p>
 
 
+        await transporter.sendMail(mailOptions);
 
-            }
-            return new NextResponse("Registration created", { status: 200 })
-        } catch (error) {
-            console.error(error);
-            return new NextResponse("Error registering for event.", { status: 500 });
-        }
+        const host = await prisma.user.findUnique({
+          where: {
+            userId: booking.room!.userId!
+          },
+          select: {
+            stripeAccountId: true,
+          },
+        });
+
+        if (!host) return new NextResponse("Host not found", { status: 500 });
+
+        if (!host.stripeAccountId) return new NextResponse("Host has not connected their Stripe account", { status: 500 });
+
+        const amount = (booking.price! * 100) - 1000 - ((booking.price! * 100) * 0.029);
+
+        await stripe.transfers.create({
+          amount,
+          currency: "usd",
+          destination: host.stripeAccountId, // from DB
+          description: `Payout for Aurevo booking ${booking.id}`,
+        });
+
+      }
+      return new NextResponse("Registration created", { status: 200 })
+    } catch (error) {
+      console.error(error);
+      return new NextResponse("Error registering for event.", { status: 500 });
     }
+  }
 }

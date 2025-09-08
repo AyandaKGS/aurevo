@@ -124,6 +124,7 @@ exports.Prisma.BookingScalarFieldEnum = {
   checkIn: 'checkIn',
   checkOut: 'checkOut',
   guests: 'guests',
+  price: 'price',
   name: 'name',
   email: 'email',
   phone: 'phone',
@@ -220,7 +221,8 @@ exports.Prisma.UserScalarFieldEnum = {
   lastName: 'lastName',
   imageUrl: 'imageUrl',
   role: 'role',
-  receiveMarketing: 'receiveMarketing'
+  receiveMarketing: 'receiveMarketing',
+  stripeAccountId: 'stripeAccountId'
 };
 
 exports.Prisma.ReviewScalarFieldEnum = {
