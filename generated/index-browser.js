@@ -128,7 +128,8 @@ exports.Prisma.BookingScalarFieldEnum = {
   name: 'name',
   email: 'email',
   phone: 'phone',
-  notes: 'notes'
+  notes: 'notes',
+  amount: 'amount'
 };
 
 exports.Prisma.ExperienceScalarFieldEnum = {
@@ -187,6 +188,7 @@ exports.Prisma.RoomScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   ngoziId: 'ngoziId',
+  propertyName: 'propertyName',
   name: 'name',
   category: 'category',
   featured: 'featured',
@@ -208,6 +210,11 @@ exports.Prisma.RoomScalarFieldEnum = {
   popular: 'popular',
   newlyRenovated: 'newlyRenovated',
   address: 'address',
+  checkInTime: 'checkInTime',
+  checkOutTime: 'checkOutTime',
+  minStay: 'minStay',
+  maxStay: 'maxStay',
+  availabilityRules: 'availabilityRules',
   cancellationPolicy: 'cancellationPolicy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

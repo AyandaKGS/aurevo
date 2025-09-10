@@ -51,6 +51,8 @@ export async function GET(req: NextRequest) {
                     images: true,
                     price: true,
                     maxGuests: true,
+                    availabilityStatus: true,
+                    availabilityRules: true,
                     bookings: true,
                 },
                 take: parseInt(pageSize),

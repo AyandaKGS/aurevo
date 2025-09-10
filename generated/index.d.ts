@@ -1701,11 +1701,13 @@ export namespace Prisma {
   export type BookingAvgAggregateOutputType = {
     guests: number | null
     price: number | null
+    amount: number | null
   }
 
   export type BookingSumAggregateOutputType = {
     guests: number | null
     price: number | null
+    amount: number | null
   }
 
   export type BookingMinAggregateOutputType = {
@@ -1724,6 +1726,7 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     notes: string | null
+    amount: number | null
   }
 
   export type BookingMaxAggregateOutputType = {
@@ -1742,6 +1745,7 @@ export namespace Prisma {
     email: string | null
     phone: string | null
     notes: string | null
+    amount: number | null
   }
 
   export type BookingCountAggregateOutputType = {
@@ -1760,6 +1764,7 @@ export namespace Prisma {
     email: number
     phone: number
     notes: number
+    amount: number
     _all: number
   }
 
@@ -1767,11 +1772,13 @@ export namespace Prisma {
   export type BookingAvgAggregateInputType = {
     guests?: true
     price?: true
+    amount?: true
   }
 
   export type BookingSumAggregateInputType = {
     guests?: true
     price?: true
+    amount?: true
   }
 
   export type BookingMinAggregateInputType = {
@@ -1790,6 +1797,7 @@ export namespace Prisma {
     email?: true
     phone?: true
     notes?: true
+    amount?: true
   }
 
   export type BookingMaxAggregateInputType = {
@@ -1808,6 +1816,7 @@ export namespace Prisma {
     email?: true
     phone?: true
     notes?: true
+    amount?: true
   }
 
   export type BookingCountAggregateInputType = {
@@ -1826,6 +1835,7 @@ export namespace Prisma {
     email?: true
     phone?: true
     notes?: true
+    amount?: true
     _all?: true
   }
 
@@ -1931,6 +1941,7 @@ export namespace Prisma {
     email: string
     phone: string | null
     notes: string | null
+    amount: number | null
     _count: BookingCountAggregateOutputType | null
     _avg: BookingAvgAggregateOutputType | null
     _sum: BookingSumAggregateOutputType | null
@@ -1968,6 +1979,7 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     notes?: boolean
+    amount?: boolean
     room?: boolean | booking$roomArgs<ExtArgs>
     experience?: boolean | booking$experienceArgs<ExtArgs>
     service?: boolean | booking$serviceArgs<ExtArgs>
@@ -1994,9 +2006,10 @@ export namespace Prisma {
     email?: boolean
     phone?: boolean
     notes?: boolean
+    amount?: boolean
   }
 
-  export type bookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "roomId" | "experienceId" | "serviceId" | "userId" | "status" | "checkedStatus" | "checkIn" | "checkOut" | "guests" | "price" | "name" | "email" | "phone" | "notes", ExtArgs["result"]["booking"]>
+  export type bookingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "roomId" | "experienceId" | "serviceId" | "userId" | "status" | "checkedStatus" | "checkIn" | "checkOut" | "guests" | "price" | "name" | "email" | "phone" | "notes" | "amount", ExtArgs["result"]["booking"]>
   export type bookingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     room?: boolean | booking$roomArgs<ExtArgs>
     experience?: boolean | booking$experienceArgs<ExtArgs>
@@ -2031,6 +2044,7 @@ export namespace Prisma {
       email: string
       phone: string | null
       notes: string | null
+      amount: number | null
     }, ExtArgs["result"]["booking"]>
     composites: {}
   }
@@ -2443,6 +2457,7 @@ export namespace Prisma {
     readonly email: FieldRef<"booking", 'String'>
     readonly phone: FieldRef<"booking", 'String'>
     readonly notes: FieldRef<"booking", 'String'>
+    readonly amount: FieldRef<"booking", 'Int'>
   }
     
 
@@ -6396,6 +6411,8 @@ export namespace Prisma {
     originalPrice: number | null
     size: number | null
     maxGuests: number | null
+    minStay: number | null
+    maxStay: number | null
   }
 
   export type RoomSumAggregateOutputType = {
@@ -6403,12 +6420,15 @@ export namespace Prisma {
     originalPrice: number | null
     size: number | null
     maxGuests: number | null
+    minStay: number | null
+    maxStay: number | null
   }
 
   export type RoomMinAggregateOutputType = {
     id: string | null
     userId: string | null
     ngoziId: string | null
+    propertyName: string | null
     name: string | null
     category: string | null
     featured: boolean | null
@@ -6426,6 +6446,10 @@ export namespace Prisma {
     popular: boolean | null
     newlyRenovated: boolean | null
     address: string | null
+    checkInTime: string | null
+    checkOutTime: string | null
+    minStay: number | null
+    maxStay: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6434,6 +6458,7 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     ngoziId: string | null
+    propertyName: string | null
     name: string | null
     category: string | null
     featured: boolean | null
@@ -6451,6 +6476,10 @@ export namespace Prisma {
     popular: boolean | null
     newlyRenovated: boolean | null
     address: string | null
+    checkInTime: string | null
+    checkOutTime: string | null
+    minStay: number | null
+    maxStay: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6459,6 +6488,7 @@ export namespace Prisma {
     id: number
     userId: number
     ngoziId: number
+    propertyName: number
     name: number
     category: number
     featured: number
@@ -6480,6 +6510,11 @@ export namespace Prisma {
     popular: number
     newlyRenovated: number
     address: number
+    checkInTime: number
+    checkOutTime: number
+    minStay: number
+    maxStay: number
+    availabilityRules: number
     cancellationPolicy: number
     createdAt: number
     updatedAt: number
@@ -6492,6 +6527,8 @@ export namespace Prisma {
     originalPrice?: true
     size?: true
     maxGuests?: true
+    minStay?: true
+    maxStay?: true
   }
 
   export type RoomSumAggregateInputType = {
@@ -6499,12 +6536,15 @@ export namespace Prisma {
     originalPrice?: true
     size?: true
     maxGuests?: true
+    minStay?: true
+    maxStay?: true
   }
 
   export type RoomMinAggregateInputType = {
     id?: true
     userId?: true
     ngoziId?: true
+    propertyName?: true
     name?: true
     category?: true
     featured?: true
@@ -6522,6 +6562,10 @@ export namespace Prisma {
     popular?: true
     newlyRenovated?: true
     address?: true
+    checkInTime?: true
+    checkOutTime?: true
+    minStay?: true
+    maxStay?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6530,6 +6574,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     ngoziId?: true
+    propertyName?: true
     name?: true
     category?: true
     featured?: true
@@ -6547,6 +6592,10 @@ export namespace Prisma {
     popular?: true
     newlyRenovated?: true
     address?: true
+    checkInTime?: true
+    checkOutTime?: true
+    minStay?: true
+    maxStay?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6555,6 +6604,7 @@ export namespace Prisma {
     id?: true
     userId?: true
     ngoziId?: true
+    propertyName?: true
     name?: true
     category?: true
     featured?: true
@@ -6576,6 +6626,11 @@ export namespace Prisma {
     popular?: true
     newlyRenovated?: true
     address?: true
+    checkInTime?: true
+    checkOutTime?: true
+    minStay?: true
+    maxStay?: true
+    availabilityRules?: true
     cancellationPolicy?: true
     createdAt?: true
     updatedAt?: true
@@ -6672,6 +6727,7 @@ export namespace Prisma {
     id: string
     userId: string | null
     ngoziId: string | null
+    propertyName: string | null
     name: string
     category: string
     featured: boolean | null
@@ -6693,6 +6749,11 @@ export namespace Prisma {
     popular: boolean | null
     newlyRenovated: boolean | null
     address: string | null
+    checkInTime: string | null
+    checkOutTime: string | null
+    minStay: number | null
+    maxStay: number | null
+    availabilityRules: string[]
     cancellationPolicy: string[]
     createdAt: Date
     updatedAt: Date
@@ -6721,6 +6782,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     ngoziId?: boolean
+    propertyName?: boolean
     name?: boolean
     category?: boolean
     featured?: boolean
@@ -6742,7 +6804,12 @@ export namespace Prisma {
     popular?: boolean
     newlyRenovated?: boolean
     address?: boolean
+    checkInTime?: boolean
+    checkOutTime?: boolean
+    minStay?: boolean
+    maxStay?: boolean
     availabilityStatus?: boolean | AvailabilityStatusDefaultArgs<ExtArgs>
+    availabilityRules?: boolean
     cancellationPolicy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -6758,6 +6825,7 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     ngoziId?: boolean
+    propertyName?: boolean
     name?: boolean
     category?: boolean
     featured?: boolean
@@ -6779,12 +6847,17 @@ export namespace Prisma {
     popular?: boolean
     newlyRenovated?: boolean
     address?: boolean
+    checkInTime?: boolean
+    checkOutTime?: boolean
+    minStay?: boolean
+    maxStay?: boolean
+    availabilityRules?: boolean
     cancellationPolicy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type roomOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "ngoziId" | "name" | "category" | "featured" | "location" | "country" | "price" | "originalPrice" | "size" | "maxGuests" | "bedType" | "view" | "description" | "images" | "amenities" | "features" | "services" | "status" | "availability" | "popular" | "newlyRenovated" | "address" | "availabilityStatus" | "cancellationPolicy" | "createdAt" | "updatedAt", ExtArgs["result"]["room"]>
+  export type roomOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "ngoziId" | "propertyName" | "name" | "category" | "featured" | "location" | "country" | "price" | "originalPrice" | "size" | "maxGuests" | "bedType" | "view" | "description" | "images" | "amenities" | "features" | "services" | "status" | "availability" | "popular" | "newlyRenovated" | "address" | "checkInTime" | "checkOutTime" | "minStay" | "maxStay" | "availabilityStatus" | "availabilityRules" | "cancellationPolicy" | "createdAt" | "updatedAt", ExtArgs["result"]["room"]>
   export type roomInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | room$userArgs<ExtArgs>
     bookings?: boolean | room$bookingsArgs<ExtArgs>
@@ -6803,6 +6876,7 @@ export namespace Prisma {
       id: string
       userId: string | null
       ngoziId: string | null
+      propertyName: string | null
       name: string
       category: string
       featured: boolean | null
@@ -6824,6 +6898,11 @@ export namespace Prisma {
       popular: boolean | null
       newlyRenovated: boolean | null
       address: string | null
+      checkInTime: string | null
+      checkOutTime: string | null
+      minStay: number | null
+      maxStay: number | null
+      availabilityRules: string[]
       cancellationPolicy: string[]
       createdAt: Date
       updatedAt: Date
@@ -7227,6 +7306,7 @@ export namespace Prisma {
     readonly id: FieldRef<"room", 'String'>
     readonly userId: FieldRef<"room", 'String'>
     readonly ngoziId: FieldRef<"room", 'String'>
+    readonly propertyName: FieldRef<"room", 'String'>
     readonly name: FieldRef<"room", 'String'>
     readonly category: FieldRef<"room", 'String'>
     readonly featured: FieldRef<"room", 'Boolean'>
@@ -7248,6 +7328,11 @@ export namespace Prisma {
     readonly popular: FieldRef<"room", 'Boolean'>
     readonly newlyRenovated: FieldRef<"room", 'Boolean'>
     readonly address: FieldRef<"room", 'String'>
+    readonly checkInTime: FieldRef<"room", 'String'>
+    readonly checkOutTime: FieldRef<"room", 'String'>
+    readonly minStay: FieldRef<"room", 'Int'>
+    readonly maxStay: FieldRef<"room", 'Int'>
+    readonly availabilityRules: FieldRef<"room", 'String[]'>
     readonly cancellationPolicy: FieldRef<"room", 'String[]'>
     readonly createdAt: FieldRef<"room", 'DateTime'>
     readonly updatedAt: FieldRef<"room", 'DateTime'>
@@ -10035,7 +10120,8 @@ export namespace Prisma {
     name: 'name',
     email: 'email',
     phone: 'phone',
-    notes: 'notes'
+    notes: 'notes',
+    amount: 'amount'
   };
 
   export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
@@ -10106,6 +10192,7 @@ export namespace Prisma {
     id: 'id',
     userId: 'userId',
     ngoziId: 'ngoziId',
+    propertyName: 'propertyName',
     name: 'name',
     category: 'category',
     featured: 'featured',
@@ -10127,6 +10214,11 @@ export namespace Prisma {
     popular: 'popular',
     newlyRenovated: 'newlyRenovated',
     address: 'address',
+    checkInTime: 'checkInTime',
+    checkOutTime: 'checkOutTime',
+    minStay: 'minStay',
+    maxStay: 'maxStay',
+    availabilityRules: 'availabilityRules',
     cancellationPolicy: 'cancellationPolicy',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -10313,6 +10405,7 @@ export namespace Prisma {
     email?: StringFilter<"booking"> | string
     phone?: StringNullableFilter<"booking"> | string | null
     notes?: StringNullableFilter<"booking"> | string | null
+    amount?: IntNullableFilter<"booking"> | number | null
     room?: XOR<RoomNullableScalarRelationFilter, roomWhereInput> | null
     experience?: XOR<ExperienceNullableScalarRelationFilter, experienceWhereInput> | null
     service?: XOR<ServiceNullableScalarRelationFilter, serviceWhereInput> | null
@@ -10336,6 +10429,7 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     notes?: SortOrder
+    amount?: SortOrder
     room?: roomOrderByWithRelationInput
     experience?: experienceOrderByWithRelationInput
     service?: serviceOrderByWithRelationInput
@@ -10362,6 +10456,7 @@ export namespace Prisma {
     email?: StringFilter<"booking"> | string
     phone?: StringNullableFilter<"booking"> | string | null
     notes?: StringNullableFilter<"booking"> | string | null
+    amount?: IntNullableFilter<"booking"> | number | null
     room?: XOR<RoomNullableScalarRelationFilter, roomWhereInput> | null
     experience?: XOR<ExperienceNullableScalarRelationFilter, experienceWhereInput> | null
     service?: XOR<ServiceNullableScalarRelationFilter, serviceWhereInput> | null
@@ -10385,6 +10480,7 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     notes?: SortOrder
+    amount?: SortOrder
     _count?: bookingCountOrderByAggregateInput
     _avg?: bookingAvgOrderByAggregateInput
     _max?: bookingMaxOrderByAggregateInput
@@ -10411,6 +10507,7 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"booking"> | string
     phone?: StringNullableWithAggregatesFilter<"booking"> | string | null
     notes?: StringNullableWithAggregatesFilter<"booking"> | string | null
+    amount?: IntNullableWithAggregatesFilter<"booking"> | number | null
   }
 
   export type experienceWhereInput = {
@@ -10746,6 +10843,7 @@ export namespace Prisma {
     id?: StringFilter<"room"> | string
     userId?: StringNullableFilter<"room"> | string | null
     ngoziId?: StringNullableFilter<"room"> | string | null
+    propertyName?: StringNullableFilter<"room"> | string | null
     name?: StringFilter<"room"> | string
     category?: StringFilter<"room"> | string
     featured?: BoolNullableFilter<"room"> | boolean | null
@@ -10767,7 +10865,12 @@ export namespace Prisma {
     popular?: BoolNullableFilter<"room"> | boolean | null
     newlyRenovated?: BoolNullableFilter<"room"> | boolean | null
     address?: StringNullableFilter<"room"> | string | null
+    checkInTime?: StringNullableFilter<"room"> | string | null
+    checkOutTime?: StringNullableFilter<"room"> | string | null
+    minStay?: IntNullableFilter<"room"> | number | null
+    maxStay?: IntNullableFilter<"room"> | number | null
     availabilityStatus?: AvailabilityStatusCompositeListFilter | AvailabilityStatusObjectEqualityInput[]
+    availabilityRules?: StringNullableListFilter<"room">
     cancellationPolicy?: StringNullableListFilter<"room">
     createdAt?: DateTimeFilter<"room"> | Date | string
     updatedAt?: DateTimeFilter<"room"> | Date | string
@@ -10780,6 +10883,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     ngoziId?: SortOrder
+    propertyName?: SortOrder
     name?: SortOrder
     category?: SortOrder
     featured?: SortOrder
@@ -10801,7 +10905,12 @@ export namespace Prisma {
     popular?: SortOrder
     newlyRenovated?: SortOrder
     address?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    minStay?: SortOrder
+    maxStay?: SortOrder
     availabilityStatus?: AvailabilityStatusOrderByCompositeAggregateInput
+    availabilityRules?: SortOrder
     cancellationPolicy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10819,6 +10928,7 @@ export namespace Prisma {
     NOT?: roomWhereInput | roomWhereInput[]
     userId?: StringNullableFilter<"room"> | string | null
     ngoziId?: StringNullableFilter<"room"> | string | null
+    propertyName?: StringNullableFilter<"room"> | string | null
     name?: StringFilter<"room"> | string
     category?: StringFilter<"room"> | string
     featured?: BoolNullableFilter<"room"> | boolean | null
@@ -10840,7 +10950,12 @@ export namespace Prisma {
     popular?: BoolNullableFilter<"room"> | boolean | null
     newlyRenovated?: BoolNullableFilter<"room"> | boolean | null
     address?: StringNullableFilter<"room"> | string | null
+    checkInTime?: StringNullableFilter<"room"> | string | null
+    checkOutTime?: StringNullableFilter<"room"> | string | null
+    minStay?: IntNullableFilter<"room"> | number | null
+    maxStay?: IntNullableFilter<"room"> | number | null
     availabilityStatus?: AvailabilityStatusCompositeListFilter | AvailabilityStatusObjectEqualityInput[]
+    availabilityRules?: StringNullableListFilter<"room">
     cancellationPolicy?: StringNullableListFilter<"room">
     createdAt?: DateTimeFilter<"room"> | Date | string
     updatedAt?: DateTimeFilter<"room"> | Date | string
@@ -10853,6 +10968,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     ngoziId?: SortOrder
+    propertyName?: SortOrder
     name?: SortOrder
     category?: SortOrder
     featured?: SortOrder
@@ -10874,6 +10990,11 @@ export namespace Prisma {
     popular?: SortOrder
     newlyRenovated?: SortOrder
     address?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    minStay?: SortOrder
+    maxStay?: SortOrder
+    availabilityRules?: SortOrder
     cancellationPolicy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -10891,6 +11012,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"room"> | string
     userId?: StringNullableWithAggregatesFilter<"room"> | string | null
     ngoziId?: StringNullableWithAggregatesFilter<"room"> | string | null
+    propertyName?: StringNullableWithAggregatesFilter<"room"> | string | null
     name?: StringWithAggregatesFilter<"room"> | string
     category?: StringWithAggregatesFilter<"room"> | string
     featured?: BoolNullableWithAggregatesFilter<"room"> | boolean | null
@@ -10912,6 +11034,11 @@ export namespace Prisma {
     popular?: BoolNullableWithAggregatesFilter<"room"> | boolean | null
     newlyRenovated?: BoolNullableWithAggregatesFilter<"room"> | boolean | null
     address?: StringNullableWithAggregatesFilter<"room"> | string | null
+    checkInTime?: StringNullableWithAggregatesFilter<"room"> | string | null
+    checkOutTime?: StringNullableWithAggregatesFilter<"room"> | string | null
+    minStay?: IntNullableWithAggregatesFilter<"room"> | number | null
+    maxStay?: IntNullableWithAggregatesFilter<"room"> | number | null
+    availabilityRules?: StringNullableListFilter<"room">
     cancellationPolicy?: StringNullableListFilter<"room">
     createdAt?: DateTimeWithAggregatesFilter<"room"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"room"> | Date | string
@@ -11105,6 +11232,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     room?: roomCreateNestedOneWithoutBookingsInput
     experience?: experienceCreateNestedOneWithoutBookingsInput
     service?: serviceCreateNestedOneWithoutBookingsInput
@@ -11128,6 +11256,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     review?: reviewUncheckedCreateNestedManyWithoutBookingInput
   }
 
@@ -11142,6 +11271,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     room?: roomUpdateOneWithoutBookingsNestedInput
     experience?: experienceUpdateOneWithoutBookingsNestedInput
     service?: serviceUpdateOneWithoutBookingsNestedInput
@@ -11164,6 +11294,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     review?: reviewUncheckedUpdateManyWithoutBookingNestedInput
   }
 
@@ -11183,6 +11314,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
   }
 
   export type bookingUpdateManyMutationInput = {
@@ -11196,6 +11328,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type bookingUncheckedUpdateManyInput = {
@@ -11213,6 +11346,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type experienceCreateInput = {
@@ -11598,6 +11732,7 @@ export namespace Prisma {
   export type roomCreateInput = {
     id?: string
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -11619,7 +11754,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11632,6 +11772,7 @@ export namespace Prisma {
     id?: string
     userId?: string | null
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -11653,7 +11794,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11663,6 +11809,7 @@ export namespace Prisma {
 
   export type roomUpdateInput = {
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -11684,7 +11831,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11696,6 +11848,7 @@ export namespace Prisma {
   export type roomUncheckedUpdateInput = {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -11717,7 +11870,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11729,6 +11887,7 @@ export namespace Prisma {
     id?: string
     userId?: string | null
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -11750,7 +11909,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -11758,6 +11922,7 @@ export namespace Prisma {
 
   export type roomUpdateManyMutationInput = {
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -11779,7 +11944,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -11788,6 +11958,7 @@ export namespace Prisma {
   export type roomUncheckedUpdateManyInput = {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -11809,7 +11980,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -12114,11 +12290,13 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     notes?: SortOrder
+    amount?: SortOrder
   }
 
   export type bookingAvgOrderByAggregateInput = {
     guests?: SortOrder
     price?: SortOrder
+    amount?: SortOrder
   }
 
   export type bookingMaxOrderByAggregateInput = {
@@ -12137,6 +12315,7 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     notes?: SortOrder
+    amount?: SortOrder
   }
 
   export type bookingMinOrderByAggregateInput = {
@@ -12155,11 +12334,13 @@ export namespace Prisma {
     email?: SortOrder
     phone?: SortOrder
     notes?: SortOrder
+    amount?: SortOrder
   }
 
   export type bookingSumOrderByAggregateInput = {
     guests?: SortOrder
     price?: SortOrder
+    amount?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -12550,6 +12731,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     ngoziId?: SortOrder
+    propertyName?: SortOrder
     name?: SortOrder
     category?: SortOrder
     featured?: SortOrder
@@ -12571,6 +12753,11 @@ export namespace Prisma {
     popular?: SortOrder
     newlyRenovated?: SortOrder
     address?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    minStay?: SortOrder
+    maxStay?: SortOrder
+    availabilityRules?: SortOrder
     cancellationPolicy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -12581,12 +12768,15 @@ export namespace Prisma {
     originalPrice?: SortOrder
     size?: SortOrder
     maxGuests?: SortOrder
+    minStay?: SortOrder
+    maxStay?: SortOrder
   }
 
   export type roomMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
     ngoziId?: SortOrder
+    propertyName?: SortOrder
     name?: SortOrder
     category?: SortOrder
     featured?: SortOrder
@@ -12604,6 +12794,10 @@ export namespace Prisma {
     popular?: SortOrder
     newlyRenovated?: SortOrder
     address?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    minStay?: SortOrder
+    maxStay?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -12612,6 +12806,7 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     ngoziId?: SortOrder
+    propertyName?: SortOrder
     name?: SortOrder
     category?: SortOrder
     featured?: SortOrder
@@ -12629,6 +12824,10 @@ export namespace Prisma {
     popular?: SortOrder
     newlyRenovated?: SortOrder
     address?: SortOrder
+    checkInTime?: SortOrder
+    checkOutTime?: SortOrder
+    minStay?: SortOrder
+    maxStay?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -12638,6 +12837,8 @@ export namespace Prisma {
     originalPrice?: SortOrder
     size?: SortOrder
     maxGuests?: SortOrder
+    minStay?: SortOrder
+    maxStay?: SortOrder
   }
 
   export type RoomListRelationFilter = {
@@ -13217,6 +13418,10 @@ export namespace Prisma {
     set: string[]
   }
 
+  export type roomCreateavailabilityRulesInput = {
+    set: string[]
+  }
+
   export type roomCreatecancellationPolicyInput = {
     set: string[]
   }
@@ -13271,6 +13476,11 @@ export namespace Prisma {
   }
 
   export type roomUpdateservicesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type roomUpdateavailabilityRulesInput = {
     set?: string[]
     push?: string | string[]
   }
@@ -13906,6 +14116,7 @@ export namespace Prisma {
   export type roomCreateWithoutBookingsInput = {
     id?: string
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -13927,7 +14138,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -13939,6 +14155,7 @@ export namespace Prisma {
     id?: string
     userId?: string | null
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -13960,7 +14177,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -14159,6 +14381,7 @@ export namespace Prisma {
 
   export type roomUpdateWithoutBookingsInput = {
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -14180,7 +14403,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14191,6 +14419,7 @@ export namespace Prisma {
   export type roomUncheckedUpdateWithoutBookingsInput = {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -14212,7 +14441,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -14458,6 +14692,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     room?: roomCreateNestedOneWithoutBookingsInput
     service?: serviceCreateNestedOneWithoutBookingsInput
     user?: userCreateNestedOneWithoutBookingInput
@@ -14479,6 +14714,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     review?: reviewUncheckedCreateNestedManyWithoutBookingInput
   }
 
@@ -14607,6 +14843,7 @@ export namespace Prisma {
     email?: StringFilter<"booking"> | string
     phone?: StringNullableFilter<"booking"> | string | null
     notes?: StringNullableFilter<"booking"> | string | null
+    amount?: IntNullableFilter<"booking"> | number | null
   }
 
   export type reviewUpsertWithWhereUniqueWithoutExperienceInput = {
@@ -14674,6 +14911,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     room?: roomCreateNestedOneWithoutBookingsInput
     experience?: experienceCreateNestedOneWithoutBookingsInput
     user?: userCreateNestedOneWithoutBookingInput
@@ -14695,6 +14933,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     review?: reviewUncheckedCreateNestedManyWithoutBookingInput
   }
 
@@ -14860,6 +15099,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     experience?: experienceCreateNestedOneWithoutBookingsInput
     service?: serviceCreateNestedOneWithoutBookingsInput
     user?: userCreateNestedOneWithoutBookingInput
@@ -14881,6 +15121,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     review?: reviewUncheckedCreateNestedManyWithoutBookingInput
   }
 
@@ -15040,6 +15281,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     room?: roomCreateNestedOneWithoutBookingsInput
     experience?: experienceCreateNestedOneWithoutBookingsInput
     service?: serviceCreateNestedOneWithoutBookingsInput
@@ -15061,6 +15303,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     review?: reviewUncheckedCreateNestedManyWithoutBookingInput
   }
 
@@ -15076,6 +15319,7 @@ export namespace Prisma {
   export type roomCreateWithoutUserInput = {
     id?: string
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -15097,7 +15341,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15108,6 +15357,7 @@ export namespace Prisma {
   export type roomUncheckedCreateWithoutUserInput = {
     id?: string
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -15129,7 +15379,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15315,6 +15570,7 @@ export namespace Prisma {
     id?: StringFilter<"room"> | string
     userId?: StringNullableFilter<"room"> | string | null
     ngoziId?: StringNullableFilter<"room"> | string | null
+    propertyName?: StringNullableFilter<"room"> | string | null
     name?: StringFilter<"room"> | string
     category?: StringFilter<"room"> | string
     featured?: BoolNullableFilter<"room"> | boolean | null
@@ -15336,6 +15592,11 @@ export namespace Prisma {
     popular?: BoolNullableFilter<"room"> | boolean | null
     newlyRenovated?: BoolNullableFilter<"room"> | boolean | null
     address?: StringNullableFilter<"room"> | string | null
+    checkInTime?: StringNullableFilter<"room"> | string | null
+    checkOutTime?: StringNullableFilter<"room"> | string | null
+    minStay?: IntNullableFilter<"room"> | number | null
+    maxStay?: IntNullableFilter<"room"> | number | null
+    availabilityRules?: StringNullableListFilter<"room">
     cancellationPolicy?: StringNullableListFilter<"room">
     createdAt?: DateTimeFilter<"room"> | Date | string
     updatedAt?: DateTimeFilter<"room"> | Date | string
@@ -15463,6 +15724,7 @@ export namespace Prisma {
   export type roomCreateWithoutReviewInput = {
     id?: string
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -15484,7 +15746,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15496,6 +15763,7 @@ export namespace Prisma {
     id?: string
     userId?: string | null
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -15517,7 +15785,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -15647,6 +15920,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
     room?: roomCreateNestedOneWithoutBookingsInput
     experience?: experienceCreateNestedOneWithoutBookingsInput
     service?: serviceCreateNestedOneWithoutBookingsInput
@@ -15669,6 +15943,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
   }
 
   export type bookingCreateOrConnectWithoutReviewInput = {
@@ -15730,6 +16005,7 @@ export namespace Prisma {
 
   export type roomUpdateWithoutReviewInput = {
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -15751,7 +16027,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15762,6 +16043,7 @@ export namespace Prisma {
   export type roomUncheckedUpdateWithoutReviewInput = {
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -15783,7 +16065,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -15926,6 +16213,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     room?: roomUpdateOneWithoutBookingsNestedInput
     experience?: experienceUpdateOneWithoutBookingsNestedInput
     service?: serviceUpdateOneWithoutBookingsNestedInput
@@ -15947,6 +16235,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type reviewCreateManyBookingInput = {
@@ -16005,6 +16294,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
   }
 
   export type reviewCreateManyExperienceInput = {
@@ -16034,6 +16324,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     room?: roomUpdateOneWithoutBookingsNestedInput
     service?: serviceUpdateOneWithoutBookingsNestedInput
     user?: userUpdateOneWithoutBookingNestedInput
@@ -16054,6 +16345,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     review?: reviewUncheckedUpdateManyWithoutBookingNestedInput
   }
 
@@ -16071,6 +16363,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type reviewUpdateWithoutExperienceInput = {
@@ -16118,6 +16411,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
   }
 
   export type reviewCreateManyServiceInput = {
@@ -16142,6 +16436,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     room?: roomUpdateOneWithoutBookingsNestedInput
     experience?: experienceUpdateOneWithoutBookingsNestedInput
     user?: userUpdateOneWithoutBookingNestedInput
@@ -16162,6 +16457,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     review?: reviewUncheckedUpdateManyWithoutBookingNestedInput
   }
 
@@ -16179,6 +16475,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type reviewUpdateWithoutServiceInput = {
@@ -16226,6 +16523,7 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
   }
 
   export type reviewCreateManyRoomInput = {
@@ -16250,6 +16548,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     experience?: experienceUpdateOneWithoutBookingsNestedInput
     service?: serviceUpdateOneWithoutBookingsNestedInput
     user?: userUpdateOneWithoutBookingNestedInput
@@ -16270,6 +16569,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     review?: reviewUncheckedUpdateManyWithoutBookingNestedInput
   }
 
@@ -16287,6 +16587,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type reviewUpdateWithoutRoomInput = {
@@ -16345,11 +16646,13 @@ export namespace Prisma {
     email: string
     phone?: string | null
     notes?: string | null
+    amount?: number | null
   }
 
   export type roomCreateManyUserInput = {
     id?: string
     ngoziId?: string | null
+    propertyName?: string | null
     name: string
     category: string
     featured?: boolean | null
@@ -16371,7 +16674,12 @@ export namespace Prisma {
     popular?: boolean | null
     newlyRenovated?: boolean | null
     address?: string | null
+    checkInTime?: string | null
+    checkOutTime?: string | null
+    minStay?: number | null
+    maxStay?: number | null
     availabilityStatus?: XOR<AvailabilityStatusListCreateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomCreateavailabilityRulesInput | string[]
     cancellationPolicy?: roomCreatecancellationPolicyInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -16462,6 +16770,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     room?: roomUpdateOneWithoutBookingsNestedInput
     experience?: experienceUpdateOneWithoutBookingsNestedInput
     service?: serviceUpdateOneWithoutBookingsNestedInput
@@ -16482,6 +16791,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
     review?: reviewUncheckedUpdateManyWithoutBookingNestedInput
   }
 
@@ -16499,10 +16809,12 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type roomUpdateWithoutUserInput = {
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -16524,7 +16836,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16534,6 +16851,7 @@ export namespace Prisma {
 
   export type roomUncheckedUpdateWithoutUserInput = {
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -16555,7 +16873,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16565,6 +16888,7 @@ export namespace Prisma {
 
   export type roomUncheckedUpdateManyWithoutUserInput = {
     ngoziId?: NullableStringFieldUpdateOperationsInput | string | null
+    propertyName?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     category?: StringFieldUpdateOperationsInput | string
     featured?: NullableBoolFieldUpdateOperationsInput | boolean | null
@@ -16586,7 +16910,12 @@ export namespace Prisma {
     popular?: NullableBoolFieldUpdateOperationsInput | boolean | null
     newlyRenovated?: NullableBoolFieldUpdateOperationsInput | boolean | null
     address?: NullableStringFieldUpdateOperationsInput | string | null
+    checkInTime?: NullableStringFieldUpdateOperationsInput | string | null
+    checkOutTime?: NullableStringFieldUpdateOperationsInput | string | null
+    minStay?: NullableIntFieldUpdateOperationsInput | number | null
+    maxStay?: NullableIntFieldUpdateOperationsInput | number | null
     availabilityStatus?: XOR<AvailabilityStatusListUpdateEnvelopeInput, AvailabilityStatusCreateInput> | AvailabilityStatusCreateInput[]
+    availabilityRules?: roomUpdateavailabilityRulesInput | string[]
     cancellationPolicy?: roomUpdatecancellationPolicyInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

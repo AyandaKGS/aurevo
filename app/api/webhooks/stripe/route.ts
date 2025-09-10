@@ -5,8 +5,6 @@ import Stripe from "stripe";
 import nodemailer from "nodemailer";
 import { formatDate } from "date-fns";
 
-const stripe = new Stripe(env.STRIPE_SECRET_KEY!);
-
 export async function POST(req: NextRequest) {
   const chunks = [];
 
@@ -35,11 +33,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (event.type === "checkout.session.completed" && event.data.object.metadata?.userId) {
+
     try {
       const userId = event.data.object.metadata?.userId;
       const bookingId = event.data.object.metadata?.bookingId;
       const email = event.data.object.metadata?.email;
-      
+      const amount = event.data.object.metadata?.amount;
+
       const booking = await prisma.booking.findFirst({
         where: {
           id: bookingId,
@@ -91,19 +91,19 @@ export async function POST(req: NextRequest) {
         <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #444;">
           Thank you for choosing Aurevo. Your stay is confirmed and we look forward to hosting you. 
           Please reach out if you need assistance with your arrival. 
-          Location: ${booking.room.address}
+          Location: ${booking.room?.address}
         </p>
       </div>
 
       <!-- Property Image -->
       <div>
-        <img src="${booking.room.images[0] || 'https://aurevo-default-image.com/room.jpg'}" alt="Property Image" style="width: 100%; max-height: 250px; object-fit: cover;">
+        <img src="${booking.room?.images[0] || 'https://aurevo-default-image.com/room.jpg'}" alt="Property Image" style="width: 100%; max-height: 250px; object-fit: cover;">
       </div>
 
       <!-- Booking Details -->
       <div style="padding: 20px; text-align: left;">
-        <h3 style="margin-top: 0; font-size: 18px; color: #2D2E83;">${booking.room.name || 'Your Aurevo Stay'}</h3>
-        <p style="margin: 0; font-size: 14px; color: #666;">${booking.room.description || 'A comfortable stay awaits you with Aurevo.'}</p>
+        <h3 style="margin-top: 0; font-size: 18px; color: #2D2E83;">${booking.room?.name || 'Your Aurevo Stay'}</h3>
+        <p style="margin: 0; font-size: 14px; color: #666;">${booking.room?.description || 'A comfortable stay awaits you with Aurevo.'}</p>
 
         <table style="width: 100%; margin-top: 15px; border-collapse: collapse; font-size: 14px; color: #333;">
           <tr>
@@ -144,28 +144,6 @@ export async function POST(req: NextRequest) {
 
 
         await transporter.sendMail(mailOptions);
-
-        const host = await prisma.user.findUnique({
-          where: {
-            userId: booking.room!.userId!
-          },
-          select: {
-            stripeAccountId: true,
-          },
-        });
-
-        if (!host) return new NextResponse("Host not found", { status: 500 });
-
-        if (!host.stripeAccountId) return new NextResponse("Host has not connected their Stripe account", { status: 500 });
-
-        const amount = (booking.price! * 100) - 1000 - ((booking.price! * 100) * 0.029);
-
-        await stripe.transfers.create({
-          amount,
-          currency: "usd",
-          destination: host.stripeAccountId, // from DB
-          description: `Payout for Aurevo booking ${booking.id}`,
-        });
 
       }
       return new NextResponse("Registration created", { status: 200 })

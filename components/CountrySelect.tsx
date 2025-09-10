@@ -32,27 +32,30 @@ export function CountrySelect({ value, onChange }: { value?: string; onChange: (
                     {value ? value : "Select a country..."}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0">
+            <PopoverContent
+                className="w-[300px] p-0"
+                align="start"
+            >
                 <Command>
                     <CommandInput placeholder="Search countries..." />
-                    <CommandList  className="no-scrollbar">
+                    <CommandList className="no-scrollbar">
                         <CommandEmpty>No country found.</CommandEmpty>
                         <CommandGroup>
                             {countries.map((country) => (
                                 <CommandItem
-                                    key={country}
+                                    key={country.name}
                                     onSelect={() => {
-                                        onChange(country)
+                                        onChange(country.name)
                                         setOpen(false)
                                     }}
                                 >
                                     <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            country === value ? "opacity-100" : "opacity-0"
+                                            country.name === value ? "opacity-100" : "opacity-0"
                                         )}
                                     />
-                                    {country}
+                                    {country.name}
                                 </CommandItem>
                             ))}
                         </CommandGroup>

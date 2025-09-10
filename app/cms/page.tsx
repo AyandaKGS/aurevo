@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { FileUpload } from "@/components/ui/file-upload"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { editRoomsLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
@@ -65,7 +65,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import z from "zod"
+import z, { property } from "zod"
 
 type CategoryAgg = {
     value: string
@@ -175,12 +175,32 @@ const recurringPatternsSchema = z.object({
     days: z.array(z.string()).refine((value) => value.some((days) => days)),
     availability: z.string({ error: "Please select an availability." }).min(1),
     pricePerNight: z.string().optional(),
-})
+});
+
+const propertySettingsSchema = z.object({
+    checkInTime: z.string().optional(),
+    checkOutTime: z.string().optional(),
+    minStay: z.string().optional(),
+    maxStay: z.string().optional()
+});
+
+const availabilityRulesSchema = z.object({
+    availabilityRules: z.array(z.string()).refine((value) => value.some((rule) => rule)),
+});
+
+const connectAccountSchema = z.object({
+    holderName: z.string({ error: "Please enter an account holder name" }),
+    email: z.email({ error: "Please enter a valid email." }),
+    country: z.string({ error: "Please enter a valid country" }),
+});
 
 type EditRoomData = z.infer<typeof editRoomSchema>;
 type AvailabilityCalenderData = z.infer<typeof availabilityCalenderSchema>;
 type BulkOperationsData = z.infer<typeof bulkOperationsSchema>;
 type RecurringPatternsData = z.infer<typeof recurringPatternsSchema>;
+type PropertySettingsData = z.infer<typeof propertySettingsSchema>;
+type AvailabilityRulesData = z.infer<typeof availabilityRulesSchema>;
+type ConnectAccountData = z.infer<typeof connectAccountSchema>;
 
 export default function CMSDashboard() {
     const { user, isLoaded } = useUser();
@@ -279,6 +299,10 @@ export default function CMSDashboard() {
         Pending: "bg-yellow-500/70 text-black dark:bg-yellow-700/60 dark:text-yellow-300",
         Cancelled: "bg-red-500/70 text-white dark:bg-red-700/60 dark:text-red-300",
     };
+
+    const availabilityRules = [
+        { id: "same-day", label: "Allow same-day bookings" },
+    ];
 
     // const revenueData = [
     //     { month: "Jan", revenue: 45000, bookings: 120, occupancy: 78 },
@@ -414,8 +438,24 @@ export default function CMSDashboard() {
         }
     });
 
-    const pickedDates = availabilityCalenderForm.watch("dates");
+    const propertySettingsForm = useForm<PropertySettingsData>({
+        resolver: zodResolver(propertySettingsSchema),
+        defaultValues: {}
+    });
 
+    const availabilityRulesForm = useForm<AvailabilityRulesData>({
+        resolver: zodResolver(availabilityRulesSchema),
+        defaultValues: {
+            availabilityRules: []
+        }
+    });
+
+    const connectAccountForm = useForm<ConnectAccountData>({
+        resolver: zodResolver(connectAccountSchema),
+        defaultValues: {}
+    });
+
+    const pickedDates = availabilityCalenderForm.watch("dates");
 
     const saveRoomMtn = useMutation({
         mutationFn: async (data: EditRoomData) => {
@@ -456,7 +496,49 @@ export default function CMSDashboard() {
 
             return returnData;
         }
+    });
+
+    const submitPropertySettings = useMutation({
+        mutationFn: async (data: PropertySettingsData) => {
+            const { data: returnData } = await axios.put("/api/update-room", {
+                data: {
+                    ...data,
+                    minStay: data.minStay ? parseInt(data.minStay) : undefined,
+                    maxStay: data.maxStay ? parseInt(data.maxStay) : undefined,
+                    userId: user?.id,
+                }
+            });
+
+            return returnData;
+        },
+    });
+
+    const submitAvailabilityRules = useMutation({
+        mutationFn: async (data: AvailabilityRulesData) => {
+            const { data: returnData } = await axios.put("/api/update-room", {
+                data: {
+                    ...data,
+                    userId: user?.id,
+                }
+            });
+
+            return returnData;
+        },
+    });
+
+    const submitConnectAccount = useMutation({
+        mutationFn: async (data: ConnectAccountData) => {
+            const { data: returnData } = await axios.post("/api/create-connected-account", {
+                data: {
+                    ...data,
+                    role: user?.publicMetadata?.role,
+                    userId: user?.id,
+                }
+            });
+            return returnData;
+        }
     })
+
 
     const filteredRooms = rooms.filter((room) => {
         const matchesSearch = room.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -570,6 +652,53 @@ export default function CMSDashboard() {
 
     };
 
+    const onPropertySettingsSubmit = async (data: PropertySettingsData) => {
+        submitPropertySettings.mutate(data, {
+            onSuccess: () => {
+                toast.success("Success", {
+                    description: `Successfully updated property settings.`
+                });
+            },
+            onError: () => {
+                toast.error("Error", {
+                    description: "Error updating property settings. Please try again."
+                });
+            },
+        });
+    };
+
+    const onAvailabilityRulesSubmit = async (data: AvailabilityRulesData) => {
+
+        submitAvailabilityRules.mutate(data, {
+            onSuccess: () => {
+                toast.success("Success", {
+                    description: `Successfully updated availability rules`
+                });
+            },
+            onError: () => {
+                toast.error("Error", {
+                    description: "Error updating availability rules. Please try again."
+                });
+            },
+        });
+    };
+
+    const onConnectAccountSubmit = async (data: ConnectAccountData) => {
+        submitConnectAccount.mutate(data, {
+            onSuccess: (data) => {
+                toast.success("Success", {
+                    description: `Successfully connected account. Redirecting.`
+                });
+                console.error("Data", data);
+                router.push(data.url);
+            },
+            onError: () => {
+                toast.error("Error", {
+                    description: "Error connecting account. Please try again."
+                });
+            },
+        });
+    }
     function formatCategoryLabel(slug: string) {
         return slug
             .split("-")
@@ -740,9 +869,7 @@ export default function CMSDashboard() {
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel htmlFor="country">Country</FormLabel>
-                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                            <CountrySelect value={field.value} onChange={field.onChange} />
-                                                        </Select>
+                                                        <CountrySelect value={field.value} onChange={field.onChange} />
                                                         <FormMessage />
                                                     </FormItem>
                                                 )}
@@ -2869,34 +2996,90 @@ export default function CMSDashboard() {
                                             <CardDescription>Configure your property details and preferences</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <div>
-                                                <Label htmlFor="property-name">Property Name</Label>
-                                                <Input id="property-name" defaultValue="Grand Vista Resort" />
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <Label htmlFor="check-in">Default Check-in Time</Label>
-                                                    <Input id="check-in" type="time" defaultValue="15:00" />
-                                                </div>
-                                                <div>
-                                                    <Label htmlFor="check-out">Default Check-out Time</Label>
-                                                    <Input id="check-out" type="time" defaultValue="11:00" />
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <Label htmlFor="min-stay">Minimum Stay (nights)</Label>
-                                                    <Input id="min-stay" type="number" defaultValue="1" />
-                                                </div>
-                                                <div>
-                                                    <Label htmlFor="max-stay">Maximum Stay (nights)</Label>
-                                                    <Input id="max-stay" type="number" defaultValue="30" />
-                                                </div>
-                                            </div>
-                                            <Button className="bg-amber-600 hover:bg-amber-700">
-                                                <Save className="h-4 w-4 mr-2" />
-                                                Save Settings
-                                            </Button>
+                                            <Form {...propertySettingsForm}>
+                                                <form
+                                                    onSubmit={propertySettingsForm.handleSubmit(onPropertySettingsSubmit)}
+                                                    className="space-y-3"
+                                                >
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <FormField
+                                                            control={propertySettingsForm.control}
+                                                            name="checkInTime"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel htmlFor="check-in">Default Check-in Time</FormLabel>
+                                                                    <Input id="check-out" type="time" {...field} defaultValue="12:00" />
+                                                                    <FormDescription>Time must be in 24hr format, e.g. 13:00</FormDescription>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <FormField
+                                                            control={propertySettingsForm.control}
+                                                            name="checkOutTime"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel htmlFor="check-out">Default Check-out Time</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input id="check-out" type="time" {...field} defaultValue="15:00" />
+                                                                    </FormControl>
+                                                                    <FormDescription>Time must be in 24hr format, e.g. 13:00</FormDescription>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <FormField
+                                                            control={propertySettingsForm.control}
+                                                            name="minStay"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel htmlFor="min-stay">Minimum Stay (nights)</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input id="min-stay" type="number" defaultValue="1" {...field} />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <FormField
+                                                            control={propertySettingsForm.control}
+                                                            name="maxStay"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel htmlFor="max-stay">Maximum Stay (nights)</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            id="max-stay"
+                                                                            type="number"
+                                                                            defaultValue="30"
+                                                                            min={28}
+                                                                            {...field}
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <Button className="bg-amber-600 hover:bg-amber-700">
+                                                        {
+                                                            submitPropertySettings.isPending ? (
+                                                                <>
+                                                                    <Loader className="animate-spin mr-2" />
+                                                                    Saving Settings...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Save className="h-4 w-4 mr-2" />
+                                                                    Save Settings
+                                                                </>
+                                                            )
+                                                        }
+                                                    </Button>
+                                                </form>
+                                            </Form>
                                         </CardContent>
                                     </Card>
 
@@ -2906,31 +3089,73 @@ export default function CMSDashboard() {
                                             <CardDescription>Set up automatic availability rules and restrictions</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
-                                            <div className="flex items-center space-x-2">
-                                                <Checkbox id="advance-booking" />
-                                                <Label htmlFor="advance-booking">Allow advance booking up to 365 days</Label>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Checkbox id="same-day" />
-                                                <Label htmlFor="same-day">Allow same-day bookings</Label>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Checkbox id="auto-close" />
-                                                <Label htmlFor="auto-close">Automatically close dates when fully booked</Label>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Checkbox id="weekend-premium" />
-                                                <Label htmlFor="weekend-premium">Apply weekend premium pricing</Label>
-                                            </div>
-                                            <Button className="bg-amber-600 hover:bg-amber-700">
-                                                <Save className="h-4 w-4 mr-2" />
-                                                Save Rules
-                                            </Button>
+                                            <Form {...availabilityRulesForm}>
+                                                <form
+                                                    onSubmit={availabilityRulesForm.handleSubmit(onAvailabilityRulesSubmit)}
+                                                    className="space-y-3"
+                                                >
+                                                    <FormField
+                                                        control={availabilityRulesForm.control}
+                                                        name="availabilityRules"
+                                                        render={({ field }) => {
+                                                            const value: string[] = field.value || [];
+
+                                                            const handleCheckboxChange = (id: string, checked: boolean) => {
+                                                                if (checked) {
+                                                                    field.onChange([...value, id]);
+                                                                } else {
+                                                                    field.onChange(value.filter((rule) => rule !== id));
+                                                                }
+                                                            };
+
+                                                            return (
+                                                                <FormItem className="space-y-2">
+                                                                    {availabilityRules.map((rule) => (
+                                                                        <FormItem
+                                                                            key={rule.id}
+                                                                            className="flex flex-row items-center space-x-2"
+                                                                        >
+                                                                            <FormControl>
+                                                                                <Checkbox
+                                                                                    id={rule.id}
+                                                                                    checked={value.includes(rule.id)}
+                                                                                    onCheckedChange={(checked) =>
+                                                                                        handleCheckboxChange(rule.id, Boolean(checked))
+                                                                                    }
+                                                                                />
+                                                                            </FormControl>
+                                                                            <FormLabel htmlFor={rule.id} className="font-normal">
+                                                                                {rule.label}
+                                                                            </FormLabel>
+                                                                        </FormItem>
+                                                                    ))}
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            );
+                                                        }}
+                                                    />
+                                                    <Button className="bg-amber-600 hover:bg-amber-700">
+                                                        {
+                                                            submitAvailabilityRules.isPending ? (
+                                                                <>
+                                                                    <Loader className="mr-2 animate-spin" />
+                                                                    Saving Rules...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Save className="h-4 w-4 mr-2" />
+                                                                    Save Rules
+                                                                </>
+                                                            )
+                                                        }
+                                                    </Button>
+                                                </form>
+                                            </Form>
                                         </CardContent>
                                     </Card>
 
                                     {/* Stripe Payout Settings */}
-                                    <Card>
+                                    {/* <Card>
                                         <CardHeader>
                                             <CardTitle className="flex items-center">
                                                 <CreditCard className="h-5 w-5 mr-2" />
@@ -2939,7 +3164,7 @@ export default function CMSDashboard() {
                                             <CardDescription>Configure your details to receive payments from bookings</CardDescription>
                                         </CardHeader>
                                         <CardContent className="space-y-6">
-                                            {/* Stripe Fee Information */}
+                                            
                                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                                 <h4 className="font-semibold text-blue-900 mb-2">Stripe Transaction Fees</h4>
                                                 <div className="space-y-2 text-sm text-blue-800">
@@ -2964,85 +3189,130 @@ export default function CMSDashboard() {
                                                         <span className="font-medium">1.5% (min $0.50)</span>
                                                     </div>
                                                 </div>
+                                                <h4 className="font-semibold text-blue-900 my-2">Platform Service Fees</h4>
+                                                <div className="space-y-2 text-sm text-blue-800">
+                                                    <div className="flex justify-between">
+                                                        <span>Bookings under 10 days:</span>
+                                                        <span className="font-medium">$5 per booking</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Bookings 10 days and over:</span>
+                                                        <span className="font-medium">$10 per booking</span>
+                                                    </div>
+                                                </div>
                                                 <div className="mt-3 pt-3 border-t border-blue-200">
                                                     <p className="text-xs text-blue-700">
-                                                        <strong>Example:</strong> For a $500 booking, you&apos;ll receive $485.20 after Stripe fees ($500 -
-                                                        $14.80 in fees). Instant payouts would cost an additional $7.50.
+                                                        <strong>Example:</strong> For a $1000 booking of more than 10 days, you&apos;ll receive
+                                                        $960.70 after Stripe fees and the service fee ($1000 - $29.30 in Stripe fees - $10 service fee).
+                                                        Instant payouts would cost an additional $14.41.
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            {/* Account Details */}
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <Label htmlFor="account-holder">Account Holder Name</Label>
-                                                    <Input id="account-holder" placeholder="John Doe" className="mt-1" />
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <Label htmlFor="email">Email</Label>
-                                                        <Input id="email" placeholder="jdoe@email.com" className="mt-1" />
-                                                        <p className="text-xs text-gray-500 mt-1">Email address</p>
-                                                    </div>
-                                                    <div>
-                                                        <Label htmlFor="country">Country</Label>
-                                                        <Input id="country" placeholder="Canada" className="mt-1" />
-                                                        <p className="text-xs text-gray-500 mt-1">Your Country</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Verification Status */}
-                                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                                <div className="flex items-center mb-2">
-                                                    <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
-                                                    <h4 className="font-semibold text-yellow-900">Account Verification Required</h4>
-                                                </div>
-                                                <p className="text-sm text-yellow-800 mb-3">
-                                                    To receive payouts, you&apos;ll need to verify your identity and business information with Stripe. This
-                                                    typically takes 1-2 business days.
-                                                </p>
-                                                <div className="space-y-2 text-sm text-yellow-800">
-                                                    <div className="flex items-center">
-                                                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                                                        <span>Government-issued ID verification</span>
-                                                    </div>
-                                                    <div className="flex items-center">
-                                                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                                                        <span>Bank account verification</span>
-                                                    </div>
-                                                    <div className="flex items-center">
-                                                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                                                        <span>Business documentation (if applicable)</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Action Buttons */}
-                                            <div className="flex flex-col sm:flex-row gap-3">
-                                                <Button className="bg-amber-600 hover:bg-amber-700 flex-1">
-                                                    <Save className="h-4 w-4 mr-2" />
-                                                    Save Payout Details
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    className="flex-1 bg-transparent"
-                                                    onClick={async () => {
-                                                        const { data } = await axios.post("/api/create-connected-account", {
-                                                            userId: user?.id,
-                                                            role: user?.publicMetadata?.role,
-                                                        });
-                                                        const { url } = data;
-                                                        window.location.href = url; // send host to Stripe onboarding
-                                                    }}
+                                            <Form {...connectAccountForm}>
+                                                <form
+                                                    onSubmit={connectAccountForm.handleSubmit(onConnectAccountSubmit)}
+                                                    className="space-y-4"
                                                 >
-                                                    <RefreshCw className="h-4 w-4 mr-2" />
-                                                    Verify with Stripe
-                                                </Button>
-                                            </div>
+                                                    <FormField
+                                                        control={connectAccountForm.control}
+                                                        name="holderName"
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel htmlFor="account-holder">Account Holder Name</FormLabel>
+                                                                <FormControl>
+                                                                    <Input
+                                                                        id="account-holder"
+                                                                        placeholder="John Doe"
+                                                                        className="mt-1"
+                                                                        {...field}
+                                                                    />
+                                                                </FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <FormField
+                                                            control={connectAccountForm.control}
+                                                            name="email"
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormLabel htmlFor="email">Email</FormLabel>
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            id="email"
+                                                                            placeholder="jdoe@email.com"
+                                                                            className="mt-1"
+                                                                            {...field}
+                                                                        />
+                                                                    </FormControl>
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                        <FormField
+                                                            control={connectAccountForm.control}
+                                                            name="country"
+                                                            render={({ field }) => (
+                                                                <FormItem className="mt-4 w-full">
+                                                                    <FormLabel htmlFor="country">Country</FormLabel>
+                                                                    <CountrySelect
+                                                                        value={field.value}
+                                                                        onChange={field.onChange}
+                                                                    />
+                                                                    <FormMessage />
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
 
-                                            {/* Security Notice */}
+                                                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                                        <div className="flex items-center mb-2">
+                                                            <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
+                                                            <h4 className="font-semibold text-yellow-900">Account Verification Required</h4>
+                                                        </div>
+                                                        <p className="text-sm text-yellow-800 mb-3">
+                                                            To receive payouts, you&apos;ll need to verify your identity and business information with Stripe. This
+                                                            typically takes 1-2 business days.
+                                                        </p>
+                                                        <div className="space-y-2 text-sm text-yellow-800">
+                                                            <div className="flex items-center">
+                                                                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                                                <span>Government-issued ID verification</span>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                                                <span>Bank account verification</span>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                                                                <span>Business documentation (if applicable)</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <Button
+                                                        variant="outline"
+                                                        className="flex-1 bg-transparent w-full"
+                                                    >
+                                                        {
+                                                            submitConnectAccount.isPending ? (
+                                                                <>
+                                                                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                                                    Verifying with Stripe...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                                                    Verify with Stripe
+                                                                </>
+                                                            )
+                                                        }
+                                                    </Button>
+                                                </form>
+                                            </Form>
+
                                             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                                 <div className="flex items-start">
                                                     <Shield className="h-5 w-5 text-gray-600 mr-2 mt-0.5" />
@@ -3056,7 +3326,7 @@ export default function CMSDashboard() {
                                                 </div>
                                             </div>
                                         </CardContent>
-                                    </Card>
+                                    </Card> */}
                                 </TabsContent>
                             </Tabs>
                         </div>

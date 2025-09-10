@@ -116,9 +116,10 @@ function getBlockedDates(
 ): Date[] {
     const blockedDates: Date[] = [];
 
-    console.error("Availability", availabilityStatus);
-    // Add unavailable/maintenance/booked days
+    console.error("Availability status", availabilityStatus);
+    // Add unavailable/booked days
     availabilityStatus.forEach(({ dates, availability }) => {
+        console.error("Availability", availability);
         if (["unavailable", "booked"].includes(availability)) {
             dates.forEach((dateStr) => {
                 console.error("Date", dateStr);
@@ -164,27 +165,6 @@ export default function BookingDialog({
         }
     });
 
-    const createBooking = useMutation({
-        mutationFn: async ({ data, total }: { data: BookingFormData, total: number }) => {
-
-            const { data: returnData } = await axios.post("/api/create-booking-payment", {
-                data: {
-                    ...data,
-                    featured,
-                    page,
-                    userId,
-                    roomId: room.id,
-                    amount: total,
-                    room: room.name,
-                    image: room.images[0],
-                    description: room.description,
-                }
-            });
-
-            return returnData
-        },
-    });
-
     const checkIn = bookingForm.watch("checkIn");
     const checkOut = bookingForm.watch("checkOut");
 
@@ -194,9 +174,34 @@ export default function BookingDialog({
         [nights, room.price],
     )
 
-    const serviceFees = useMemo(() => nights <= 5 ? 6 : 5, [nights])
+    const serviceFees = useMemo(() => subtotal && Math.round(subtotal * 0.02 + (nights <= 5 ? 6 : 5)), [subtotal, nights])
 
-    const total = useMemo(() => (subtotal && serviceFees ? subtotal + serviceFees : subtotal), [subtotal, serviceFees])
+    const hostServiceFees = useMemo(() => subtotal && Math.round(subtotal * 0.02 + 5), [subtotal, nights])
+
+    const total = useMemo(() => (subtotal && serviceFees ? subtotal + serviceFees : subtotal), [subtotal, serviceFees]);
+
+    const createBooking = useMutation({
+        mutationFn: async ({ data, total, serviceFees }: { data: BookingFormData, total: number, serviceFees: number }) => {
+
+            const { data: returnData } = await axios.post("/api/create-booking-payment", {
+                data: {
+                    ...data,
+                    featured,
+                    page,
+                    userId,
+                    roomId: room.id,
+                    amount: Math.round(total),
+                    serviceFees,
+                    hostServiceFees,
+                    room: room.name,
+                    image: room.images[0],
+                    description: room.description,
+                }
+            });
+
+            return returnData
+        },
+    });
 
     const isAvailable = useMemo(
         () => isDateRangeAvailable(checkIn, checkOut, room.bookings),
@@ -221,9 +226,8 @@ export default function BookingDialog({
         }
 
 
-        createBooking.mutate({ data, total: total! }, {
+        createBooking.mutate({ data, total: total!, serviceFees: serviceFees! }, {
             onSuccess: (data) => {
-                console.log("Success", data);
                 //reset form
                 bookingForm.reset();
                 toast.success("Upload complete.", {

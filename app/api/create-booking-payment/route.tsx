@@ -2,6 +2,7 @@ import { env } from '@/env';
 import { prisma } from '@/lib/db/prisma';
 import { redisClient } from '@/lib/redis';
 import { rateLimit } from '@/lib/utils/rate-limit';
+import { eachDayOfInterval, format } from 'date-fns';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
@@ -15,7 +16,23 @@ export async function POST(req: NextRequest) {
 
     try {
         const { data } = await req.json();
-        const { checkIn, checkOut, guests, name, email, phone, notes, room, roomId, image, description, amount, userId, receiveMarketing, featured, page } = data;
+        const { checkIn, checkOut, guests, name, email, phone, notes, room, roomId, image, description, amount, serviceFees, hostServiceFees, userId, receiveMarketing, featured, page } = data;
+
+        const user = await prisma.room.findUnique({
+            where: {
+                id: roomId
+            },
+            select: {
+                user: {
+                    select: {
+                        stripeAccountId: true
+                    }
+                }
+            }
+        });
+
+        if (!user?.user?.stripeAccountId) return new NextResponse("No stripe account found", { status: 404 });
+
 
         const cacheKey = `aurevo-rooms-${featured}-${page}`;
 
@@ -29,9 +46,54 @@ export async function POST(req: NextRequest) {
                 email,
                 phone,
                 notes,
+                amount: parseInt(amount) - parseInt(serviceFees),
                 status: "Pending"
             }
         });
+
+        let dates: string[] = [];
+
+        const allDates = eachDayOfInterval({
+            start: new Date(booking.checkIn),
+            end: new Date(booking.checkOut),
+        }).map((d) => format(d, "yyyy-MM-dd"));
+
+        dates = allDates;
+
+        const roomToUpdate = await prisma.room.findUnique({
+            where: {
+                id: roomId,
+            },
+        });
+
+        let updatedStatus = roomToUpdate?.availabilityStatus ?? [];
+
+        // 2. Remove overlapping dates from existing entries
+        updatedStatus = updatedStatus.map(
+            (entry: { availability: string; dates: string[] }) => ({
+                ...entry,
+                dates: entry.dates.filter((d) => !dates.includes(d)),
+            })
+        );
+
+        // 3. Drop empty date groups
+        updatedStatus = updatedStatus.filter((entry) => entry.dates.length > 0);
+
+        // 4. Add the new entry
+        updatedStatus.push({
+            availability: "booked",
+            dates,
+        });
+
+        await prisma.room.update({
+            where: {
+                id: roomId,
+            },
+            data: {
+                availabilityStatus: updatedStatus
+            }
+        });
+
 
         if (receiveMarketing) await prisma.user.update({
             where: {
@@ -91,7 +153,6 @@ export async function POST(req: NextRequest) {
             description,
             metadata: {
                 bookingId: booking.id, // Store reference to your booking
-
             },
         });
 
@@ -111,9 +172,16 @@ export async function POST(req: NextRequest) {
                     quantity: 1,
                 },
             ],
+            // payment_intent_data: {
+            //     transfer_data: {
+            //         destination: user?.user?.stripeAccountId,
+            //         amount: Math.round(amount - (serviceFees + hostServiceFees)) * 100,
+            //     },
+            // },
             metadata: {
                 userId,
                 bookingId: booking.id,
+                amount,
             },
             mode: 'payment',
             success_url: `${env.NEXT_PUBLIC_BASE_URL}?success=true`,

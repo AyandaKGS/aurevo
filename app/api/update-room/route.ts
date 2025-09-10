@@ -17,6 +17,44 @@ export async function PUT(req: NextRequest) {
 
     try {
 
+        if (data.availabilityRules) {
+            const { userId, ...rest } = data;
+
+            await prisma.room.updateMany({
+                where: {
+                    userId,
+                },
+                data: rest
+            });
+
+            return new NextResponse("Successfully updated room", {
+                status: 200,
+                headers: {
+                    "X-RateLimit-Limit": "1",
+                    "X-RateLimit-Remaining": remaining.toString(),
+                    "X-RateLimit-Reset": new Date(Date.now() + 1000).toISOString(),
+                }
+            });
+        }
+        if (data.checkInTime) {
+            const { userId, ...rest } = data;
+
+            await prisma.room.updateMany({
+                where: {
+                    userId
+                },
+                data: rest
+            });
+
+            return new NextResponse("Successfully updated rooms", {
+                status: 200,
+                headers: {
+                    "X-RateLimit-Limit": "1",
+                    "X-RateLimit-Remaining": remaining.toString(),
+                    "X-RateLimit-Reset": new Date(Date.now() + 1000).toISOString(),
+                }
+            });
+        }
         if (data.roomIds) {
             const { roomIds, userId, pricePerNight, startDate, endDate, days, ...rest } = data;
 
@@ -103,7 +141,14 @@ export async function PUT(req: NextRequest) {
                 });
             }
 
-            return new NextResponse("Successfully updated rooms", { status: 200 });
+            return new NextResponse("Successfully updated rooms", {
+                status: 200,
+                headers: {
+                    "X-RateLimit-Limit": "1",
+                    "X-RateLimit-Remaining": remaining.toString(),
+                    "X-RateLimit-Reset": new Date(Date.now() + 1000).toISOString(),
+                }
+            });
         };
 
         const body = {

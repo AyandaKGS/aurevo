@@ -48,6 +48,7 @@ model booking {
     email         String
     phone         String?
     notes         String?
+    amount        Int?
     room          room?         @relation(fields: [roomId], references: [id], onDelete: Cascade)
     experience    experience?   @relation(fields: [experienceId], references: [id], onDelete: Cascade)
     service       service?      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
@@ -129,6 +130,7 @@ model room {
     id                 String               @id @default(auto()) @map("_id") @db.ObjectId
     userId             String?
     ngoziId            String?
+    propertyName       String?
     name               String
     category           String
     featured           Boolean?
@@ -150,7 +152,12 @@ model room {
     popular            Boolean?
     newlyRenovated     Boolean?
     address            String?
+    checkInTime        String?
+    checkOutTime       String?
+    minStay            Int?
+    maxStay            Int?
     availabilityStatus AvailabilityStatus[]
+    availabilityRules  String[]
     cancellationPolicy String[]
     user               user?                @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
