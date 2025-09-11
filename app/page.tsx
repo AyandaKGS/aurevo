@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { homepageLoadingStates, MultiStepLoader } from "@/components/ui/multi-step-loader"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { experience, room } from "@/generated"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { experience, room } from "@prisma/client"
 import { IconCheese, IconYoga } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
@@ -467,7 +467,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {getData?.data?.experiences?.map((experience: experience, index: number) => (
+            {getData?.data?.experiences?.map((experience: experience) => (
               <Card
                 key={`featured-rooms-${experience.id}`}
                 className="overflow-hidden hover:shadow-xl bg-background transition-shadow duration-300 pt-0 px-0 border-0">
