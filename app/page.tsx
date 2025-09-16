@@ -225,9 +225,9 @@ export default function HomePage() {
               <div className="text-white">
                 <Badge className="mb-4 bg-gold-gradient text-white border-0">⭐ 3-Star+ Luxury Apartments</Badge>
                 <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-                  Elevating
-                  <span className="block text-amber-400">Luxury Living,</span>
-                  around the world
+                  Built for the
+                  <span className="block text-amber-400">Roaming</span>
+                  Nomad.
                 </h1>
                 <p className="text-xl mb-8 text-gray-200 leading-relaxed">
                   Discover exceptional homes in iconic cities and breathtaking destinations—all in one seamless platform.

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer"
 import LoadingIcon from "@/components/LoadinIcon"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
@@ -18,16 +19,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import { Textarea } from "@/components/ui/textarea"
 import { booking } from "@/generated"
 import { BookingWithRoom, RoomWithReviews } from "@/lib/types"
+import { cn } from "@/lib/utils"
 import { useUser } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { room } from "@prisma/client"
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query"
 import axios from "axios"
-import { addDays, format, formatDate, subDays } from "date-fns"
+import { addDays, format, formatDate } from "date-fns"
 import {
     AlertTriangle,
     Bed,
@@ -43,7 +44,6 @@ import {
     Eye,
     ImageIcon,
     Loader,
-    Loader2,
     Lock,
     LogIn,
     LogOut,
@@ -63,7 +63,6 @@ import { useEffect, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import z from "zod"
-import { cn } from "@/lib/utils"
 
 type CategoryAgg = {
     value: string

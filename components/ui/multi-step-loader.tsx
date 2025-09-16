@@ -167,7 +167,7 @@ export const MultiStepLoader = ({
 
 // Predefined loading states for common hospitality scenarios
 export const homepageLoadingStates: LoadingState[] = [
-    { text: "Welcome to Aurevo", icon: "location" },
+    { text: "Welcome to Nomaro", icon: "location" },
     { text: "Loading room availability", icon: "room" },
     { text: "Preparing amenities showcase", icon: "amenities" },
     { text: "Fetching current offers", icon: "booking" },

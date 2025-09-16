@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aurevo",
-  description: "Elevating luxury living around the world.",
+  title: "Nomaro",
+  description: "For the roaming nomad.",
 };
 
 export default function RootLayout({
