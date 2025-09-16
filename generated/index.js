@@ -265,7 +265,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\ayand\\Documents\\Websites\\aurevo\\generated",
+      "value": "C:\\aurevo\\generated",
       "fromEnvVar": null
     },
     "config": {
@@ -279,7 +279,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\ayand\\Documents\\Websites\\aurevo\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\aurevo\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -293,6 +293,7 @@ const config = {
     "db"
   ],
   "activeProvider": "mongodb",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

@@ -68,7 +68,7 @@ export const ImagesSlider = ({
     window.addEventListener("keydown", handleKeyDown);
 
     // autoplay
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any 
+
     let interval: any;
     if (autoplay) {
       interval = setInterval(() => {

@@ -4,8 +4,6 @@ import { rateLimit } from "@/lib/utils/rate-limit";
 import { addDays, addYears, eachDayOfInterval, format } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export async function PUT(req: NextRequest) {
     const { data } = await req.json();
     const { userId, ...rest } = data;

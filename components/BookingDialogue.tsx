@@ -17,7 +17,6 @@ import { AvailabilityStatus } from "@/generated"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@clerk/nextjs"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { booking } from "@prisma/client"
 import { useMutation } from "@tanstack/react-query"
 import axios from "axios"
 import { addDays, format, isBefore, subDays } from "date-fns"
@@ -31,6 +30,11 @@ import { toast } from "sonner"
 import z from "zod"
 import { Calendar } from "./ui/calendar"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
+<<<<<<< HEAD
+=======
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { AvailabilityStatus, booking } from "@/generated"
+>>>>>>> 87a5adc44a47ae74c53df368edde6ea198beb7f3
 
 const bookingFormSchema = z.object({
     checkIn: z.date({ error: "Please select a check-in date." }),

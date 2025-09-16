@@ -47,7 +47,7 @@ export default function VerifyEmailPage() {
                         </div>
                     </div>
                 </main>
-                <Footer/>
+                <Footer />
             </div>
         </Suspense>
     )
@@ -126,7 +126,7 @@ function FormComp() {
         if (code && code.length === 6) {
             onSubmit({ code });
         }
-    }, [code]);
+    }, [code, onSubmit]);
 
     return (
         <Form {...otpForm}>

@@ -13,7 +13,6 @@ import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RoomWithReviews } from "@/lib/types"
 import { cn } from "@/lib/utils"
-import { review } from "@prisma/client"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import axios from "axios"
 import { format } from "date-fns"
@@ -39,6 +38,7 @@ import { useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { Input } from "./ui/input"
 import Footer from "./Footer"
+import { review } from "@/generated"
 
 interface EnhancedSearchProps {
     searchQuery: string
