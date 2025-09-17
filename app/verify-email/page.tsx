@@ -126,7 +126,7 @@ function FormComp() {
         if (code && code.length === 6) {
             onSubmit({ code });
         }
-    }, [code, onSubmit]);
+    }, [code]);
 
     return (
         <Form {...otpForm}>

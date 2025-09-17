@@ -158,7 +158,7 @@ export function SignUpComp() {
             </div>
         )
     };
-
+    
     return (
         <div className="min-h-screen flex flex-col items-center justify-center border-t-[1px] px-4 py-8">
             <Card className="w-full max-w-lg">

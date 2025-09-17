@@ -6,6 +6,8 @@ import { NavbarComp } from "@/components/Navbar";
 import QueryProvider from "@/components/query-provider";
 import { Toaster } from "sonner";
 import { ClerkProvider } from '@clerk/nextjs';
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,6 +45,8 @@ export default function RootLayout({
               <NavbarComp />
               {children}
               <Toaster richColors />
+              <Analytics />
+              <SpeedInsights />
             </ThemeProvider>
           </QueryProvider>
         </body>
