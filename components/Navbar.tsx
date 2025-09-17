@@ -37,11 +37,11 @@ export function NavbarComp() {
         },
         {
             name: "Experiences",
-            link: "#experiences",
+            link: "/#experiences",
         },
         {
             name: "Services",
-            link: "#services",
+            link: "/#services",
         },
     ];
 

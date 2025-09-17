@@ -143,7 +143,7 @@ export const MultiStepLoader = ({
                     }}
                     className="w-full h-full fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-2xl bg-black/20 dark:bg-black/40"
                 >
-                    <div className="bg-white/65 bg:bg-gray-900/70 backdrop-blur-2xl rounded-2xl shadow-2xl border border-gray-200/65 dark:border-gray-700/70 p-8 max-w-md w-full mx-4">
+                    <div className="max-h-[95vh] bg-white/65 bg:bg-gray-900/70 backdrop-blur-2xl rounded-2xl shadow-2xl border border-gray-200/65 dark:border-gray-700/70 p-8 max-w-md w-full mx-4">
                         <div className="text-center mb-8">
                             <div className="w-16 h-16 bg-primary-foreground rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Bed className="w-8 h-8 text-primary" />
