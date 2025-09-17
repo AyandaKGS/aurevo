@@ -397,7 +397,7 @@ export default function RoomsComp() {
         });
 
     const RoomCard = ({ room }: { room: RoomWithReviews }) => (
-        <Card className="w-[300px] sm:w-full overflow-hidden hover:shadow-xl transition-all duration-300 group pt-0">
+        <Card className="w-full overflow-hidden hover:shadow-xl transition-all duration-300 group pt-0">
             <div className="relative">
                 <Image
                     src={room.images[0] || "/placeholder.svg"}
@@ -919,7 +919,7 @@ export default function RoomsComp() {
 
                         {/* Rooms Grid */}
                         {viewMode === "grid" ? (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div className="flex  flex-col justify-center items-center md:grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {filteredAndSortedRooms.map((room) => (
                                     <RoomCard key={room.id} room={room} />
                                 ))}
