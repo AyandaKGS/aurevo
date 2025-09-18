@@ -699,7 +699,7 @@ export default function HomePage() {
             </div>
             <div className="relative">
               <Image
-                src="https://lh3.googleusercontent.com/gps-cs-s/AC9h4noCA0DKxjI502fPj-_MDi_68liMJdbmwA95UlyVRsz-lo-l1zdEKkAaZgnRIc1kutqQSULV8FJc9crOnz8TmUcF2zbC-k48OgQSfgLCUD2riEM3Df7C2ciX0HvtCG34KEPNc7Orhw=s680-w680-h510-rw"
+                src="https://8pdpy78amg.ufs.sh/f/mIltK9OTv04zqhBk1QTVxUsvJanTo5AO9wyE7eMiZYrt3KD0"
                 alt="Resort location map"
                 width={500}
                 height={500}

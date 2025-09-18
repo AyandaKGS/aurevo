@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "8pdpy78amg.ufs.sh",
+      },
+      {
+        protocol: "https",
         hostname: "lh3.googleusercontent.com"
       }
     ],
