@@ -14,6 +14,8 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { DarkModeToggle } from "./DarkModeToggle";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { User } from "lucide-react";
 
 export default function NavBar() {
     return (
@@ -59,7 +61,7 @@ export function NavbarComp() {
                         navItems.concat([{ name: "CMS", link: "/cms" }])
                         : navItems
                 } />
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-5">
                     <NavbarButton variant="secondary" className="relative left-6">
                         <DarkModeToggle />
                     </NavbarButton>
@@ -67,19 +69,26 @@ export function NavbarComp() {
                         <>
                             <NavbarButton
                                 onClick={() => {
-                                    setIsMobileMenuOpen(false);
-                                    signOut();
+                                    // router.push("/profile")
+                                    signOut()
                                 }}
                                 variant="secondary"
+                                className={`relative cursor-pointer overflow-hidden transition-all duration-300 group rounded-full size-9 p-0`}
+                                aria-label="Go to user profile"
                             >
-                                Sign Out
+                                <Avatar className="size-9">
+                                    <AvatarImage src={user?.imageUrl || "/placeholder.svg"} alt={user?.firstName ? user?.firstName + " " + user?.lastName : "User"} />
+                                    <AvatarFallback>
+                                        <User className="w-5 h-5" />
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:translate-x-full transition-transform duration-1000 ease-out rounded-full" />
                             </NavbarButton>
                         </>
                     ) :
                         (
                             <NavbarButton
                                 onClick={() => {
-                                    setIsMobileMenuOpen(false);
                                     router.push("/sign-in")
                                 }}
                                 variant="secondary"
@@ -128,12 +137,19 @@ export function NavbarComp() {
                                 <NavbarButton
                                     onClick={() => {
                                         setIsMobileMenuOpen(false);
-                                        signOut();
+                                        router.push("/profile")
                                     }}
                                     variant="primary"
-                                    className="w-full"
+                                    className={`relative cursor-pointer overflow-hidden transition-all duration-300 group`}
+                                    aria-label="Go to user profile"
                                 >
-                                    Sign Out
+                                    <Avatar className="size-10">
+                                        <AvatarImage src={user?.imageUrl || "/placeholder.svg"} alt={user?.firstName ? user?.firstName + " " + user?.lastName : "User"} />
+                                        <AvatarFallback>
+                                            <User className="w-5 h-5" />
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:translate-x-full transition-transform duration-1000 ease-out rounded-full" />
                                 </NavbarButton>
                                 <NavbarButton
                                     onClick={() => {

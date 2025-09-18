@@ -176,12 +176,12 @@ export const homepageLoadingStates: LoadingState[] = [
 ];
 
 export const editRoomsLoadingStates: LoadingState[] = [
-  { text: "Fetching room details", icon: "file-search" },
-  { text: "Loading images and media", icon: "image" },
-  { text: "Retrieving amenities", icon: "list" },
-  { text: "Preparing room editor", icon: "pencil" },
-  { text: "Applying saved configurations", icon: "sliders" },
-  { text: "Edit page ready!", icon: "check-circle" },
+    { text: "Fetching room details", icon: "file-search" },
+    { text: "Loading images and media", icon: "image" },
+    { text: "Retrieving amenities", icon: "list" },
+    { text: "Preparing room editor", icon: "pencil" },
+    { text: "Applying saved configurations", icon: "sliders" },
+    { text: "Edit page ready!", icon: "check-circle" },
 ];
 
 export const hotelBookingStates: LoadingState[] = [
@@ -199,12 +199,15 @@ export const checkInStates: LoadingState[] = [
     { text: "Welcome to our hotel!", icon: "complete" },
 ];
 
-export const roomServiceStates: LoadingState[] = [
-    { text: "Receiving your order", icon: "dining" },
-    { text: "Preparing your meal", icon: "service" },
-    { text: "Dispatching to your room", icon: "room" },
-    { text: "Order on its way!", icon: "complete" },
+export const profileLoadingStates: LoadingState[] = [
+    { text: "Loading your profile", icon: "user" },
+    { text: "Fetching saved preferences", icon: "settings" },
+    { text: "Retrieving your bookings", icon: "booking" },
+    { text: "Preparing your travel history", icon: "history" },
+    { text: "Personalizing recommendations", icon: "service" },
+    { text: "Profile ready!", icon: "complete" },
 ];
+
 
 export const conciergeStates: LoadingState[] = [
     { text: "Understanding your request", icon: "service" },

@@ -1,18 +1,25 @@
 "use client"
 
+import Footer from "@/components/Footer"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { homepageLoadingStates, MultiStepLoader, profileLoadingStates } from "@/components/ui/multi-step-loader"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import { user } from "@/generated"
+import { useAuth } from "@clerk/nextjs"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
 import { Award, Bed, Calendar, Camera, CreditCard, Edit, Gift, MessageSquare, Save, Star, Users } from "lucide-react"
 import { useState } from "react"
 
 export default function UserProfilePage() {
+    const { userId, signOut } = useAuth();
     const [isEditing, setIsEditing] = useState(false)
     const [profileData, setProfileData] = useState({
         firstName: "Sarah",
@@ -24,52 +31,83 @@ export default function UserProfilePage() {
         preferences: "Ocean view rooms, late checkout, vegetarian meals",
     })
 
+    const getUser = useQuery({
+        queryKey: ["user", userId],
+        queryFn: async () => {
+            const { data } = await axios.get("/user/get-user", {
+                params: {
+                    userId
+                },
+            });
+
+            return data;
+        },
+        enabled: !!userId,
+    });
+
+
+
     const handleSaveProfile = () => {
         setIsEditing(false)
         // Here you would typically save to a backend
     }
 
+    if (getUser.isLoading || !getUser.data) {
+        <MultiStepLoader
+            loadingStates={profileLoadingStates}
+            loading={getUser.isFetching}
+            duration={2000}
+        />
+    }
+
+    const user: user = getUser.data;
+
     return (
-        <div className="min-h-screen bg-gray-50">
-            
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="min-h-screen">
+            <Card className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-5">
                 {/* Profile Header */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <Card className="rounded-lg shadow-sm p-6 mb-8">
                     <div className="flex items-center space-x-6">
                         <div className="relative">
                             <Avatar className="h-24 w-24">
-                                <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Profile" />
-                                <AvatarFallback className="text-2xl">SJ</AvatarFallback>
+                                <AvatarImage src={user?.imageUrl} alt="Profile" />
+                                <AvatarFallback className="text-2xl">{user?.firstName?.charAt(0).toUpperCase()}{user?.lastName?.charAt(0).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <Button size="sm" className="absolute -bottom-2 -right-2 rounded-full p-2 h-8 w-8">
                                 <Camera className="h-4 w-4" />
                             </Button>
                         </div>
                         <div className="flex-1">
-                            <h1 className="text-3xl font-bold text-gray-900">Welcome back, Sarah!</h1>
-                            <p className="text-gray-600 mt-1">Member since March 2019</p>
+                            <h1 className="text-3xl font-bold text-card-foreground">Welcome back, {user?.firstName} {user?.lastName}!</h1>
+                            <p className="text-muted-foreground mt-1">Member since March 2019</p>
                             <div className="flex items-center space-x-4 mt-3">
-                                <Badge className="bg-amber-600 text-white">
+                                <Badge className="bg-amber-600 text-white dark:text-neutral-100">
                                     <Award className="h-3 w-3 mr-1" />
                                     Gold Member
                                 </Badge>
-                                <div className="flex items-center text-sm text-gray-600">
+                                <div className="flex items-center text-sm text-muted-foreground">
                                     <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
                                     4.9 Guest Rating
                                 </div>
-                                <div className="text-sm text-gray-600">12 Stays Completed</div>
+                                <div className="text-sm text-muted-foreground">12 Stays Completed</div>
                             </div>
+                            <Button
+                                className="mt-3 h-6 rounded-2xl bg-gold-gradient"
+                                onClick={() => signOut()}
+                            >
+                                Logout
+                            </Button>
                         </div>
                         <div className="text-right">
                             <div className="text-2xl font-bold text-amber-600">2,450</div>
-                            <div className="text-sm text-gray-600">Reward Points</div>
-                            <Button variant="outline" size="sm" className="mt-2 bg-transparent">
+                            <div className="text-sm text-muted-foreground">Reward Points</div>
+                            <Button variant="outline" size="sm" className="mt-2 bg-transparent dark:hover:text-neutral-400">
                                 <Gift className="h-4 w-4 mr-2" />
                                 Redeem
                             </Button>
                         </div>
                     </div>
-                </div>
+                </Card>
 
                 {/* Main Content */}
                 <Tabs defaultValue="bookings" className="space-y-8">
@@ -83,7 +121,7 @@ export default function UserProfilePage() {
                     {/* Bookings Tab */}
                     <TabsContent value="bookings" className="space-y-6">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-bold text-gray-900">My Bookings</h2>
+                            <h2 className="text-2xl font-bold text-card-foreground">My Bookings</h2>
                             <Button className="bg-amber-600 hover:bg-amber-700">
                                 <Calendar className="h-4 w-4 mr-2" />
                                 New Booking
@@ -104,23 +142,23 @@ export default function UserProfilePage() {
                             <CardContent>
                                 <div className="grid md:grid-cols-3 gap-4">
                                     <div className="flex items-center space-x-2">
-                                        <Calendar className="h-4 w-4 text-gray-500" />
+                                        <Calendar className="h-4 w-4 text-muted-foreground opacity-80" />
                                         <span className="text-sm">Dec 15-18, 2024</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <Users className="h-4 w-4 text-gray-500" />
+                                        <Users className="h-4 w-4 text-muted-foreground opacity-80" />
                                         <span className="text-sm">2 Guests</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <Bed className="h-4 w-4 text-gray-500" />
+                                        <Bed className="h-4 w-4 text-muted-foreground opacity-80" />
                                         <span className="text-sm">Room 1205</span>
                                     </div>
                                 </div>
                                 <Separator className="my-4" />
                                 <div className="flex justify-between items-center">
                                     <div>
-                                        <p className="text-sm text-gray-600">Booking Reference: #GV-2024-1205</p>
-                                        <p className="text-sm text-gray-600">Check-out: Tomorrow, 11:00 AM</p>
+                                        <p className="text-sm text-muted-foreground">Booking Reference: #GV-2024-1205</p>
+                                        <p className="text-sm text-muted-foreground">Check-out: Tomorrow, 11:00 AM</p>
                                     </div>
                                     <div className="flex space-x-2">
                                         <Button variant="outline" size="sm">
@@ -136,7 +174,7 @@ export default function UserProfilePage() {
 
                         {/* Upcoming Bookings */}
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Bookings</h3>
+                            <h3 className="text-lg font-semibold text-card-foreground mb-4">Upcoming Bookings</h3>
                             <Card>
                                 <CardHeader>
                                     <div className="flex justify-between items-start">
@@ -150,20 +188,20 @@ export default function UserProfilePage() {
                                 <CardContent>
                                     <div className="grid md:grid-cols-3 gap-4 mb-4">
                                         <div className="flex items-center space-x-2">
-                                            <Calendar className="h-4 w-4 text-gray-500" />
+                                            <Calendar className="h-4 w-4 text-muted-foreground opacity-80" />
                                             <span className="text-sm">Mar 20-25, 2025</span>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <Users className="h-4 w-4 text-gray-500" />
+                                            <Users className="h-4 w-4 text-muted-foreground opacity-80" />
                                             <span className="text-sm">2 Guests</span>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <CreditCard className="h-4 w-4 text-gray-500" />
+                                            <CreditCard className="h-4 w-4 text-muted-foreground opacity-80" />
                                             <span className="text-sm">$1,299 Total</span>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <p className="text-sm text-gray-600">Booking Reference: #GV-2025-0320</p>
+                                        <p className="text-sm text-muted-foreground">Booking Reference: #GV-2025-0320</p>
                                         <div className="flex space-x-2">
                                             <Button variant="outline" size="sm">
                                                 Modify
@@ -179,7 +217,7 @@ export default function UserProfilePage() {
 
                         {/* Past Bookings */}
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Past Stays</h3>
+                            <h3 className="text-lg font-semibold text-card-foreground mb-4">Past Stays</h3>
                             <div className="space-y-4">
                                 {[
                                     {
@@ -203,22 +241,22 @@ export default function UserProfilePage() {
                                         <CardContent className="pt-6">
                                             <div className="flex justify-between items-start">
                                                 <div className="flex-1">
-                                                    <h4 className="font-semibold text-gray-900">{booking.room}</h4>
+                                                    <h4 className="font-semibold text-card-foreground">{booking.room}</h4>
                                                     <div className="grid md:grid-cols-3 gap-4 mt-2">
                                                         <div className="flex items-center space-x-2">
-                                                            <Calendar className="h-4 w-4 text-gray-500" />
-                                                            <span className="text-sm text-gray-600">{booking.dates}</span>
+                                                            <Calendar className="h-4 w-4 text-muted-foreground opacity-80" />
+                                                            <span className="text-sm text-muted-foreground">{booking.dates}</span>
                                                         </div>
                                                         <div className="flex items-center space-x-2">
-                                                            <Users className="h-4 w-4 text-gray-500" />
-                                                            <span className="text-sm text-gray-600">{booking.guests} Guests</span>
+                                                            <Users className="h-4 w-4 text-muted-foreground opacity-80" />
+                                                            <span className="text-sm text-muted-foreground">{booking.guests} Guests</span>
                                                         </div>
                                                         <div className="flex items-center space-x-2">
-                                                            <CreditCard className="h-4 w-4 text-gray-500" />
-                                                            <span className="text-sm text-gray-600">{booking.total}</span>
+                                                            <CreditCard className="h-4 w-4 text-muted-foreground opacity-80" />
+                                                            <span className="text-sm text-muted-foreground">{booking.total}</span>
                                                         </div>
                                                     </div>
-                                                    <p className="text-sm text-gray-500 mt-2">{booking.reference}</p>
+                                                    <p className="text-sm text-muted-foreground opacity-80 mt-2">{booking.reference}</p>
                                                 </div>
                                                 <div className="flex space-x-2">
                                                     <Button variant="outline" size="sm">
@@ -242,7 +280,7 @@ export default function UserProfilePage() {
                     {/* Reviews Tab */}
                     <TabsContent value="reviews" className="space-y-6">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-bold text-gray-900">Reviews</h2>
+                            <h2 className="text-2xl font-bold text-card-foreground">Reviews</h2>
                             <Button className="bg-amber-600 hover:bg-amber-700">
                                 <MessageSquare className="h-4 w-4 mr-2" />
                                 Write New Review
@@ -302,7 +340,7 @@ export default function UserProfilePage() {
 
                         {/* My Reviews */}
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">My Reviews</h3>
+                            <h3 className="text-lg font-semibold text-card-foreground mb-4">My Reviews</h3>
                             <div className="space-y-4">
                                 {[
                                     {
@@ -326,7 +364,7 @@ export default function UserProfilePage() {
                                         <CardContent className="pt-6">
                                             <div className="flex justify-between items-start mb-3">
                                                 <div>
-                                                    <h4 className="font-semibold text-gray-900">{review.stay}</h4>
+                                                    <h4 className="font-semibold text-card-foreground">{review.stay}</h4>
                                                     <div className="flex items-center space-x-2 mt-1">
                                                         <div className="flex space-x-1">
                                                             {[...Array(5)].map((_, i) => (
@@ -337,7 +375,7 @@ export default function UserProfilePage() {
                                                                 />
                                                             ))}
                                                         </div>
-                                                        <span className="text-sm text-gray-600">{review.date}</span>
+                                                        <span className="text-sm text-muted-foreground">{review.date}</span>
                                                     </div>
                                                 </div>
                                                 <Button variant="outline" size="sm">
@@ -345,8 +383,8 @@ export default function UserProfilePage() {
                                                     Edit
                                                 </Button>
                                             </div>
-                                            <p className="text-gray-700 mb-3">{review.review}</p>
-                                            <div className="flex items-center justify-between text-sm text-gray-600">
+                                            <p className="text-card-foreground- mb-3">{review.review}</p>
+                                            <div className="flex items-center justify-between text-sm text-muted-foreground">
                                                 <span>{review.helpful} people found this helpful</span>
                                                 <Badge variant="outline">Published</Badge>
                                             </div>
@@ -360,7 +398,7 @@ export default function UserProfilePage() {
                     {/* Profile Settings Tab */}
                     <TabsContent value="profile" className="space-y-6">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
+                            <h2 className="text-2xl font-bold text-card-foreground">Profile Settings</h2>
                             {!isEditing ? (
                                 <Button onClick={() => setIsEditing(true)} variant="outline">
                                     <Edit className="h-4 w-4 mr-2" />
@@ -476,7 +514,7 @@ export default function UserProfilePage() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h4 className="font-medium">Email Notifications</h4>
-                                        <p className="text-sm text-gray-600">Receive booking confirmations and special offers</p>
+                                        <p className="text-sm text-muted-foreground">Receive booking confirmations and special offers</p>
                                     </div>
                                     <Button variant="outline" size="sm">
                                         Manage
@@ -485,18 +523,8 @@ export default function UserProfilePage() {
                                 <Separator />
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h4 className="font-medium">Password</h4>
-                                        <p className="text-sm text-gray-600">Last updated 3 months ago</p>
-                                    </div>
-                                    <Button variant="outline" size="sm">
-                                        Change Password
-                                    </Button>
-                                </div>
-                                <Separator />
-                                <div className="flex items-center justify-between">
-                                    <div>
                                         <h4 className="font-medium">Two-Factor Authentication</h4>
-                                        <p className="text-sm text-gray-600">Add an extra layer of security</p>
+                                        <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
                                     </div>
                                     <Button variant="outline" size="sm">
                                         Enable
@@ -509,7 +537,7 @@ export default function UserProfilePage() {
                     {/* Rewards Tab */}
                     <TabsContent value="rewards" className="space-y-6">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-2xl font-bold text-gray-900">Rewards & Loyalty</h2>
+                            <h2 className="text-2xl font-bold text-card-foreground">Rewards & Loyalty</h2>
                             <Badge className="bg-amber-600 text-white text-lg px-4 py-2">
                                 <Award className="h-4 w-4 mr-2" />
                                 Gold Member
@@ -582,9 +610,9 @@ export default function UserProfilePage() {
                                     <CardContent className="pt-6">
                                         <div className="text-center">
                                             <Gift className="h-8 w-8 text-amber-600 mx-auto mb-3" />
-                                            <h3 className="font-semibold text-gray-900 mb-2">{reward.title}</h3>
+                                            <h3 className="font-semibold text-card-foreground mb-2">{reward.title}</h3>
                                             <p className="text-2xl font-bold text-amber-600 mb-2">{reward.points}</p>
-                                            <p className="text-sm text-gray-600 mb-4">{reward.description}</p>
+                                            <p className="text-sm text-muted-foreground mb-4">{reward.description}</p>
                                             <Button
                                                 className={`w-full ${reward.available ? "bg-amber-600 hover:bg-amber-700" : "bg-gray-300 cursor-not-allowed"
                                                     }`}
@@ -634,8 +662,8 @@ export default function UserProfilePage() {
                                     ].map((transaction, index) => (
                                         <div key={index} className="flex justify-between items-center py-2">
                                             <div>
-                                                <p className="font-medium text-gray-900">{transaction.action}</p>
-                                                <p className="text-sm text-gray-600">{transaction.description}</p>
+                                                <p className="font-medium text-card-foreground">{transaction.action}</p>
+                                                <p className="text-sm text-muted-foreground">{transaction.description}</p>
                                             </div>
                                             <div className="text-right">
                                                 <p
@@ -644,7 +672,7 @@ export default function UserProfilePage() {
                                                 >
                                                     {transaction.points}
                                                 </p>
-                                                <p className="text-sm text-gray-600">{transaction.date}</p>
+                                                <p className="text-sm text-muted-foreground">{transaction.date}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -653,7 +681,8 @@ export default function UserProfilePage() {
                         </Card>
                     </TabsContent>
                 </Tabs>
-            </div>
+            </Card>
+            <Footer />
         </div>
     )
 }

@@ -114,19 +114,16 @@ function getBlockedDates(
 ): Date[] {
     const blockedDates: Date[] = [];
 
-    console.error("Availability status", availabilityStatus);
     // Add unavailable/booked days
     availabilityStatus.forEach(({ dates, availability }) => {
-        console.error("Availability", availability);
+
         if (["unavailable", "booked"].includes(availability)) {
             dates.forEach((dateStr) => {
-                console.error("Date", dateStr);
                 blockedDates.push(parseDateOnly(dateStr))
             })
         }
-    })
+    });
 
-    console.error("Blocked dates:", blockedDates.map(d => d.toDateString()))
     return blockedDates
 }
 
@@ -235,7 +232,7 @@ export default function BookingDialog({
             },
             onError: (error) => {
                 console.error("Error creating booking", error);
-                toast.error("Error creating booking.")
+                toast.error("Error creating booking. Please try again.")
             }
         })
     }

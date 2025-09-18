@@ -233,18 +233,26 @@ export const MobileNavToggle = ({
 
 export const NavbarLogo = () => {
   return (
-    <Link
-      href="/"
-      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
-    >
-      <Image
-        src="/images/logo-transparent.png"
-        alt="logo"
-        width={100}
-        height={100}
-        className="object-cover w-32 dark:invert"
-      />
-    </Link>
+    
+<Link
+  href="/"
+  className="group relative z-20 mr-4 inline-flex items-center text-sm font-normal text-black p-0 rounded-full focus:outline-none focus:ring-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+>
+  <div className="relative overflow-hidden rounded-full w-32">
+    <Image
+      src="/images/logo-transparent.png"
+      alt="logo"
+      width={128}
+      height={128}
+      className="w-full h-full object-cover dark:invert"
+    />
+    <div
+      className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none bg-gradient-to-r from-transparent via-white/30 to-transparent z-10"
+      aria-hidden="true"
+    />
+  </div>
+</Link>
+
   );
 };
 
